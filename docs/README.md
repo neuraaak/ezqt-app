@@ -66,7 +66,7 @@ EzQt_App is a Python framework designed to facilitate the creation of modern Qt 
 pip install ezqt_app
 
 # Or locally
-git clone https://github.com/neuraaak/ezqt_app.git
+git clone https://github.com/neuraaak/EzQt-App.git
 cd ezqt_app
 pip install .
 ```

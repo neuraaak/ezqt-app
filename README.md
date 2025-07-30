@@ -1,8 +1,8 @@
 # 🚀 EzQt_App
 
-[![Repository](https://img.shields.io/badge/Repository-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/neuraaak/ezqt_app)
+[![Repository](https://img.shields.io/badge/Repository-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/neuraaak/EzQt-App)
 [![PyPI](https://img.shields.io/badge/PyPI-ezqt_app-green?style=for-the-badge&logo=pypi)](https://pypi.org/project/EzQt_App/)
-[![Tests](https://img.shields.io/badge/Tests-240%2B%20passing-green?style=for-the-badge&logo=pytest)](https://github.com/neuraaak/ezqt_app/actions)
+[![Tests](https://img.shields.io/badge/Tests-240%2B%20passing-green?style=for-the-badge&logo=pytest)](https://github.com/neuraaak/EzQt-App/actions)
 
 A lightweight Python framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management.
 
@@ -237,7 +237,7 @@ ezqt_app/
 
 ### **Development Installation**
 ```bash
-git clone https://github.com/neuraaak/ezqt_app.git
+git clone https://github.com/neuraaak/EzQt-App.git
 cd ezqt_app
 pip install -e ".[dev]"
 
