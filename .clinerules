@@ -1,0 +1,29 @@
+<project_context>
+    <instruction_sources>
+    CRITICAL: Always consult .github/instructions/ before any development task.
+
+        Workflow:
+        1. Read .github/instructions/README.md FIRST (if present)
+        → Project-specific context, instructions, and overrides
+
+        2. Then consult task-specific files:
+        - core/advanced-cognitive-conduct.md → Core principles
+        - languages/python/pyproject-standards.md → Project setup
+        - languages/python/python-development-standards.md → Development practices
+        - languages/python/python-formatting-standards.md → Code formatting
+
+        Use `view .github/instructions/` to explore available instruction files.
+    </instruction_sources>
+
+    <priority_order>
+        1. .github/instructions/README.md (project context and overrides)
+        2. Specific instruction files in .github/instructions/
+        3. General conventions (only if not covered above)
+    </priority_order>
+
+    <note>
+        .github/instructions/ rules override all default conventions.
+        README.md in this directory provides project-specific context.
+    </note>
+
+</project_context>

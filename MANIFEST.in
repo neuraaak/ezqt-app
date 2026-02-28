@@ -3,7 +3,6 @@ include README.md
 include CHANGELOG.md
 include LICENSE
 include MANIFEST.in
-include TODO.md
 
 # Documentation
 recursive-include docs *.md
@@ -13,25 +12,32 @@ recursive-include ezqt_app/resources *
 recursive-include ezqt_app/widgets *
 recursive-include ezqt_app/kernel *
 recursive-include ezqt_app/cli *
+recursive-include examples *
 
 # Configuration files
 include ezqt_app/app.yaml
 
 # Test files
-recursive-include tests *.py
-include tests/pytest.ini
 include tests/run_tests.py
+include tests/pytest.ini
+include tests/conftest.py
+recursive-include tests/unit *
 
 # Exclude unnecessary files
 exclude build_upload.bat
-exclude *.spec
-exclude requirements.txt
-
-# Exclude build and cache directories
+exclude .coverage
+exclude coverage.xml
+exclude htmlcov/
+exclude .pytest_cache/
+exclude .benchmarks/
+exclude _temp/
+exclude *.tmp
+exclude *.temp
 prune build
 prune dist
 prune EzQt_App.egg-info
 prune __pycache__
-prune .pytest_cache
-prune htmlcov
-prune _temp
+prune .venv
+prune .vscode
+prune .idea
+prune .git
