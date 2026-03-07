@@ -1,0 +1,35 @@
+# ///////////////////////////////////////////////////////////////
+# WIDGETS.EXTENDED - Extended widget package
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
+
+"""Extended application widgets."""
+
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Local imports
+from .menu_button import MenuButton
+from .setting_widgets import (
+    SettingCheckbox,
+    SettingSelect,
+    SettingSlider,
+    SettingText,
+    SettingToggle,
+)
+from .theme_icon import ThemeIcon
+
+# ///////////////////////////////////////////////////////////////
+# PUBLIC API
+# ///////////////////////////////////////////////////////////////
+__all__ = [
+    "MenuButton",
+    "SettingCheckbox",
+    "SettingSelect",
+    "SettingSlider",
+    "SettingText",
+    "SettingToggle",
+    "ThemeIcon",
+]

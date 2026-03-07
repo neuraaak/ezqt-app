@@ -53,7 +53,7 @@ def read_version() -> str:
     """
     # Project root is the parent of the .scripts/dev directory
     project_root = Path(__file__).resolve().parents[2]
-    init_path = project_root / project_name.lower() / "__init__.py"
+    init_path = project_root / "src" / project_name.lower() / "__init__.py"
     content = init_path.read_text(encoding="utf-8")
 
     # Match __version__ = "X.Y.Z"

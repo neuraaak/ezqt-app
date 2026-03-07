@@ -8,14 +8,13 @@ include MANIFEST.in
 recursive-include docs *.md
 
 # EzQt_App package resources
-recursive-include ezqt_app/resources *
-recursive-include ezqt_app/widgets *
-recursive-include ezqt_app/kernel *
-recursive-include ezqt_app/cli *
+recursive-include src/ezqt_app/resources *
+recursive-include src/ezqt_app/widgets *
+recursive-include src/ezqt_app/cli *
 recursive-include examples *
 
 # Configuration files
-include ezqt_app/app.yaml
+include src/ezqt_app/py.typed
 
 # Test files
 include tests/run_tests.py
