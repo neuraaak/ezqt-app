@@ -10,6 +10,17 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API
 # ///////////////////////////////////////////////////////////////
+from .errors import (
+    BootstrapError,
+    DomainError,
+    EzQtError,
+    InitAlreadyInitializedError,
+    InitStepError,
+    InvalidOverwritePolicyError,
+    MissingPackageResourceError,
+    ResourceCompilationError,
+    ResourceError,
+)
 from .models import (
     FONT_SPECS,
     SIZE_POLICY_SPECS,
@@ -24,6 +35,7 @@ from .ports import (
     TranslationServiceProtocol,
     UiComponentFactoryProtocol,
 )
+from .results import BaseResult, InitResult, InitStepResult, ResultError
 
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API
@@ -35,10 +47,25 @@ __all__ = [
     "SizePolicySpec",
     "FONT_SPECS",
     "SIZE_POLICY_SPECS",
+    # Errors
+    "EzQtError",
+    "DomainError",
+    "BootstrapError",
+    "InitAlreadyInitializedError",
+    "InitStepError",
+    "ResourceError",
+    "MissingPackageResourceError",
+    "ResourceCompilationError",
+    "InvalidOverwritePolicyError",
     # Ports
     "ConfigServiceProtocol",
     "RuntimeStateServiceProtocol",
     "SettingsServiceProtocol",
     "TranslationServiceProtocol",
     "UiComponentFactoryProtocol",
+    # Results
+    "BaseResult",
+    "InitResult",
+    "InitStepResult",
+    "ResultError",
 ]

@@ -12,11 +12,13 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 from pathlib import Path
-from typing import Any
 
 # Local imports
+from ...domain.errors import InitAlreadyInitializedError
+from ...domain.results import InitResult
+from ...domain.results.result_error import ResultError
 from ..application.file_service import FileService
-from .init_options import InitOptions
+from .contracts.options import InitOptions
 from .sequence import InitializationSequence
 
 
@@ -29,18 +31,54 @@ class InitService:
     def __init__(self) -> None:
         self._initialized = False
 
-    def run(self, options: InitOptions | None = None) -> dict[str, Any]:
+    def run(self, options: InitOptions | None = None) -> InitResult:
         """Run initialization sequence with normalized options."""
         resolved = (options or InitOptions()).resolve()
 
         if self._initialized:
-            return {"success": True, "message": "Already initialized"}
+            err = InitAlreadyInitializedError(
+                code="bootstrap.already_initialized",
+                message="Initialization already completed",
+                context={
+                    "project_root": (
+                        str(resolved.project_root) if resolved.project_root else None
+                    ),
+                    "bin_path": str(resolved.bin_path) if resolved.bin_path else None,
+                },
+            )
+            return InitResult(
+                success=True,
+                message="Already initialized",
+                error=ResultError(
+                    code=err.code, message=err.message, context=err.context
+                ),
+            )
 
-        sequence = InitializationSequence(resolved)
-        summary = sequence.execute(verbose=resolved.verbose)
+        try:
+            sequence = InitializationSequence(resolved)
+            summary = sequence.execute(verbose=resolved.verbose)
+        except Exception as e:
+            return InitResult(
+                success=False,
+                message="Initialization failed before sequence completion",
+                error=ResultError(
+                    code="bootstrap.unexpected_error",
+                    message=str(e),
+                    context={
+                        "project_root": (
+                            str(resolved.project_root)
+                            if resolved.project_root
+                            else None
+                        ),
+                        "bin_path": (
+                            str(resolved.bin_path) if resolved.bin_path else None
+                        ),
+                    },
+                ),
+            )
 
         # CLI-only optional step: generate main.py from package template.
-        if summary.get("success") and resolved.generate_main and resolved.project_root:
+        if summary.success and resolved.generate_main and resolved.project_root:
             maker = FileService(
                 base_path=Path(resolved.project_root),
                 bin_path=resolved.bin_path,
@@ -49,7 +87,7 @@ class InitService:
             )
             maker.make_main_from_template()
 
-        if summary.get("success"):
+        if summary.success:
             self._initialized = True
 
         return summary

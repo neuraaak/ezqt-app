@@ -13,12 +13,12 @@ from __future__ import annotations
 # Standard library imports
 import json
 import re
-import warnings
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 # Local imports
+from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
 
 
@@ -65,7 +65,11 @@ class StringCollector:
                         if self._is_valid_string(text):
                             collected.add(text)
                     except Exception as e:
-                        warnings.warn(f"Could not read widget text: {e}", stacklevel=2)
+                        warn_tech(
+                            code="translation.collector.read_text_failed",
+                            message="Could not read widget text",
+                            error=e,
+                        )
 
                 if hasattr(w, "toolTip") and callable(getattr(w, "toolTip", None)):
                     try:
@@ -73,8 +77,10 @@ class StringCollector:
                         if self._is_valid_string(tooltip):
                             collected.add(tooltip)
                     except Exception as e:
-                        warnings.warn(
-                            f"Could not read widget toolTip: {e}", stacklevel=2
+                        warn_tech(
+                            code="translation.collector.read_tooltip_failed",
+                            message="Could not read widget toolTip",
+                            error=e,
                         )
 
                 if hasattr(w, "placeholderText") and callable(
@@ -85,8 +91,10 @@ class StringCollector:
                         if self._is_valid_string(placeholder):
                             collected.add(placeholder)
                     except Exception as e:
-                        warnings.warn(
-                            f"Could not read widget placeholderText: {e}", stacklevel=2
+                        warn_tech(
+                            code="translation.collector.read_placeholder_failed",
+                            message="Could not read widget placeholderText",
+                            error=e,
                         )
 
                 if hasattr(w, "windowTitle") and callable(
@@ -97,8 +105,10 @@ class StringCollector:
                         if self._is_valid_string(title):
                             collected.add(title)
                     except Exception as e:
-                        warnings.warn(
-                            f"Could not read widget windowTitle: {e}", stacklevel=2
+                        warn_tech(
+                            code="translation.collector.read_window_title_failed",
+                            message="Could not read widget windowTitle",
+                            error=e,
                         )
 
                 if recursive:
@@ -106,12 +116,18 @@ class StringCollector:
                         for child in w.findChildren(type(w)):
                             collect_recursive(child)
                     except Exception as e:
-                        warnings.warn(
-                            f"Could not iterate widget children: {e}", stacklevel=2
+                        warn_tech(
+                            code="translation.collector.iter_children_failed",
+                            message="Could not iterate widget children",
+                            error=e,
                         )
 
             except Exception as e:
-                get_printer().warning(f"Error scanning widget {type(w)}: {e}")
+                warn_tech(
+                    code="translation.collector.scan_widget_failed",
+                    message=f"Error scanning widget {type(w)}",
+                    error=e,
+                )
 
         collect_recursive(widget)
         return collected
@@ -145,7 +161,11 @@ class StringCollector:
         except ImportError:
             return self._simple_language_detection(text)
         except Exception as e:
-            get_printer().warning(f"Language detection error: {e}")
+            warn_tech(
+                code="translation.collector.language_detection_failed",
+                message="Language detection error",
+                error=e,
+            )
             return "en"
 
     def _simple_language_detection(self, text: str) -> str:
@@ -170,7 +190,11 @@ class StringCollector:
                     f.write(f"{s}\n")
             get_printer().info(f"✅ {len(strings)} pending strings saved")
         except Exception as e:
-            get_printer().warning(f"Error saving strings: {e}")
+            warn_tech(
+                code="translation.collector.save_pending_failed",
+                message="Error saving strings",
+                error=e,
+            )
 
     def detect_languages_and_save(self, strings: set[str]) -> list[tuple[str, str]]:
         language_detected: list[tuple[str, str]] = []
@@ -179,7 +203,11 @@ class StringCollector:
                 lang = self._detect_language(text)
                 language_detected.append((lang, text))
             except Exception as e:
-                get_printer().warning(f"Language detection error: {e}")
+                warn_tech(
+                    code="translation.collector.detect_languages_failed",
+                    message="Language detection error",
+                    error=e,
+                )
                 language_detected.append(("en", text))
 
         try:
@@ -193,7 +221,11 @@ class StringCollector:
                     f.write(f"{lang}|{text}\n")
             self._language_detected_strings = language_detected
         except Exception as e:
-            get_printer().warning(f"Error saving language detection results: {e}")
+            warn_tech(
+                code="translation.collector.save_language_results_failed",
+                message="Error saving language detection results",
+                error=e,
+            )
 
         return language_detected
 
@@ -210,7 +242,11 @@ class StringCollector:
             else:
                 get_printer().info("📝 No processed strings file found")
         except Exception as e:
-            get_printer().warning(f"Error loading processed strings: {e}")
+            warn_tech(
+                code="translation.collector.load_processed_failed",
+                message="Error loading processed strings",
+                error=e,
+            )
         return processed
 
     def get_supported_languages(self) -> list[str]:
@@ -230,7 +266,11 @@ class StringCollector:
                 json.dump(tasks, f, indent=2, ensure_ascii=False)
             get_printer().info(f"✅ {len(tasks)} translation tasks generated")
         except Exception as e:
-            get_printer().warning(f"Error saving tasks: {e}")
+            warn_tech(
+                code="translation.collector.save_tasks_failed",
+                message="Error saving tasks",
+                error=e,
+            )
         return tasks
 
     def get_new_strings(self) -> set[str]:
@@ -262,7 +302,10 @@ class StringCollector:
         if strings is None:
             strings = self._new_strings
         if not strings:
-            get_printer().warning("No strings to mark as processed")
+            warn_user(
+                code="translation.collector.mark_processed_empty",
+                user_message="No strings to mark as processed",
+            )
             return
         try:
             processed = self.load_processed_strings()
@@ -275,7 +318,12 @@ class StringCollector:
                     f.write(f"{s}\n")
             get_printer().info(f"✅ {len(strings)} strings marked as processed")
         except Exception as e:
-            get_printer().warning(f"Error marking strings: {e}")
+            warn_user(
+                code="translation.collector.mark_processed_failed",
+                user_message="Error marking strings",
+                log_message="Error marking strings",
+                error=e,
+            )
 
     def get_stats(self) -> dict[str, Any]:
         return {

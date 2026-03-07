@@ -12,39 +12,14 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 from collections.abc import Callable
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any
 
 # Local imports
+from ...domain.errors import EzQtError
+from ...domain.results import InitResult, InitStepResult
+from ...domain.results.result_error import ResultError
 from ...utils.printer import get_printer
-from .init_options import InitOptions
-
-
-# ///////////////////////////////////////////////////////////////
-# TYPES
-# ///////////////////////////////////////////////////////////////
-class StepStatus(Enum):
-    """Execution status of a single initialization step."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
-    SKIPPED = "skipped"
-
-
-@dataclass
-class InitStep:
-    """Descriptor for a single initialization step."""
-
-    name: str
-    description: str
-    function: Callable
-    required: bool = True
-    status: StepStatus = StepStatus.PENDING
-    error_message: str | None = None
-    duration: float | None = None
+from .contracts.options import InitOptions
+from .contracts.steps import InitStep, StepStatus
 
 
 # ///////////////////////////////////////////////////////////////
@@ -64,6 +39,15 @@ class InitializationSequence:
         self.current_step: InitStep | None = None
         self.printer = get_printer(self.options.verbose)
         self._setup_steps()
+
+    # ------------------------------------------------------------------
+    # Error code
+    # ------------------------------------------------------------------
+
+    def _error_code_for_step(self, step_name: str) -> str:
+        """Return a normalized error code for a failed step."""
+        slug = step_name.strip().lower().replace(" ", "_")
+        return f"bootstrap.step.{slug}.failed"
 
     # ------------------------------------------------------------------
     # Default steps
@@ -135,7 +119,7 @@ class InitializationSequence:
         self,
         name: str,
         description: str,
-        function: Callable,
+        function: Callable[[], None],
         required: bool = True,
     ) -> None:
         """Append a new step to the sequence."""
@@ -149,14 +133,13 @@ class InitializationSequence:
     # Execution
     # ------------------------------------------------------------------
 
-    def execute(self, verbose: bool = True) -> dict[str, Any]:
+    def execute(self, verbose: bool = True) -> InitResult:
         """Run all registered steps in order.
 
         Returns
         -------
-        dict
-            Summary with keys: ``total_steps``, ``successful``, ``failed``,
-            ``skipped``, ``total_time``, ``success``, ``steps``.
+        InitResult
+            Typed aggregate result with step-level execution details.
         """
         import time
 
@@ -171,6 +154,8 @@ class InitializationSequence:
         successful_steps = 0
         failed_steps = 0
         skipped_steps = 0
+        first_error: Exception | None = None
+        first_failed_step: str | None = None
 
         for step in self.steps:
             self.current_step = step
@@ -187,6 +172,9 @@ class InitializationSequence:
                 step.error_message = str(e)
                 step.duration = time.time() - step_start
                 failed_steps += 1
+                if first_error is None:
+                    first_error = e
+                    first_failed_step = step.name
 
                 if verbose:
                     self.printer.error(
@@ -201,24 +189,51 @@ class InitializationSequence:
                     break
 
         total_time = time.time() - start_time
-        summary: dict[str, Any] = {
-            "total_steps": len(self.steps),
-            "successful": successful_steps,
-            "failed": failed_steps,
-            "skipped": skipped_steps,
-            "total_time": total_time,
-            "success": failed_steps == 0,
-            "steps": self.steps,
-        }
+        summary = InitResult(
+            success=(failed_steps == 0),
+            total_steps=len(self.steps),
+            successful=successful_steps,
+            failed=failed_steps,
+            skipped=skipped_steps,
+            total_time=total_time,
+            steps=[
+                InitStepResult(
+                    name=step.name,
+                    description=step.description,
+                    required=step.required,
+                    status=step.status.value,
+                    error_message=step.error_message,
+                    duration=step.duration,
+                )
+                for step in self.steps
+            ],
+        )
+
+        if first_error is not None and first_failed_step is not None:
+            if isinstance(first_error, EzQtError):
+                summary.error = ResultError(
+                    code=first_error.code,
+                    message=first_error.message,
+                    context=first_error.context,
+                )
+            else:
+                summary.error = ResultError(
+                    code=self._error_code_for_step(first_failed_step),
+                    message=str(first_error),
+                    context={
+                        "step": first_failed_step,
+                        "error_type": type(first_error).__name__,
+                    },
+                )
 
         if verbose:
             self._print_summary(summary)
 
         return summary
 
-    def _print_summary(self, summary: dict[str, Any]) -> None:
+    def _print_summary(self, summary: InitResult) -> None:
         self.printer.raw_print("...")
-        if summary["success"]:
+        if summary.success:
             self.printer.custom_print(
                 "~ [Initializer] Initialization completed successfully!",
                 color="MAGENTA",

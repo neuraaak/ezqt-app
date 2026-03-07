@@ -20,11 +20,8 @@ from .utils.printer import get_printer
 
 if TYPE_CHECKING:
     from ezqt_app.services.application import FileService
-    from ezqt_app.services.bootstrap import (
-        Initializer,
-        OverwritePolicy,
-        StartupConfig,
-    )
+    from ezqt_app.services.bootstrap import Initializer, StartupConfig
+    from ezqt_app.services.bootstrap.contracts import OverwritePolicy
 
 # ///////////////////////////////////////////////////////////////
 # FUNCTIONS
@@ -37,7 +34,7 @@ def init(
     bin_path: str | Path | None = None,
     overwrite_policy: OverwritePolicy | None = None,
     verbose: bool = True,
-) -> dict:
+) -> dict[str, object]:
     """
     Initialize the EzQt_App application using the new modular system.
 
@@ -51,7 +48,7 @@ def init(
     mk_theme : bool, optional
         Generate theme file (default: True).
     """
-    from ezqt_app.services.bootstrap import OverwritePolicy
+    from ezqt_app.services.bootstrap.contracts import OverwritePolicy
 
     resolved_policy = overwrite_policy or OverwritePolicy.ASK
     resolved_project_root = str(project_root) if project_root is not None else None

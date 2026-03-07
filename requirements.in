@@ -5,7 +5,8 @@ PyYAML>=6.0
 ruamel.yaml==0.18.6
 colorama==0.4.6
 ezqt-widgets>=2.0.0
-langdetect
+ezplog>=1.5.0
+langdetect>=1.0.0
 #mypy-types
 typing_extensions>=4.0.0
 types-requests

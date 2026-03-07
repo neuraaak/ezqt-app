@@ -12,7 +12,6 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 import sys
-import warnings
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +20,7 @@ from PySide6.QtCore import QCoreApplication, QObject, QTranslator, Signal
 
 # Local imports
 from ...domain.models.translation import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
+from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH
 from .auto_translator import get_auto_translator
@@ -68,8 +68,10 @@ class TranslationManager(QObject):
                 if pkg_dir.exists():
                     possible_paths.append(pkg_dir)
             except Exception as e:
-                warnings.warn(
-                    f"Could not resolve package translations dir: {e}", stacklevel=2
+                warn_tech(
+                    code="translation.manager.package_dir_resolution_failed",
+                    message="Could not resolve package translations dir",
+                    error=e,
                 )
 
             self.translations_dir = next(
@@ -119,7 +121,11 @@ class TranslationManager(QObject):
             self._ts_translations.update(translations)
             return True
         except Exception as e:
-            get_printer().warning(f"Error loading .ts file {ts_file_path}: {e}")
+            warn_tech(
+                code="translation.manager.load_ts_failed",
+                message=f"Error loading .ts file {ts_file_path}",
+                error=e,
+            )
             return False
 
     def load_language(self, language_name: str) -> bool:
@@ -132,7 +138,10 @@ class TranslationManager(QObject):
 
     def load_language_by_code(self, language_code: str) -> bool:
         if language_code not in SUPPORTED_LANGUAGES:
-            get_printer().warning(f"Unsupported language: {language_code}")
+            warn_user(
+                code="translation.manager.unsupported_language",
+                user_message=f"Unsupported language: {language_code}",
+            )
             return False
 
         app = QCoreApplication.instance()
@@ -140,7 +149,11 @@ class TranslationManager(QObject):
             try:
                 QCoreApplication.removeTranslator(self.translator)
             except Exception as e:
-                get_printer().warning(f"Error removing translator: {e}")
+                warn_tech(
+                    code="translation.manager.remove_translator_failed",
+                    message="Error removing translator",
+                    error=e,
+                )
 
         self.translator = QTranslator()
         language_info = SUPPORTED_LANGUAGES[language_code]
@@ -151,12 +164,19 @@ class TranslationManager(QObject):
                 try:
                     QCoreApplication.installTranslator(self.translator)
                 except Exception as e:
-                    get_printer().warning(f"Error installing translator: {e}")
+                    warn_tech(
+                        code="translation.manager.install_translator_failed",
+                        message="Error installing translator",
+                        error=e,
+                    )
             self.current_language = language_code
             get_printer().info(f"Language switched to {language_info['name']}")
         else:
-            get_printer().warning(
-                f"Unable to load translations for {language_info['name']}"
+            warn_user(
+                code="translation.manager.load_language_failed",
+                user_message=(
+                    f"Unable to load translations for {language_info['name']}"
+                ),
             )
 
         self._retranslate_all_widgets()
@@ -221,11 +241,16 @@ class TranslationManager(QObject):
             elif hasattr(widget, "setToolTip"):
                 widget.setToolTip(translated)
             else:
-                get_printer().warning(
-                    f"Widget type not supported for translation: {type(widget)}"
+                warn_tech(
+                    code="translation.manager.unsupported_widget_for_translation",
+                    message=f"Widget type not supported for translation: {type(widget)}",
                 )
         except Exception as e:
-            get_printer().warning(f"Error translating widget: {e}")
+            warn_tech(
+                code="translation.manager.widget_translation_failed",
+                message="Error translating widget",
+                error=e,
+            )
 
     def _retranslate_all_widgets(self) -> None:
         for widget in self._translatable_widgets:
@@ -246,7 +271,11 @@ class TranslationManager(QObject):
                 )
                 self._ts_translations[original] = translated
         except Exception as e:
-            get_printer().warning(f"Error saving automatic translation: {e}")
+            warn_tech(
+                code="translation.manager.auto_translation_save_failed",
+                message="Error saving automatic translation",
+                error=e,
+            )
 
     def enable_auto_translation(self, enabled: bool = True) -> None:
         self.auto_translation_enabled = enabled

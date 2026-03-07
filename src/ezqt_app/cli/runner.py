@@ -18,6 +18,9 @@ from typing import Any
 # Third-party imports
 import click
 
+# Local imports
+from ezqt_app.utils.diagnostics import warn_tech
+
 
 # ///////////////////////////////////////////////////////////////
 # CLASSES
@@ -109,6 +112,11 @@ class ProjectRunner:
                 os.chdir(original_cwd)
 
         except Exception as e:
+            warn_tech(
+                "cli.runner.create_project_template_failed",
+                "Project template creation workflow failed",
+                error=e,
+            )
             if self.verbose:
                 click.echo(f"Error creating template: {e}")
             return False

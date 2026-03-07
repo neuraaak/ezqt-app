@@ -19,6 +19,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QSizePolicy, QToolButton
 
 # Local imports
+from ezqt_app.utils.diagnostics import warn_tech
 from ezqt_app.utils.icon_utils import colorize_pixmap, load_icon_from_source
 
 
@@ -164,6 +165,11 @@ class MenuButton(QToolButton):
             # Recalculate icon position when icon changes
             self._icon_x_position = (self._shrink_size - self._icon_size.width()) // 2
             self.iconChanged.emit(icon)
+        elif value is not None:
+            warn_tech(
+                code="widgets.menu_button.icon_load_failed",
+                message=f"Could not load icon from source: {value}",
+            )
 
     @property
     def text(self) -> str:

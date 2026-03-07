@@ -17,9 +17,6 @@ from PySide6.QtCore import QByteArray, QFile, QSize, Qt
 from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 from PySide6.QtSvg import QSvgRenderer
 
-# Local imports
-from ezqt_app.utils.printer import get_printer
-
 # ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
@@ -84,8 +81,7 @@ def load_icon_from_source(source: QIcon | str | None) -> QIcon | None:
                         raise ValueError("Failed to load image data from URL.")
                     pixmap = colorize_pixmap(pixmap, "#FFFFFF", 0.5)
                     return QIcon(pixmap)
-            except Exception as e:
-                get_printer().warning(f"Failed to load icon from URL: {e}")
+            except Exception:
                 return None
         elif source.lower().endswith(".svg"):
             try:
@@ -99,13 +95,11 @@ def load_icon_from_source(source: QIcon | str | None) -> QIcon | None:
                 renderer.render(painter)
                 painter.end()
                 return QIcon(pixmap)
-            except Exception as e:
-                get_printer().warning(f"Failed to load local SVG: {e}")
+            except Exception:
                 return None
         else:
             pixmap = QPixmap(source)
             if pixmap.isNull():
-                get_printer().warning(f"Failed to load pixmap from path: {source}")
                 return None
             pixmap = colorize_pixmap(pixmap, "#FFFFFF", 0.5)
             return QIcon(pixmap)

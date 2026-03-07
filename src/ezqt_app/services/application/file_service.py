@@ -16,6 +16,11 @@ import subprocess
 from pathlib import Path
 
 # Local imports
+from ...domain.errors import (
+    InvalidOverwritePolicyError,
+    MissingPackageResourceError,
+    ResourceCompilationError,
+)
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH
 
@@ -35,6 +40,14 @@ class FileService:
     - Project templates
     """
 
+    _ERROR_CODES: dict[str, str] = {
+        "invalid_overwrite_policy": "resources.invalid_overwrite_policy",
+        "missing_yaml": "resources.missing_yaml",
+        "missing_theme": "resources.missing_theme",
+        "missing_translations": "resources.missing_translations",
+        "qrc_compilation_failed": "resources.qrc_compilation_failed",
+    }
+
     def __init__(
         self,
         base_path: Path | None = None,
@@ -48,7 +61,25 @@ class FileService:
         self._qrc_file: str = ""
         self._resources_module_file: str = ""
         self._overwrite_policy = overwrite_policy.lower().strip()
+        if self._overwrite_policy not in {"ask", "skip", "force"}:
+            raise InvalidOverwritePolicyError(
+                code=self._error_code("invalid_overwrite_policy"),
+                message=f"Unsupported overwrite policy: {overwrite_policy}",
+                context={"supported": ["ask", "skip", "force"]},
+            )
         self.printer = get_printer(verbose)
+
+    # -----------------------------------------------------------
+    # Error Code
+    # -----------------------------------------------------------
+
+    def _error_code(self, key: str) -> str:
+        """Return a codified resource error code for a known key."""
+        code = self._ERROR_CODES.get(key)
+        if code is not None:
+            return code
+        slug = key.strip().lower().replace(" ", "_")
+        return f"resources.{slug}"
 
     # -----------------------------------------------------------
     # Overwrite handling
@@ -168,8 +199,11 @@ class FileService:
             )
 
         if not yaml_package.exists():
-            self.printer.warning(f"YAML file not found at {yaml_package}")
-            return None
+            raise MissingPackageResourceError(
+                code=self._error_code("missing_yaml"),
+                message=f"YAML file not found at {yaml_package}",
+                context={"resource": str(yaml_package)},
+            )
 
         target_path = self._bin / "config" / "app.yaml"
         target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -189,8 +223,11 @@ class FileService:
             )
 
         if not theme_package.exists():
-            self.printer.warning(f"Theme directory not found at {theme_package}")
-            return False
+            raise MissingPackageResourceError(
+                code=self._error_code("missing_theme"),
+                message=f"Theme resource not found at {theme_package}",
+                context={"resource": str(theme_package)},
+            )
 
         target_path = self._bin / "themes"
 
@@ -267,10 +304,11 @@ class FileService:
             )
 
         if not translations_package.exists():
-            self.printer.warning(
-                f"Translations directory not found at {translations_package}"
+            raise MissingPackageResourceError(
+                code=self._error_code("missing_translations"),
+                message=f"Translations resource not found at {translations_package}",
+                context={"resource": str(translations_package)},
             )
-            return False
 
         target_path = self._bin / "translations"
 
@@ -360,7 +398,11 @@ class FileService:
             )
             self.printer.qrc_compilation_result(True)
         except subprocess.CalledProcessError as e:
-            self.printer.qrc_compilation_result(False, str(e))
+            raise ResourceCompilationError(
+                code=self._error_code("qrc_compilation_failed"),
+                message="QRC compilation failed",
+                context={"details": str(e), "qrc_file": self._qrc_file},
+            ) from e
         except FileNotFoundError:
             self.printer.qrc_compilation_result(False, "pyside6-rcc not found")
 

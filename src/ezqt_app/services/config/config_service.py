@@ -21,6 +21,7 @@ import yaml
 
 # Local imports
 from ...domain.ports.config_service import ConfigServiceProtocol
+from ...utils.diagnostics import warn_user
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH
 
@@ -69,7 +70,11 @@ class ConfigService(ConfigServiceProtocol):
         config_file = self._resolve_config_file(config_name)
 
         if not config_file:
-            get_printer().warning(f"No configuration file found for '{config_name}'")
+            warn_user(
+                code="config.service.missing_file",
+                user_message=f"No configuration file found for '{config_name}'",
+                log_message=f"No configuration file found for '{config_name}'",
+            )
             get_printer().verbose_msg(
                 f"Searched paths: {self.get_config_paths(config_name)}"
             )

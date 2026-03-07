@@ -13,10 +13,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .init_options import InitOptions, OverwritePolicy
+from .contracts import InitOptions, InitStep, OverwritePolicy, StepStatus
+from .exceptions import BootstrapError, InitAlreadyInitializedError, InitStepError
 from .init_service import InitService
 from .initializer import Initializer
-from .sequence import InitializationSequence, InitStep, StepStatus
+from .sequence import InitializationSequence
 from .startup_config import StartupConfig
 
 _init_service = InitService()
@@ -61,7 +62,7 @@ def init(
         verbose=verbose,
         overwrite_policy=overwrite_policy,
     )
-    return _init_service.run(options)
+    return _init_service.run(options).to_dict()
 
 
 def setup_project(base_path: str | None = None) -> bool:
@@ -103,6 +104,9 @@ __all__ = [
     "InitializationSequence",
     "InitStep",
     "StepStatus",
+    "BootstrapError",
+    "InitAlreadyInitializedError",
+    "InitStepError",
     "init",
     "setup_project",
     "generate_assets",

@@ -16,7 +16,7 @@ from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 
 # Local imports
 from ...services.settings import get_settings_service
-from ...utils.printer import get_printer
+from ...utils.diagnostics import warn_tech
 
 
 # ///////////////////////////////////////////////////////////////
@@ -65,7 +65,10 @@ class ThemeIcon(QIcon):
                 app.themeChanged.connect(self.updateIcon)
         except ImportError:
             # Fallback if import fails
-            get_printer().warning("Could not connect to EzApplication theme signal")
+            warn_tech(
+                code="widgets.theme_icon.connect_theme_signal_failed",
+                message="Could not connect to EzApplication theme signal",
+            )
 
     def updateIcon(self) -> None:
         """

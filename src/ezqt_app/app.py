@@ -11,7 +11,6 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import contextlib
 import platform
 import sys
 from pathlib import Path
@@ -23,7 +22,7 @@ from PySide6.QtGui import QMouseEvent, QPixmap, QResizeEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 
 # Local imports
-from .services.application.app_service import AppService as Kernel
+from .services.application.app_service import AppService
 from .services.config import get_config_service
 from .services.settings import get_settings_service
 from .services.translation import get_translation_service
@@ -36,6 +35,7 @@ from .services.ui import (
     UiDefinitionsService,
 )
 from .shared.resources import Images
+from .utils.diagnostics import warn_tech
 from .utils.printer import get_printer
 from .widgets.core.ez_app import EzApplication
 from .widgets.ui_main import Ui_MainWindow
@@ -79,10 +79,10 @@ class EzQt_App(QMainWindow):
         """
         QMainWindow.__init__(self)
 
-        # ////// KERNEL LOADER
+        # ////// APP SERVICE LOADER
         # ///////////////////////////////////////////////////////////////
-        Kernel.load_fonts_resources()
-        Kernel.load_app_settings()
+        AppService.load_fonts_resources()
+        AppService.load_app_settings()
 
         config_service = get_config_service()
 
@@ -172,10 +172,16 @@ class EzQt_App(QMainWindow):
 
         theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
         if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
-            with contextlib.suppress(Exception):
+            try:
                 # Convert theme value to ID
                 theme_id = 0 if _theme == "light" else 1  # 0 = Light, 1 = Dark
                 theme_toggle.initialize_selector(theme_id)
+            except Exception as e:
+                warn_tech(
+                    code="app.theme.initialize_selector_failed",
+                    message="Could not initialize theme selector",
+                    error=e,
+                )
         self.ui.headerContainer.update_all_theme_icons()
         self.ui.menuContainer.update_all_theme_icons()
         # //////
@@ -219,7 +225,7 @@ class EzQt_App(QMainWindow):
             settings_service.set_theme(theme)
 
             # Save directly to app.settings_panel.theme.default
-            Kernel.write_yaml_config(
+            AppService.write_yaml_config(
                 ["app", "settings_panel", "theme", "default"], theme
             )
 
@@ -311,8 +317,10 @@ class EzQt_App(QMainWindow):
                 from .services.translation import set_tr
                 from .services.translation import tr as translate_text
             except ImportError as import_error:
-                get_printer().warning(
-                    f"Could not import translation helpers: {import_error}"
+                warn_tech(
+                    code="app.translation.import_helpers_failed",
+                    message="Could not import translation helpers",
+                    error=import_error,
                 )
                 return
 
@@ -323,7 +331,7 @@ class EzQt_App(QMainWindow):
                 """Recursive function to register all widgets."""
                 nonlocal registered_count
 
-                with contextlib.suppress(Exception):
+                try:
                     # Avoid already registered widgets
                     if widget in registered_widgets:
                         return
@@ -332,7 +340,7 @@ class EzQt_App(QMainWindow):
                     if hasattr(widget, "text") and callable(
                         getattr(widget, "text", None)
                     ):
-                        with contextlib.suppress(Exception):
+                        try:
                             text = widget.text().strip()
                             # Avoid widgets with technical text, numeric values, or too short
                             if (
@@ -348,12 +356,18 @@ class EzQt_App(QMainWindow):
                                 set_tr(widget, text)
                                 registered_widgets.add(widget)
                                 registered_count += 1
+                        except Exception as e:
+                            warn_tech(
+                                code="app.translation.read_widget_text_failed",
+                                message=f"Could not read widget text for {type(widget)}",
+                                error=e,
+                            )
 
                     # Check tooltips
                     if hasattr(widget, "toolTip") and callable(
                         getattr(widget, "toolTip", None)
                     ):
-                        with contextlib.suppress(Exception):
+                        try:
                             tooltip = widget.toolTip().strip()
                             if (
                                 tooltip
@@ -363,12 +377,18 @@ class EzQt_App(QMainWindow):
                             ):
                                 # For tooltips, we can use setToolTip with tr()
                                 widget.setToolTip(translate_text(tooltip))
+                        except Exception as e:
+                            warn_tech(
+                                code="app.translation.read_widget_tooltip_failed",
+                                message=f"Could not read widget tooltip for {type(widget)}",
+                                error=e,
+                            )
 
                     # Check placeholders
                     if hasattr(widget, "placeholderText") and callable(
                         getattr(widget, "placeholderText", None)
                     ):
-                        with contextlib.suppress(Exception):
+                        try:
                             placeholder = widget.placeholderText().strip()
                             if (
                                 placeholder
@@ -377,11 +397,33 @@ class EzQt_App(QMainWindow):
                                 and not placeholder.startswith("_")
                             ):
                                 widget.setPlaceholderText(translate_text(placeholder))
+                        except Exception as e:
+                            warn_tech(
+                                code="app.translation.read_widget_placeholder_failed",
+                                message=(
+                                    f"Could not read widget placeholder for {type(widget)}"
+                                ),
+                                error=e,
+                            )
 
                     # Iterate through all children
-                    with contextlib.suppress(Exception):
+                    try:
                         for child in widget.findChildren(QWidget):
                             register_widget_recursive(child)
+                    except Exception as e:
+                        warn_tech(
+                            code="app.translation.iter_widget_children_failed",
+                            message=(
+                                f"Could not iterate children for widget {type(widget)}"
+                            ),
+                            error=e,
+                        )
+                except Exception as e:
+                    warn_tech(
+                        code="app.translation.scan_widget_failed",
+                        message=f"Could not scan widget {type(widget)}",
+                        error=e,
+                    )
 
             # Start with main window
             register_widget_recursive(self)
@@ -389,15 +431,19 @@ class EzQt_App(QMainWindow):
             # Manually register specific widgets with fixed text
             self._register_specific_widgets_for_translation()
             get_printer().action(
-                f"[AppKernel] {registered_count} widgets registered for translation."
+                f"[EzQt_App] {registered_count} widgets registered for translation."
             )
 
         except Exception as e:
-            get_printer().warning(f"Could not register widgets for translation: {e}")
+            warn_tech(
+                code="app.translation.register_widgets_failed",
+                message="Could not register widgets for translation",
+                error=e,
+            )
 
     def _register_specific_widgets_for_translation(self) -> None:
         """Manually register specific widgets with fixed text."""
-        with contextlib.suppress(Exception):
+        try:
             from .services.translation import set_tr
 
             # Widgets in ui_main.py with fixed text
@@ -408,10 +454,16 @@ class EzQt_App(QMainWindow):
                 # Register dynamically created settings widgets
                 for widget in getattr(settings_panel, "_widgets", []):
                     if hasattr(widget, "label") and widget.label:
-                        with contextlib.suppress(Exception):
+                        try:
                             text = widget.label.text()
                             if text and len(text) > 1:
                                 set_tr(widget.label, text)
+                        except Exception as e:
+                            warn_tech(
+                                code="app.translation.register_settings_widget_failed",
+                                message="Could not register settings widget label",
+                                error=e,
+                            )
 
                 # Register theme label
                 if hasattr(settings_panel, "themeLabel"):
@@ -427,10 +479,16 @@ class EzQt_App(QMainWindow):
                 # Register dynamically created menu buttons
                 for button in getattr(menu_container, "_buttons", []):
                     if hasattr(button, "text_label") and button.text_label:
-                        with contextlib.suppress(Exception):
+                        try:
                             text = button.text_label.text()
                             if text and len(text) > 1:
                                 set_tr(button.text_label, text)
+                        except Exception as e:
+                            warn_tech(
+                                code="app.translation.register_menu_widget_failed",
+                                message="Could not register menu widget label",
+                                error=e,
+                            )
 
             # Widgets in header with fixed text
             if hasattr(self.ui, "headerContainer"):
@@ -438,16 +496,28 @@ class EzQt_App(QMainWindow):
 
                 # Register header labels
                 if hasattr(header_container, "headerAppName"):
-                    with contextlib.suppress(Exception):
+                    try:
                         text = header_container.headerAppName.text()
                         if text and len(text) > 1:
                             set_tr(header_container.headerAppName, text)
+                    except Exception as e:
+                        warn_tech(
+                            code="app.translation.register_header_name_failed",
+                            message="Could not register header app name",
+                            error=e,
+                        )
 
                 if hasattr(header_container, "headerAppDescription"):
-                    with contextlib.suppress(Exception):
+                    try:
                         text = header_container.headerAppDescription.text()
                         if text and len(text) > 1:
                             set_tr(header_container.headerAppDescription, text)
+                    except Exception as e:
+                        warn_tech(
+                            code="app.translation.register_header_description_failed",
+                            message="Could not register header app description",
+                            error=e,
+                        )
 
             # ezqt_widgets widgets with text
             # Note: These widgets generally handle their own translations
@@ -456,6 +526,12 @@ class EzQt_App(QMainWindow):
             # ToggleSwitch widgets (in setting_widgets)
             # OptionSelector widgets (in settings_panel)
             # These widgets are already handled by automatic registration
+        except Exception as e:
+            warn_tech(
+                code="app.translation.register_specific_widgets_failed",
+                message="Could not register specific widgets for translation",
+                error=e,
+            )
 
     # MOUSE CLICK EVENTS
     # ///////////////////////////////////////////////////////////////
@@ -603,11 +679,15 @@ class EzQt_App(QMainWindow):
             stats = collect_and_compare_strings(self, recursive=True)
 
             get_printer().info(
-                f"[AppKernel] Automatic collection completed: {stats['new_strings']} new strings found"
+                f"[EzQt_App] Automatic collection completed: {stats['new_strings']} new strings found"
             )
 
         except Exception as e:
-            get_printer().warning(f"Error during automatic string collection: {e}")
+            warn_tech(
+                code="app.translation.collect_strings_failed",
+                message="Error during automatic string collection",
+                error=e,
+            )
 
     def collect_strings_for_translation(self, widget=None, recursive=True):
         """

@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
 from ...services.settings import get_settings_service
 from ...services.translation import get_translation_service
 from ...services.ui import Fonts
-from ...utils.printer import get_printer
+from ...utils.diagnostics import warn_tech
 
 
 # ///////////////////////////////////////////////////////////////
@@ -182,8 +182,9 @@ class SettingsPanel(QFrame):
             self.VL_themeSettingsContainer.addWidget(self.themeToggleButton)
 
         except ImportError:
-            get_printer().warning(
-                "OptionSelector not available, theme toggle not created"
+            warn_tech(
+                code="widgets.settings_panel.option_selector_unavailable",
+                message="OptionSelector not available, theme toggle not created",
             )
 
         # ///////////////////////////////////////////////////////////////
@@ -221,7 +222,10 @@ class SettingsPanel(QFrame):
                     break
 
             if app_config is None:
-                get_printer().warning("Could not find app.yaml file")
+                warn_tech(
+                    code="widgets.settings_panel.app_yaml_not_found",
+                    message="Could not find app.yaml file",
+                )
                 return
 
             # Extract settings_panel section
@@ -242,7 +246,11 @@ class SettingsPanel(QFrame):
                         widget.set_value(default_value)  # type: ignore[union-attr]
 
         except Exception as e:
-            get_printer().warning(f"Error loading settings from YAML: {e}")
+            warn_tech(
+                code="widgets.settings_panel.load_yaml_failed",
+                message="Error loading settings from YAML",
+                error=e,
+            )
 
     def add_setting_from_config(self, key: str, config: dict) -> QWidget:
         """Add a setting based on its YAML configuration."""
@@ -508,12 +516,16 @@ class SettingsPanel(QFrame):
             # Save to YAML
             try:
                 # Direct import to avoid circular import
-                from ...services.application.app_service import AppService as Kernel
+                from ...services.application.app_service import AppService
 
                 # Save directly to settings_panel[key].default
-                Kernel.write_yaml_config(["settings_panel", key, "default"], value)
+                AppService.write_yaml_config(["settings_panel", key, "default"], value)
             except Exception as e:
-                get_printer().warning(f"Could not save setting '{key}' to YAML: {e}")
+                warn_tech(
+                    code="widgets.settings_panel.save_setting_failed",
+                    message=f"Could not save setting '{key}' to YAML",
+                    error=e,
+                )
 
             # Special handling for language changes
             if key == "language":
@@ -526,7 +538,11 @@ class SettingsPanel(QFrame):
                         # Emit language change signal
                         self.languageChanged.emit()
                 except Exception as e:
-                    get_printer().warning(f"Could not change language: {e}")
+                    warn_tech(
+                        code="widgets.settings_panel.change_language_failed",
+                        message="Could not change language",
+                        error=e,
+                    )
 
             # Emit signal for application
             self.settingChanged.emit(key, value)
@@ -554,15 +570,19 @@ class SettingsPanel(QFrame):
     def save_all_settings_to_yaml(self) -> None:
         """Save all settings to YAML file."""
         # Direct import to avoid circular import
-        from ...services.application.app_service import AppService as Kernel
+        from ...services.application.app_service import AppService
 
         for key, widget in self._settings.items():
             try:
-                Kernel.write_yaml_config(
+                AppService.write_yaml_config(
                     ["settings_panel", key, "default"], widget.get_value()
                 )
             except Exception as e:
-                get_printer().warning(f"Could not save setting '{key}' to YAML: {e}")
+                warn_tech(
+                    code="widgets.settings_panel.save_all_settings_failed",
+                    message=f"Could not save setting '{key}' to YAML",
+                    error=e,
+                )
 
     # ///////////////////////////////////////////////////////////////
     # Panel management methods
@@ -615,9 +635,9 @@ class SettingsPanel(QFrame):
             english_value = value.lower()
 
             # Save English value to YAML
-            from ...services.application.app_service import AppService as Kernel
+            from ...services.application.app_service import AppService
 
-            Kernel.write_yaml_config(
+            AppService.write_yaml_config(
                 ["settings_panel", "theme", "default"], english_value
             )
 
@@ -625,7 +645,11 @@ class SettingsPanel(QFrame):
             self.settingChanged.emit("theme", english_value)
 
         except Exception as e:
-            get_printer().warning(f"Could not handle theme selector change: {e}")
+            warn_tech(
+                code="widgets.settings_panel.theme_selector_change_failed",
+                message="Could not handle theme selector change",
+                error=e,
+            )
 
     def _on_theme_selector_clicked(self):
         """Called when theme selector is clicked."""
@@ -635,9 +659,9 @@ class SettingsPanel(QFrame):
                 current_value = self.themeToggleButton.value.lower()
 
                 # Save English value to YAML
-                from ...services.application.app_service import AppService as Kernel
+                from ...services.application.app_service import AppService
 
-                Kernel.write_yaml_config(
+                AppService.write_yaml_config(
                     ["settings_panel", "theme", "default"], current_value
                 )
 
@@ -645,7 +669,11 @@ class SettingsPanel(QFrame):
                 self.settingChanged.emit("theme", current_value)
 
         except Exception as e:
-            get_printer().warning(f"Could not handle theme selector click: {e}")
+            warn_tech(
+                code="widgets.settings_panel.theme_selector_click_failed",
+                message="Could not handle theme selector click",
+                error=e,
+            )
 
     def update_theme_selector_items(self) -> None:
         """Update theme selector items with translations."""

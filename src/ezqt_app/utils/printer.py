@@ -69,7 +69,7 @@ class Printer:
 
     def config_display(self, config_data: dict, _title: str = "Configuration") -> None:
         """Display configuration data in a formatted ASCII box."""
-        self.action("[AppKernel] Loaded Application settings.")
+        self.action("[EzQt_App] Loaded application settings.")
         if self.verbose:
             print(f"{Fore.LIGHTBLACK_EX}...{Style.RESET_ALL}")
             print(

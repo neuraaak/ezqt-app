@@ -23,11 +23,18 @@ from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QApplication
 
 # Local imports
+from ...utils.diagnostics import warn_tech
 from ...utils.qt_runtime import configure_qt_high_dpi
 
 # Configure High DPI before any QApplication instance is created
-with contextlib.suppress(ImportError, RuntimeError, Exception):
+try:
     configure_qt_high_dpi()
+except (ImportError, RuntimeError) as e:
+    warn_tech(
+        code="widgets.ez_app.high_dpi_early_config_failed",
+        message="Could not configure High DPI early",
+        error=e,
+    )
 
 
 # ///////////////////////////////////////////////////////////////
@@ -54,11 +61,17 @@ class EzApplication(QApplication):
         **kwargs : Any
             Keyword arguments passed to QApplication.
         """
-        with contextlib.suppress(ImportError, RuntimeError, Exception):
+        try:
             if QGuiApplication.instance() is None:
                 QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
                     Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
                 )
+        except (ImportError, RuntimeError) as e:
+            warn_tech(
+                code="widgets.ez_app.high_dpi_init_config_failed",
+                message="Could not configure High DPI in EzApplication.__init__",
+                error=e,
+            )
 
         existing_app = QApplication.instance()
         if existing_app and not isinstance(existing_app, EzApplication):
@@ -79,11 +92,19 @@ class EzApplication(QApplication):
         """
         Create an EzApplication instance for testing, bypassing singleton checks.
         """
-        with contextlib.suppress(ImportError, RuntimeError, Exception):
+        try:
             if QGuiApplication.instance() is None:
                 QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
                     Qt.HighDpiScaleFactorRoundingPolicy.PassThrough
                 )
+        except (ImportError, RuntimeError) as e:
+            warn_tech(
+                code="widgets.ez_app.high_dpi_test_config_failed",
+                message=(
+                    "Could not configure High DPI in EzApplication.create_for_testing"
+                ),
+                error=e,
+            )
 
         existing_app = QApplication.instance()
         if existing_app:

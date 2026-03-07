@@ -32,9 +32,7 @@ class AppService:
     """Central orchestration service for application lifecycle.
 
     Aggregates config, asset, resource and settings operations into a
-    single cohesive snake_case API.  The legacy :class:`Kernel` class
-    (in ``kernel/app_functions/kernel.py``) is now a thin shim that
-    delegates every call to this service.
+    single cohesive snake_case API used by widgets, CLI and bootstrap.
     """
 
     # ------------------------------------------------------------------

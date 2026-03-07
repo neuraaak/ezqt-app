@@ -23,6 +23,7 @@ import requests
 from PySide6.QtCore import QObject, QThread, Signal
 
 # Local imports
+from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
 
 
@@ -79,16 +80,31 @@ class LibreTranslateProvider(TranslationProvider):
             if response.status_code == 200:
                 return response.json().get("translatedText")
             if self.base_url == "https://libretranslate.com":
-                get_printer().warning(
-                    f"LibreTranslate error: {response.status_code}, trying alternative server"
+                warn_user(
+                    code="translation.provider.libretranslate.http_error",
+                    user_message=(
+                        f"LibreTranslate error: {response.status_code}, "
+                        "trying alternative server"
+                    ),
+                    log_message=(
+                        f"LibreTranslate error: {response.status_code}, "
+                        "trying alternative server"
+                    ),
                 )
                 return LibreTranslateProvider(
                     custom_server="https://translate.argosopentech.com"
                 ).translate(text, source_lang, target_lang)
-            get_printer().warning(f"LibreTranslate error: {response.status_code}")
+            warn_tech(
+                code="translation.provider.libretranslate.http_error",
+                message=f"LibreTranslate error: {response.status_code}",
+            )
             return None
         except Exception as e:
-            get_printer().warning(f"LibreTranslate exception: {e}")
+            warn_tech(
+                code="translation.provider.libretranslate.exception",
+                message="LibreTranslate exception",
+                error=e,
+            )
             return None
 
 
@@ -117,9 +133,16 @@ class GoogleTranslateProvider(TranslationProvider):
                 if data and len(data) > 0 and len(data[0]) > 0:
                     return data[0][0][0]
             else:
-                get_printer().warning(f"Google Translate error: {response.status_code}")
+                warn_tech(
+                    code="translation.provider.google.http_error",
+                    message=f"Google Translate error: {response.status_code}",
+                )
         except Exception as e:
-            get_printer().warning(f"Google Translate exception: {e}")
+            warn_tech(
+                code="translation.provider.google.exception",
+                message="Google Translate exception",
+                error=e,
+            )
         return None
 
 
@@ -141,9 +164,16 @@ class MyMemoryProvider(TranslationProvider):
                 if data.get("responseStatus") == 200:
                     return data.get("responseData", {}).get("translatedText")
             else:
-                get_printer().warning(f"MyMemory error: {response.status_code}")
+                warn_tech(
+                    code="translation.provider.mymemory.http_error",
+                    message=f"MyMemory error: {response.status_code}",
+                )
         except Exception as e:
-            get_printer().warning(f"MyMemory exception: {e}")
+            warn_tech(
+                code="translation.provider.mymemory.exception",
+                message="MyMemory exception",
+                error=e,
+            )
         return None
 
 
@@ -196,7 +226,11 @@ class TranslationCache:
                 with open(self.cache_file, encoding="utf-8") as f:
                     self.cache_data = json.load(f)
         except Exception as e:
-            get_printer().warning(f"Error loading cache: {e}")
+            warn_tech(
+                code="translation.cache.load_failed",
+                message="Error loading cache",
+                error=e,
+            )
             self.cache_data = {}
 
     def save_cache(self) -> None:
@@ -205,7 +239,11 @@ class TranslationCache:
             with open(self.cache_file, "w", encoding="utf-8") as f:
                 json.dump(self.cache_data, f, indent=2, ensure_ascii=False)
         except Exception as e:
-            get_printer().warning(f"Error saving cache: {e}")
+            warn_tech(
+                code="translation.cache.save_failed",
+                message="Error saving cache",
+                error=e,
+            )
 
     def clear_expired(self) -> None:
         current_time = datetime.now()
@@ -252,7 +290,11 @@ class AutoTranslationWorker(QThread):
                     return
                 time.sleep(provider.rate_limit_delay)
             except Exception as e:
-                get_printer().warning(f"Translation error with {provider.name}: {e}")
+                warn_tech(
+                    code="translation.worker.provider_failed",
+                    message=f"Translation error with {provider.name}",
+                    error=e,
+                )
 
         self.translation_failed.emit(text, "No translation found")
 
@@ -326,7 +368,11 @@ class AutoTranslator(QObject):
                     return translation
                 time.sleep(provider.rate_limit_delay)
             except Exception as e:
-                get_printer().warning(f"Translation error with {provider.name}: {e}")
+                warn_tech(
+                    code="translation.sync.provider_failed",
+                    message=f"Translation error with {provider.name}",
+                    error=e,
+                )
 
         return None
 
@@ -339,7 +385,11 @@ class AutoTranslator(QObject):
         self.translation_ready.emit(original, translated)
 
     def _on_translation_failed(self, original: str, error: str) -> None:
-        get_printer().warning(f"Automatic translation failed: '{original}' - {error}")
+        warn_user(
+            code="translation.auto.failed",
+            user_message=f"Automatic translation failed: '{original}' - {error}",
+            log_message=f"Automatic translation failed for '{original}': {error}",
+        )
         self.translation_error.emit(original, error)
 
     def save_translation_to_ts(
@@ -364,7 +414,11 @@ class AutoTranslator(QObject):
                 json.dump(ts_data, f, indent=2, ensure_ascii=False)
             get_printer().info(f"Translation saved to {ts_file_path}")
         except Exception as e:
-            get_printer().warning(f"Error saving translation to .ts file: {e}")
+            warn_tech(
+                code="translation.ts.save_failed",
+                message="Error saving translation to .ts file",
+                error=e,
+            )
 
     def clear_cache(self) -> None:
         self.cache.cache_data.clear()

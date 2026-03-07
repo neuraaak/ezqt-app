@@ -1,16 +1,15 @@
 # ///////////////////////////////////////////////////////////////
-# SERVICES.BOOTSTRAP.INIT_OPTIONS - Init options and overwrite policy
+# SERVICES.BOOTSTRAP.CONTRACTS.OPTIONS - Init options and policies
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""Initialization options used by the unified init workflow."""
+"""Contracts for initialization options and overwrite behavior."""
 
 from __future__ import annotations
 
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
-# Standard library imports
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path

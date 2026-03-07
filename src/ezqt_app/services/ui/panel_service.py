@@ -8,13 +8,13 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import warnings
 from typing import Any
 
 # Third-party imports
 from PySide6.QtCore import QEasingCurve, QPropertyAnimation
 
 # Local imports
+from ...utils.diagnostics import warn_tech
 from ..settings import get_settings_service
 
 
@@ -74,8 +74,8 @@ class PanelService:
                 theme_id = 0 if current_theme.lower() == "light" else 1
                 theme_toggle.initialize_selector(theme_id)
             except Exception as error:
-                warnings.warn(
-                    f"Theme toggle selector initialization failed: {error}",
-                    RuntimeWarning,
-                    stacklevel=2,
+                warn_tech(
+                    code="ui.panel.theme_toggle_selector_init_failed",
+                    message="Theme toggle selector initialization failed",
+                    error=error,
                 )

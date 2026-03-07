@@ -17,6 +17,7 @@ import xml.etree.ElementTree as ET  # noqa: S314
 from pathlib import Path
 
 # Local imports
+from ..utils.diagnostics import warn_tech
 from ..utils.printer import get_printer
 
 
@@ -76,6 +77,11 @@ def create_proper_qm_from_ts(ts_file_path: Path, qm_file_path: Path) -> bool:
         return True
 
     except Exception as e:
+        warn_tech(
+            "cli.qm.convert_failed",
+            "Conversion from .ts to .qm failed",
+            error=e,
+        )
         printer.error(f"Error during conversion: {e}")
         return False
 
@@ -114,6 +120,10 @@ def _get_package_translations_dir() -> Path | None:
         candidate = Path(str(pkg.joinpath("resources").joinpath("translations")))
         return candidate if candidate.exists() else None
     except Exception:
+        warn_tech(
+            "cli.qm.package_translations_resolution_failed",
+            "Unable to resolve bundled translations directory, using fallback",
+        )
         fallback = Path(__file__).parent.parent / "resources" / "translations"
         return fallback if fallback.exists() else None
 

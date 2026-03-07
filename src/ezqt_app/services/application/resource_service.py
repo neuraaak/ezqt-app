@@ -53,12 +53,10 @@ class ResourceService:
                 font_id = QFontDatabase.addApplicationFont(str(font))
                 if font_id == -1:
                     printer.error(
-                        f"[AppKernel] Failed to load from {source} : {font.stem}."
+                        f"[EzQt_App] Failed to load from {source} : {font.stem}."
                     )
                 else:
-                    printer.info(
-                        f"[AppKernel] Font loaded from {source} : {font.stem}."
-                    )
+                    printer.info(f"[EzQt_App] Font loaded from {source} : {font.stem}.")
 
         # Recurse to also load application-level fonts
         if not app:

@@ -44,7 +44,6 @@ import sys
 from .app import EzApplication, EzQt_App
 from .cli.main import cli
 from .main import configure_startup, generate_assets, init, setup_project
-from .services.application.app_service import AppService as Kernel
 from .services.settings import SettingsService, get_settings_service
 from .services.translation import (
     change_language,
@@ -101,8 +100,7 @@ __all__ = [
     "setup_project",
     "generate_assets",
     "configure_startup",
-    # Kernel
-    "Kernel",
+    # UI
     "UIFunctions",
     "Ui_MainWindow",
     # Settings

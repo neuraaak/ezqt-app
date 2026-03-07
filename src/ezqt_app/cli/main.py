@@ -21,6 +21,7 @@ from colorama import Fore, Style
 # Local imports
 from ezqt_app.services.bootstrap import OverwritePolicy
 from ezqt_app.services.bootstrap import init as bootstrap_init
+from ezqt_app.utils.diagnostics import warn_tech
 
 from .runner import ProjectRunner
 
@@ -92,6 +93,11 @@ def init(force, verbose, no_main):
                 click.echo("  - main.py (example)")
 
     except Exception as e:
+        warn_tech(
+            "cli.init.failed",
+            "Project initialization command failed",
+            error=e,
+        )
         click.echo(f"{Fore.RED}Error during initialization: {e}{Style.RESET_ALL}")
         if verbose:
             import traceback
@@ -112,11 +118,20 @@ def convert(verbose):  # noqa: ARG001
 
         convert_main()
     except ImportError:
+        warn_tech(
+            "cli.convert.module_missing",
+            "Translation conversion module import failed",
+        )
         click.echo(
             f"{Fore.RED}Translation conversion module not found{Style.RESET_ALL}"
         )
         sys.exit(1)
     except Exception as e:
+        warn_tech(
+            "cli.convert.failed",
+            "Translation conversion command failed",
+            error=e,
+        )
         click.echo(f"{Fore.RED}Error during conversion: {e}{Style.RESET_ALL}")
         sys.exit(1)
 
@@ -136,11 +151,20 @@ def mkqm(verbose):
 
         convert_main()
     except ImportError:
+        warn_tech(
+            "cli.mkqm.module_missing",
+            "Translation conversion module import failed",
+        )
         click.echo(
             f"{Fore.RED}Translation conversion module not found{Style.RESET_ALL}"
         )
         sys.exit(1)
     except Exception as e:
+        warn_tech(
+            "cli.mkqm.failed",
+            "Translation conversion alias command failed",
+            error=e,
+        )
         click.echo(f"{Fore.RED}Error during conversion: {e}{Style.RESET_ALL}")
         sys.exit(1)
 
@@ -227,6 +251,11 @@ def docs(serve, port):
         except KeyboardInterrupt:
             click.echo("\nDocumentation server stopped")
         except Exception as e:
+            warn_tech(
+                "cli.docs.serve_failed",
+                "Documentation local server failed",
+                error=e,
+            )
             click.echo(f"{Fore.RED}Error serving documentation: {e}{Style.RESET_ALL}")
     else:
         click.echo("Documentation options:")
@@ -307,6 +336,11 @@ def create(template, name, verbose):
             click.echo(f"{Fore.RED}Failed to create project template{Style.RESET_ALL}")
             sys.exit(1)
     except Exception as e:
+        warn_tech(
+            "cli.create.failed",
+            "Project template creation command failed",
+            error=e,
+        )
         click.echo(f"{Fore.RED}Error creating template: {e}{Style.RESET_ALL}")
         sys.exit(1)
 

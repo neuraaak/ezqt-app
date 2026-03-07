@@ -11,7 +11,6 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import contextlib
 import importlib.util
 import re
 import sys
@@ -25,6 +24,7 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget
 # Local imports
 from ...services.translation import set_tr
 from ...services.ui import Fonts
+from ...utils.diagnostics import warn_tech
 
 
 # ///////////////////////////////////////////////////////////////
@@ -119,7 +119,12 @@ class BottomBar(QFrame):
                 # Simple text with translation
                 set_tr(self.creditsLabel, credits)
 
-        except Exception:
+        except Exception as e:
+            warn_tech(
+                code="widgets.bottom_bar.set_credits_failed",
+                message="Could not apply credits data",
+                error=e,
+            )
             # In case of error, use default text
             set_tr(self.creditsLabel, "Made with ❤️ by EzQt_App")
 
@@ -155,7 +160,12 @@ class BottomBar(QFrame):
                 self.creditsLabel.setCursor(Qt.CursorShape.ArrowCursor)
                 self.creditsLabel.setStyleSheet("")
 
-        except Exception:
+        except Exception as e:
+            warn_tech(
+                code="widgets.bottom_bar.create_clickable_credits_failed",
+                message="Could not create clickable credits",
+                error=e,
+            )
             # In case of error, use default text
             set_tr(self.creditsLabel, "Made with ❤️ by EzQt_App")
 
@@ -168,8 +178,14 @@ class BottomBar(QFrame):
         email : str
             Email address to open.
         """
-        with contextlib.suppress(Exception):
+        try:
             QDesktopServices.openUrl(QUrl(f"mailto:{email}"))
+        except Exception as e:
+            warn_tech(
+                code="widgets.bottom_bar.open_email_failed",
+                message=f"Could not open mailto link for {email}",
+                error=e,
+            )
 
     def set_version_auto(self) -> None:
         """
@@ -257,7 +273,12 @@ class BottomBar(QFrame):
 
             return None
 
-        except Exception:
+        except Exception as e:
+            warn_tech(
+                code="widgets.bottom_bar.detect_project_version_failed",
+                message="Could not detect project version",
+                error=e,
+            )
             # In case of error, return None
             return None
 
@@ -286,7 +307,7 @@ class BottomBar(QFrame):
                 return f"v{version_match.group(1)}"
 
             # If not found with regex, try to import module
-            with contextlib.suppress(Exception):
+            try:
                 spec = importlib.util.spec_from_file_location("main", file_path)
                 if spec and spec.loader:
                     main_module = importlib.util.module_from_spec(spec)
@@ -294,10 +315,21 @@ class BottomBar(QFrame):
 
                     if hasattr(main_module, "__version__"):
                         return f"v{main_module.__version__}"
+            except Exception as e:
+                warn_tech(
+                    code="widgets.bottom_bar.import_main_for_version_failed",
+                    message=f"Could not import {file_path} to extract __version__",
+                    error=e,
+                )
 
             return None
 
-        except Exception:
+        except Exception as e:
+            warn_tech(
+                code="widgets.bottom_bar.extract_version_failed",
+                message=f"Could not extract version from {file_path}",
+                error=e,
+            )
             return None
 
     def set_version(self, text: str) -> None:

@@ -12,12 +12,12 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 from pathlib import Path
-from typing import Any
 
 # Local imports
+from ...domain.results import InitResult
 from ..application.app_service import AppService
 from ..application.file_service import FileService
-from .init_options import InitOptions, OverwritePolicy
+from .contracts.options import InitOptions, OverwritePolicy
 from .init_service import InitService
 from .sequence import InitializationSequence
 from .startup_config import StartupConfig
@@ -52,7 +52,7 @@ class Initializer:
         _mk_theme: bool = True,
         verbose: bool = True,
         options: InitOptions | None = None,
-    ) -> dict[str, Any]:
+    ) -> InitResult:
         """Run the complete boot sequence (idempotent).
 
         Parameters

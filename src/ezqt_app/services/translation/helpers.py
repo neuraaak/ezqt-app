@@ -11,11 +11,10 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import warnings
 from typing import Any
 
 # Local imports
-from ...utils.printer import get_printer
+from ...utils.diagnostics import warn_tech
 from .manager import get_translation_manager
 
 
@@ -114,7 +113,11 @@ def scan_widgets_for_translation(
                     ):
                         found.append((w, text))
                 except Exception as e:
-                    warnings.warn(f"Could not read widget text: {e}", stacklevel=2)
+                    warn_tech(
+                        code="translation.helpers.scan.read_text_failed",
+                        message="Could not read widget text",
+                        error=e,
+                    )
 
             if hasattr(w, "toolTip") and callable(getattr(w, "toolTip", None)):
                 try:
@@ -127,7 +130,11 @@ def scan_widgets_for_translation(
                     ):
                         found.append((w, tooltip))
                 except Exception as e:
-                    warnings.warn(f"Could not read widget toolTip: {e}", stacklevel=2)
+                    warn_tech(
+                        code="translation.helpers.scan.read_tooltip_failed",
+                        message="Could not read widget toolTip",
+                        error=e,
+                    )
 
             if hasattr(w, "placeholderText") and callable(
                 getattr(w, "placeholderText", None)
@@ -142,8 +149,10 @@ def scan_widgets_for_translation(
                     ):
                         found.append((w, placeholder))
                 except Exception as e:
-                    warnings.warn(
-                        f"Could not read widget placeholderText: {e}", stacklevel=2
+                    warn_tech(
+                        code="translation.helpers.scan.read_placeholder_failed",
+                        message="Could not read widget placeholderText",
+                        error=e,
                     )
 
             if recursive:
@@ -151,12 +160,18 @@ def scan_widgets_for_translation(
                     for child in w.findChildren(QWidget):
                         scan_recursive(child)
                 except Exception as e:
-                    warnings.warn(
-                        f"Could not iterate widget children: {e}", stacklevel=2
+                    warn_tech(
+                        code="translation.helpers.scan.iter_children_failed",
+                        message="Could not iterate widget children",
+                        error=e,
                     )
 
         except Exception as e:
-            get_printer().warning(f"Error scanning widget {type(w)}: {e}")
+            warn_tech(
+                code="translation.helpers.scan.widget_failed",
+                message=f"Error scanning widget {type(w)}",
+                error=e,
+            )
 
     scan_recursive(widget)
     return found
@@ -173,7 +188,11 @@ def register_widgets_manually(widgets_list: list[tuple[Any, str]]) -> int:
             register_tr(widget, text)
             count += 1
         except Exception as e:
-            get_printer().warning(f"Error registering widget: {e}")
+            warn_tech(
+                code="translation.helpers.register_widget_failed",
+                message="Error registering widget",
+                error=e,
+            )
     return count
 
 
