@@ -18,6 +18,7 @@ from typing import Any
 
 # Local imports
 from ...utils.printer import get_printer
+from .init_options import InitOptions
 
 
 # ///////////////////////////////////////////////////////////////
@@ -57,10 +58,11 @@ class InitializationSequence:
     immediately; non-required steps are allowed to fail silently.
     """
 
-    def __init__(self, verbose: bool = True) -> None:
+    def __init__(self, options: InitOptions | None = None) -> None:
+        self.options = (options or InitOptions()).resolve()
         self.steps: list[InitStep] = []
         self.current_step: InitStep | None = None
-        self.printer = get_printer(verbose)
+        self.printer = get_printer(self.options.verbose)
         self._setup_steps()
 
     # ------------------------------------------------------------------
@@ -73,16 +75,22 @@ class InitializationSequence:
         from ..application.file_service import FileService
         from .startup_config import StartupConfig
 
+        options = self.options
+
         self.add_step(
             name="Configure Startup",
             description="Configure UTF-8 encoding, locale, and environment variables",
-            function=lambda: StartupConfig().configure(),
+            function=lambda: StartupConfig().configure(options.project_root),
             required=True,
         )
         self.add_step(
             name="Create Directories",
             description="Create necessary directories for assets, config, and modules",
-            function=lambda: FileService().make_assets_binaries(),
+            function=lambda: FileService(
+                base_path=options.project_root,
+                bin_path=options.bin_path,
+                overwrite_policy=options.overwrite_policy.value,
+            ).make_assets_binaries(),
             required=True,
         )
         self.add_step(
@@ -94,13 +102,28 @@ class InitializationSequence:
         self.add_step(
             name="Check Requirements",
             description="Verify that all required assets and dependencies are available",
-            function=lambda: AppService.check_assets_requirements(),
+            function=lambda: (
+                AppService.check_assets_requirements(
+                    base_path=options.project_root,
+                    bin_path=options.bin_path,
+                    overwrite_policy=options.overwrite_policy.value,
+                )
+                if options.build_resources
+                else None
+            ),
             required=True,
         )
         self.add_step(
             name="Generate Files",
             description="Generate required configuration and resource files",
-            function=lambda: AppService.make_required_files(mk_theme=True),
+            function=lambda: AppService.make_required_files(
+                mk_theme=options.mk_theme,
+                mk_config=options.mk_config,
+                mk_translations=options.mk_translations,
+                base_path=options.project_root,
+                bin_path=options.bin_path,
+                overwrite_policy=options.overwrite_policy.value,
+            ),
             required=True,
         )
 

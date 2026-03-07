@@ -11,6 +11,7 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 # Local imports
@@ -19,14 +20,24 @@ from .utils.printer import get_printer
 
 if TYPE_CHECKING:
     from ezqt_app.services.application import FileService
-    from ezqt_app.services.bootstrap import Initializer, StartupConfig
+    from ezqt_app.services.bootstrap import (
+        Initializer,
+        OverwritePolicy,
+        StartupConfig,
+    )
 
 # ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
 
 
-def init(mk_theme: bool = True) -> None:
+def init(
+    mk_theme: bool = True,
+    project_root: str | Path | None = None,
+    bin_path: str | Path | None = None,
+    overwrite_policy: OverwritePolicy | None = None,
+    verbose: bool = True,
+) -> dict:
     """
     Initialize the EzQt_App application using the new modular system.
 
@@ -40,7 +51,19 @@ def init(mk_theme: bool = True) -> None:
     mk_theme : bool, optional
         Generate theme file (default: True).
     """
-    init_app(mk_theme)
+    from ezqt_app.services.bootstrap import OverwritePolicy
+
+    resolved_policy = overwrite_policy or OverwritePolicy.ASK
+    resolved_project_root = str(project_root) if project_root is not None else None
+    resolved_bin_path = str(bin_path) if bin_path is not None else None
+
+    return init_app(
+        mk_theme=mk_theme,
+        verbose=verbose,
+        project_root=resolved_project_root,
+        bin_path=resolved_bin_path,
+        overwrite_policy=resolved_policy,
+    )
 
 
 def setup_project(base_path: str | None = None) -> bool:

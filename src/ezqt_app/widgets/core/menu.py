@@ -10,9 +10,6 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
-# Standard library imports
-from typing import TYPE_CHECKING
-
 # Third-party imports
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QCursor, QIcon
@@ -22,10 +19,6 @@ from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget
 from ...services.settings import get_settings_service
 from ...services.ui import Fonts, SizePolicy
 from ...shared.resources import Icons
-
-if TYPE_CHECKING:
-    from ...widgets.extended.menu_button import MenuButton
-    from ...widgets.extended.theme_icon import ThemeIcon
 
 
 # ///////////////////////////////////////////////////////////////
@@ -40,10 +33,13 @@ class Menu(QFrame):
     section for menu items and a lower section for the toggle button.
     """
 
+    from ...widgets.extended.menu_button import MenuButton
+    from ...widgets.extended.theme_icon import ThemeIcon
+
     # ////// CLASS VARIABLES
     menus: dict[str, MenuButton] = {}
-    _buttons: list = [MenuButton]
-    _icons: list = [ThemeIcon]
+    _buttons: list[MenuButton] = []
+    _icons: list[ThemeIcon | None] = []
 
     def __init__(
         self,
@@ -233,8 +229,9 @@ class Menu(QFrame):
     def update_all_theme_icons(self) -> None:
         """Update theme icons for all buttons."""
         for i, btn in enumerate(self._buttons):
-            if hasattr(btn, "update_theme_icon") and self._icons[i]:
-                btn.update_theme_icon(self._icons[i])
+            icon = self._icons[i]
+            if icon is not None:
+                btn.update_theme_icon(icon)
 
     def sync_all_menu_states(self, extended: bool) -> None:
         """

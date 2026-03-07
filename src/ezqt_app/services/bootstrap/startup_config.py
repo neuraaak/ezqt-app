@@ -15,6 +15,7 @@ import contextlib
 import locale
 import os
 import sys
+from pathlib import Path
 
 
 # ///////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ class StartupConfig:
     def __init__(self) -> None:
         self._configured = False
 
-    def configure(self) -> None:
+    def configure(self, project_root: Path | None = None) -> None:
         """Run all startup configuration steps (idempotent)."""
         if self._configured:
             return
@@ -40,7 +41,7 @@ class StartupConfig:
         self._configure_environment()
         self._configure_locale()
         self._configure_system()
-        self._configure_project_root()
+        self._configure_project_root(project_root)
 
         self._configured = True
 
@@ -85,29 +86,27 @@ class StartupConfig:
     def _configure_macos(self) -> None:
         os.environ["QT_QPA_PLATFORM"] = "cocoa"
 
-    def _configure_project_root(self) -> None:
+    def _configure_project_root(self, project_root: Path | None = None) -> None:
         """Detect and register the project root with the config service."""
-        from pathlib import Path
-
         from ..application.app_service import AppService
 
-        project_root = Path.cwd()
+        detected_root = project_root or Path.cwd()
 
         # If running from bin/, go up one level
-        if project_root.name == "bin" and (project_root.parent / "main.py").exists():
-            project_root = project_root.parent
-        elif (project_root / "main.py").exists():
+        if detected_root.name == "bin" and (detected_root.parent / "main.py").exists():
+            detected_root = detected_root.parent
+        elif (detected_root / "main.py").exists():
             pass  # Already at project root
         else:
             # Walk up looking for a main.py
-            current = project_root
+            current = detected_root
             while current.parent != current:
                 if (current.parent / "main.py").exists():
-                    project_root = current.parent
+                    detected_root = current.parent
                     break
                 current = current.parent
 
-        AppService.set_project_root(project_root)
+        AppService.set_project_root(detected_root)
 
     # ------------------------------------------------------------------
     # Accessors

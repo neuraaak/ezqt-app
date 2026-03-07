@@ -35,37 +35,94 @@ class FileService:
     - Project templates
     """
 
-    def __init__(self, base_path: Path | None = None, verbose: bool = False) -> None:
+    def __init__(
+        self,
+        base_path: Path | None = None,
+        bin_path: Path | None = None,
+        verbose: bool = False,
+        overwrite_policy: str = "ask",
+    ) -> None:
         self.base_path: Path = base_path or APP_PATH
-        self._bin: Path = self.base_path / "bin"
+        self._bin: Path = bin_path or (self.base_path / "bin")
         self._modules: Path = self.base_path / "modules"
         self._qrc_file: str = ""
         self._resources_module_file: str = ""
+        self._overwrite_policy = overwrite_policy.lower().strip()
         self.printer = get_printer(verbose)
+
+    # -----------------------------------------------------------
+    # Overwrite handling
+    # -----------------------------------------------------------
+
+    def _should_write(self, target_path: Path) -> bool:
+        """Return whether a target file should be written according to policy."""
+        if not target_path.exists():
+            return True
+
+        if self._overwrite_policy == "force":
+            return True
+
+        if self._overwrite_policy == "skip":
+            self.printer.verbose_msg(f"Skipping existing file: {target_path}")
+            return False
+
+        # Default "ask": prompt interactively, otherwise skip for safety.
+        try:
+            import click
+
+            if click.get_current_context(silent=True) is not None:
+                return bool(click.confirm(f"Overwrite {target_path}?", default=False))
+        except Exception as e:
+            self.printer.verbose_msg(
+                f"Could not prompt for overwrite decision ({target_path}): {e}"
+            )
+
+        self.printer.verbose_msg(f"Skipping existing file (ask policy): {target_path}")
+        return False
 
     # -----------------------------------------------------------
     # High-level orchestrators
     # -----------------------------------------------------------
 
-    def setup_project(self) -> bool:
+    def setup_project(
+        self,
+        mk_theme: bool = True,
+        mk_config: bool = True,
+        mk_translations: bool = True,
+        build_resources: bool = True,
+    ) -> bool:
         """Create directories and generate all assets."""
         try:
             self.make_assets_binaries()
-            self.generate_all_assets()
+            self.generate_all_assets(
+                mk_theme=mk_theme,
+                mk_config=mk_config,
+                mk_translations=mk_translations,
+                build_resources=build_resources,
+            )
             return True
         except Exception as e:
             self.printer.error(f"Error setting up project: {e}")
             return False
 
-    def generate_all_assets(self) -> bool:
+    def generate_all_assets(
+        self,
+        mk_theme: bool = True,
+        mk_config: bool = True,
+        mk_translations: bool = True,
+        build_resources: bool = True,
+    ) -> bool:
         """Generate all required assets (YAML, QSS, translations, QRC, RC)."""
         try:
             self.make_assets_binaries()
-            self.make_yaml_from_package()
-            self.make_qss_from_package()
-            self.make_translations_from_package()
-            self.make_qrc()
-            self.make_rc_py()
+            if mk_config:
+                self.make_yaml_from_package()
+            if mk_theme:
+                self.make_qss_from_package()
+            if mk_translations:
+                self.make_translations_from_package()
+            if build_resources and self.make_qrc():
+                self.make_rc_py()
             return True
         except Exception as e:
             self.printer.error(f"Error generating assets: {e}")
@@ -106,7 +163,9 @@ class FileService:
         if yaml_package is None:
             import pkg_resources  # type: ignore[import-untyped]
 
-            yaml_package = Path(pkg_resources.resource_filename("ezqt_app", "app.yaml"))
+            yaml_package = Path(
+                pkg_resources.resource_filename("ezqt_app", "resources/config/app.yaml")
+            )
 
         if not yaml_package.exists():
             self.printer.warning(f"YAML file not found at {yaml_package}")
@@ -114,6 +173,8 @@ class FileService:
 
         target_path = self._bin / "config" / "app.yaml"
         target_path.parent.mkdir(parents=True, exist_ok=True)
+        if not self._should_write(target_path):
+            return target_path
         shutil.copy2(yaml_package, target_path)
         self.printer.info("[FileMaker] Generated YAML config file.")
         return target_path
@@ -143,7 +204,10 @@ class FileService:
                     )
                     return False
                 try:
-                    shutil.copy2(theme_package, target_path / theme_package.name)
+                    target_file = target_path / theme_package.name
+                    if not self._should_write(target_file):
+                        return True
+                    shutil.copy2(theme_package, target_file)
                     self.printer.info("[FileMaker] Generated QSS theme files.")
                     return True
                 except Exception as e:
@@ -160,7 +224,10 @@ class FileService:
                         )
                         continue
                     try:
-                        shutil.copy2(theme_file, target_path / theme_file.name)
+                        target_file = target_path / theme_file.name
+                        if not self._should_write(target_file):
+                            continue
+                        shutil.copy2(theme_file, target_file)
                         copied_files.append(theme_file.name)
                         self.printer.verbose_msg(
                             f"Copied theme file: {theme_file.name}"
@@ -212,7 +279,10 @@ class FileService:
 
             for translation_file in translations_package.glob("*.ts"):
                 try:
-                    shutil.copy2(translation_file, target_path / translation_file.name)
+                    target_file = target_path / translation_file.name
+                    if not self._should_write(target_file):
+                        continue
+                    shutil.copy2(translation_file, target_file)
                     self.printer.verbose_msg(
                         f"Copied translation file: {translation_file.name}"
                     )
@@ -261,6 +331,9 @@ class FileService:
         qrc_content.extend(["    </qresource>", "</RCC>"])
 
         qrc_file_path = self._bin / "resources.qrc"
+        if not self._should_write(qrc_file_path):
+            self._qrc_file = str(qrc_file_path)
+            return True
         with open(qrc_file_path, "w", encoding="utf-8") as f:
             f.write("\n".join(qrc_content))
 
@@ -272,6 +345,10 @@ class FileService:
         """Compile the QRC file to a Python resource module via ``pyside6-rcc``."""
         if not self._qrc_file:
             self.printer.warning("[FileMaker] No QRC file")
+            return
+
+        target_file = self._bin / "resources_rc.py"
+        if not self._should_write(target_file):
             return
 
         try:
@@ -310,7 +387,11 @@ class FileService:
             self.printer.warning(f"Main template not found at {main_template}")
             return
 
-        shutil.copy2(main_template, self.base_path / "main.py")
+        main_file = self.base_path / "main.py"
+        if not self._should_write(main_file):
+            return
+
+        shutil.copy2(main_template, main_file)
         self.printer.info("[FileMaker] Generated main.py file.")
 
     # -----------------------------------------------------------

@@ -10,17 +10,32 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+from pathlib import Path
 from typing import Any
 
+from .init_options import InitOptions, OverwritePolicy
+from .init_service import InitService
 from .initializer import Initializer
 from .sequence import InitializationSequence, InitStep, StepStatus
 from .startup_config import StartupConfig
+
+_init_service = InitService()
 
 
 # ///////////////////////////////////////////////////////////////
 # PUBLIC HELPERS
 # ///////////////////////////////////////////////////////////////
-def init(mk_theme: bool = True, verbose: bool = True) -> dict[str, Any]:
+def init(
+    mk_theme: bool = True,
+    verbose: bool = True,
+    project_root: str | None = None,
+    bin_path: str | None = None,
+    overwrite_policy: OverwritePolicy = OverwritePolicy.ASK,
+    mk_config: bool = True,
+    mk_translations: bool = True,
+    build_resources: bool = True,
+    generate_main: bool = False,
+) -> dict[str, Any]:
     """Initialize the EzQt_App application (boot sequence).
 
     Parameters
@@ -35,7 +50,18 @@ def init(mk_theme: bool = True, verbose: bool = True) -> dict[str, Any]:
     dict
         Boot sequence summary.
     """
-    return Initializer().initialize(mk_theme, verbose)
+    options = InitOptions(
+        project_root=None if project_root is None else Path(project_root),
+        bin_path=None if bin_path is None else Path(bin_path),
+        mk_theme=mk_theme,
+        mk_config=mk_config,
+        mk_translations=mk_translations,
+        build_resources=build_resources,
+        generate_main=generate_main,
+        verbose=verbose,
+        overwrite_policy=overwrite_policy,
+    )
+    return _init_service.run(options)
 
 
 def setup_project(base_path: str | None = None) -> bool:
@@ -70,6 +96,9 @@ def configure_startup() -> None:
 # ///////////////////////////////////////////////////////////////
 __all__ = [
     "Initializer",
+    "InitOptions",
+    "OverwritePolicy",
+    "InitService",
     "StartupConfig",
     "InitializationSequence",
     "InitStep",

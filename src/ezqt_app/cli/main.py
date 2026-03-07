@@ -11,7 +11,6 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import importlib.resources
 import sys
 from pathlib import Path
 
@@ -20,7 +19,8 @@ import click
 from colorama import Fore, Style
 
 # Local imports
-from ezqt_app.services.application import FileService as FileMaker
+from ezqt_app.services.bootstrap import OverwritePolicy
+from ezqt_app.services.bootstrap import init as bootstrap_init
 
 from .runner import ProjectRunner
 
@@ -58,52 +58,36 @@ def init(force, verbose, no_main):
 
     try:
         click.echo("Initializing EzQt_App project...")
-
-        maker = FileMaker(base_path=Path.cwd(), verbose=verbose)
+        policy = OverwritePolicy.FORCE if force else OverwritePolicy.ASK
 
         if verbose:
-            click.echo("Generating assets...")
+            click.echo("Running unified initialization workflow...")
 
-        maker.make_assets_binaries()
-        maker.make_qrc()
-        maker.make_rc_py()
-        maker.make_app_resources_module()
+        summary = bootstrap_init(
+            mk_theme=True,
+            verbose=verbose,
+            project_root=str(Path.cwd()),
+            bin_path=str(Path.cwd() / "bin"),
+            overwrite_policy=policy,
+            mk_config=True,
+            mk_translations=True,
+            build_resources=True,
+            generate_main=not no_main,
+        )
 
-        if not no_main:
-            template_path = Path(
-                str(
-                    importlib.resources.files("ezqt_app")
-                    .joinpath("resources")
-                    .joinpath("templates")
-                    .joinpath("main.py.template")
-                )
-            )
-
-            if template_path.exists():
-                main_py = Path.cwd() / "main.py"
-
-                if main_py.exists() and not force:
-                    if click.confirm("main.py already exists. Overwrite?"):
-                        maker.make_main_from_template(template_path)
-                        click.echo("main.py overwritten")
-                    else:
-                        click.echo(f"{Fore.YELLOW}main.py preserved{Style.RESET_ALL}")
-                else:
-                    maker.make_main_from_template(template_path)
-                    click.echo("main.py generated")
-            else:
-                click.echo(
-                    f"{Fore.RED}Template main.py.template not found{Style.RESET_ALL}"
-                )
+        if not summary.get("success", False):
+            click.echo(f"{Fore.RED}Initialization failed{Style.RESET_ALL}")
+            sys.exit(1)
 
         click.echo("Project initialization completed!")
 
         if verbose:
             click.echo("\nGenerated files:")
-            click.echo("  - assets/ (icons, images, themes)")
-            click.echo("  - base_resources.qrc")
-            click.echo("  - base_resources_rc.py")
-            click.echo("  - shared resources via ezqt_app.shared.resources")
+            click.echo("  - bin/config/app.yaml")
+            click.echo("  - bin/themes/*.qss")
+            click.echo("  - bin/translations/*.ts")
+            click.echo("  - bin/resources.qrc")
+            click.echo("  - bin/resources_rc.py (if pyside6-rcc available)")
             if not no_main:
                 click.echo("  - main.py (example)")
 

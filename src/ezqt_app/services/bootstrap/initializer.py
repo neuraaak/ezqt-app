@@ -17,6 +17,8 @@ from typing import Any
 # Local imports
 from ..application.app_service import AppService
 from ..application.file_service import FileService
+from .init_options import InitOptions, OverwritePolicy
+from .init_service import InitService
 from .sequence import InitializationSequence
 from .startup_config import StartupConfig
 
@@ -38,6 +40,7 @@ class Initializer:
         self._startup_config = StartupConfig()
         self._file_service = FileService()
         self._sequence = InitializationSequence()
+        self._init_service = InitService()
         self._initialized = False
 
     # ------------------------------------------------------------------
@@ -45,7 +48,10 @@ class Initializer:
     # ------------------------------------------------------------------
 
     def initialize(
-        self, _mk_theme: bool = True, verbose: bool = True
+        self,
+        _mk_theme: bool = True,
+        verbose: bool = True,
+        options: InitOptions | None = None,
     ) -> dict[str, Any]:
         """Run the complete boot sequence (idempotent).
 
@@ -61,14 +67,12 @@ class Initializer:
         dict
             Initialization summary (see :meth:`InitializationSequence.execute`).
         """
-        if self._initialized:
-            return {"success": True, "message": "Already initialized"}
-
-        summary = self._sequence.execute(verbose=verbose)
-        if summary["success"]:
-            self._initialized = True
-
-        return summary
+        resolved = options or InitOptions(
+            mk_theme=_mk_theme,
+            verbose=verbose,
+            overwrite_policy=OverwritePolicy.ASK,
+        )
+        return self._init_service.run(resolved)
 
     def setup_project(self, base_path: str | None = None) -> bool:
         """Configure startup then scaffold a new project directory.
@@ -114,6 +118,7 @@ class Initializer:
 
     def reset(self) -> None:
         self._initialized = False
+        self._init_service.reset()
         self._startup_config.reset()
         self._sequence.reset()
 

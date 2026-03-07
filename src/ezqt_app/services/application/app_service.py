@@ -42,17 +42,40 @@ class AppService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def check_assets_requirements() -> None:
+    def check_assets_requirements(
+        base_path: Path | None = None,
+        bin_path: Path | None = None,
+        overwrite_policy: str = "ask",
+    ) -> None:
         """Generate asset binaries, QRC and RC files at APP_PATH."""
-        AssetsService.check_assets_requirements()
+        AssetsService.check_assets_requirements(
+            base_path=base_path,
+            bin_path=bin_path,
+            overwrite_policy=overwrite_policy,
+        )
 
     @staticmethod
-    def make_app_resources_module() -> None:
+    def make_app_resources_module(
+        base_path: Path | None = None,
+        bin_path: Path | None = None,
+        overwrite_policy: str = "ask",
+    ) -> None:
         """Generate (no-op in v5) the application resources module."""
-        AssetsService.make_app_resources_module()
+        AssetsService.make_app_resources_module(
+            base_path=base_path,
+            bin_path=bin_path,
+            overwrite_policy=overwrite_policy,
+        )
 
     @staticmethod
-    def make_required_files(mk_theme: bool = True) -> None:
+    def make_required_files(
+        mk_theme: bool = True,
+        mk_config: bool = True,
+        mk_translations: bool = True,
+        base_path: Path | None = None,
+        bin_path: Path | None = None,
+        overwrite_policy: str = "ask",
+    ) -> None:
         """Copy YAML, QSS theme and translation files into ``cwd/bin/``.
 
         Parameters
@@ -60,7 +83,14 @@ class AppService:
         mk_theme:
             When ``True`` (default) also copies the QSS theme file.
         """
-        AssetsService.make_required_files(mk_theme)
+        AssetsService.make_required_files(
+            mk_theme=mk_theme,
+            mk_config=mk_config,
+            mk_translations=mk_translations,
+            base_path=base_path,
+            bin_path=bin_path,
+            overwrite_policy=overwrite_policy,
+        )
 
     # ------------------------------------------------------------------
     # Configuration
