@@ -106,7 +106,7 @@ class ConfigService(ConfigServiceProtocol):
         config_name:
             Configuration file name.
         key_path:
-            Dot-separated path (e.g. ``"app.name"`` or ``"theme_palette.dark"``).
+            Dot-separated path (e.g. ``"app.name"`` or ``"palette.dark"``).
         default:
             Value returned when key is absent.
         """
@@ -143,7 +143,7 @@ class ConfigService(ConfigServiceProtocol):
 
         config_dir = self._project_root / "bin" / "config"
         config_dir.mkdir(parents=True, exist_ok=True)
-        config_file = config_dir / f"{config_name}.yaml"
+        config_file = config_dir / f"{config_name}.config.yaml"
 
         try:
             with open(config_file, "w", encoding="utf-8") as f:
@@ -171,9 +171,10 @@ class ConfigService(ConfigServiceProtocol):
         Parameters
         ----------
         config_name:
-            Configuration file name (e.g. ``"app"``, ``"palette"``).
+            Logical configuration name (e.g. ``"app"``, ``"languages"``,
+            ``"theme"``). Files are resolved as ``<name>.config.yaml``.
         """
-        config_file = f"{config_name}.yaml"
+        config_file = f"{config_name}.config.yaml"
         paths: list[Path] = []
 
         # 1. Child project (bin/config/)
@@ -263,6 +264,12 @@ class ConfigService(ConfigServiceProtocol):
 
     def _find_package_config_dir(self) -> Path | None:
         """Locate the ``resources/config`` directory inside the installed package."""
+        package_root = _get_installed_package_root()
+        if package_root is not None:
+            installed_config_dir = package_root / "resources" / "config"
+            if installed_config_dir.exists():
+                return installed_config_dir
+
         # 1. Walk up from cwd looking for an ezqt_app package dir
         current = Path.cwd()
         while current.parent != current:
@@ -301,6 +308,50 @@ class ConfigService(ConfigServiceProtocol):
 _config_service: ConfigService | None = None
 
 
+def _get_installed_package_root() -> Path | None:
+    """Return installed ``ezqt_app`` package root when discoverable."""
+    try:
+        import importlib.util
+
+        spec = importlib.util.find_spec("ezqt_app")
+        if spec is not None:
+            if spec.submodule_search_locations:
+                location = next(iter(spec.submodule_search_locations), None)
+                if location:
+                    candidate = Path(location)
+                    if candidate.exists():
+                        return candidate
+            if spec.origin:
+                candidate = Path(spec.origin).resolve().parent
+                if candidate.exists():
+                    return candidate
+    except Exception as e:
+        get_printer().verbose_msg(
+            f"Could not resolve installed package root for ezqt_app: {e}"
+        )
+
+    return None
+
+
+def _resource_candidates(resource_path: str) -> list[Path]:
+    """Build candidate paths for a package resource in priority order."""
+    rel_path = Path(resource_path.replace("\\", "/"))
+    candidates: list[Path] = []
+
+    package_root = _get_installed_package_root()
+    if package_root is not None:
+        candidates.append(package_root / rel_path)
+
+    candidates.extend(
+        [
+            APP_PATH / "ezqt_app" / rel_path,
+            APP_PATH / rel_path,
+            Path.cwd() / "ezqt_app" / rel_path,
+        ]
+    )
+    return candidates
+
+
 # ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
@@ -325,12 +376,25 @@ def get_package_resource(resource_path: str) -> Path:
     Path
         Resolved path to the resource.
     """
+    for candidate in _resource_candidates(resource_path):
+        if candidate.exists():
+            return candidate
+
     try:
         import pkg_resources  # type: ignore[import-untyped]
 
-        return Path(pkg_resources.resource_filename("ezqt_app", resource_path))
-    except Exception:
-        return APP_PATH / "ezqt_app" / resource_path
+        pkg_candidate = Path(pkg_resources.resource_filename("ezqt_app", resource_path))
+        if pkg_candidate.exists():
+            return pkg_candidate
+    except Exception as e:
+        get_printer().verbose_msg(
+            f"pkg_resources lookup failed for '{resource_path}': {e}"
+        )
+
+    package_root = _get_installed_package_root()
+    if package_root is not None:
+        return package_root / Path(resource_path.replace("\\", "/"))
+    return APP_PATH / "ezqt_app" / Path(resource_path.replace("\\", "/"))
 
 
 def get_package_resource_content(resource_path: str) -> str:

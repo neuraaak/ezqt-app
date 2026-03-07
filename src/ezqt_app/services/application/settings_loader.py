@@ -27,7 +27,7 @@ from ..settings import get_settings_service
 # CLASSES
 # ///////////////////////////////////////////////////////////////
 class SettingsLoader:
-    """Loads ``app.yaml`` and populates the settings service.
+    """Loads ``app.config.yaml`` and populates the settings service.
 
     Reads the YAML configuration file, extracts application and GUI
     parameters, and injects them into the singleton ``SettingsService``.
@@ -44,7 +44,7 @@ class SettingsLoader:
         Parameters
         ----------
         yaml_file:
-            Path to the YAML file. Defaults to the package ``app.yaml``.
+            Path to the YAML file. Defaults to the package ``app.config.yaml``.
 
         Returns
         -------
@@ -52,7 +52,7 @@ class SettingsLoader:
             Raw ``app`` section from the YAML file.
         """
         if not yaml_file:
-            yaml_file = get_package_resource("app.yaml")
+            yaml_file = get_package_resource("resources/config/app.config.yaml")
 
         with open(yaml_file, encoding="utf-8") as file:
             data = yaml.safe_load(file)

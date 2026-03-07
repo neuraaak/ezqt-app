@@ -43,10 +43,6 @@ class Header(QFrame):
     control buttons (minimize, maximize, close).
     """
 
-    # ////// CLASS VARIABLES
-    _buttons: list[QPushButton] = []
-    _icons: list = []  # Type hint removed to avoid circular import
-
     def __init__(
         self,
         app_name: str = "",
@@ -72,6 +68,8 @@ class Header(QFrame):
             Additional keyword arguments.
         """
         super().__init__(parent, *args, **kwargs)
+        self._buttons: list[QPushButton] = []
+        self._icons: list[Any] = []
 
         # ////// SETUP WIDGET PROPERTIES
         self.setObjectName("headerContainer")

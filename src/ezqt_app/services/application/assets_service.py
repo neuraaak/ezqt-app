@@ -82,7 +82,7 @@ class AssetsService:
         )
 
         if mk_config:
-            yaml_package = get_package_resource("resources/config/app.yaml")
+            yaml_package = get_package_resource("resources/config/app.config.yaml")
             maker.make_yaml_from_package(yaml_package)
 
         if mk_theme:

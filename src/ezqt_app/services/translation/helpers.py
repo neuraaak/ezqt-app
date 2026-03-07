@@ -46,6 +46,11 @@ def change_language(language_name: str) -> bool:
     return get_translation_manager().load_language(language_name)
 
 
+def change_language_by_code(language_code: str) -> bool:
+    """Switch the application language by ISO code (e.g. ``"fr"``)."""
+    return get_translation_manager().load_language_by_code(language_code)
+
+
 def get_available_languages() -> list[str]:
     """Return list of available language codes."""
     return get_translation_manager().get_available_languages()

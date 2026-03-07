@@ -38,27 +38,43 @@ class ProjectRunner:
             "status": "unknown",
             "has_assets": False,
             "has_qrc": False,
+            "has_bin": False,
+            "has_config": False,
             "has_main": False,
             "has_tests": False,
         }
 
         assets_dir = self.project_root / "assets"
-        qrc_file = self.project_root / "base_resources.qrc"
+        bin_dir = self.project_root / "bin"
+        qrc_file = bin_dir / "resources.qrc"
+        legacy_qrc_file = self.project_root / "base_resources.qrc"
+        app_config_file = bin_dir / "config" / "app.config.yaml"
         main_file = self.project_root / "main.py"
         tests_dir = self.project_root / "tests"
 
         if assets_dir.exists():
             info["has_assets"] = True
-        if qrc_file.exists():
+        if bin_dir.exists():
+            info["has_bin"] = True
+        if qrc_file.exists() or legacy_qrc_file.exists():
             info["has_qrc"] = True
+        if app_config_file.exists():
+            info["has_config"] = True
         if main_file.exists():
             info["has_main"] = True
         if tests_dir.exists():
             info["has_tests"] = True
 
-        if all([info["has_assets"], info["has_qrc"], info["has_main"]]):
+        if all([info["has_bin"], info["has_qrc"], info["has_main"]]):
             info["status"] = "initialized"
-        elif any([info["has_assets"], info["has_qrc"], info["has_main"]]):
+        elif any(
+            [
+                info["has_bin"],
+                info["has_qrc"],
+                info["has_main"],
+                info["has_assets"],
+            ]
+        ):
             info["status"] = "partial"
         else:
             info["status"] = "not_initialized"

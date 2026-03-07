@@ -84,7 +84,7 @@ def init(force, verbose, no_main):
 
         if verbose:
             click.echo("\nGenerated files:")
-            click.echo("  - bin/config/app.yaml")
+            click.echo("  - bin/config/app.config.yaml")
             click.echo("  - bin/themes/*.qss")
             click.echo("  - bin/translations/*.ts")
             click.echo("  - bin/resources.qrc")

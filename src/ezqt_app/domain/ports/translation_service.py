@@ -23,6 +23,9 @@ class TranslationServiceProtocol(Protocol):
     def change_language(self, language_name: str) -> bool:
         """Switch application language using its display name."""
 
+    def change_language_by_code(self, language_code: str) -> bool:
+        """Switch application language using its language code."""
+
     def get_available_languages(self) -> list[str]:
         """Return available language codes."""
 

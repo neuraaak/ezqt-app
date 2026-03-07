@@ -1,0 +1,39 @@
+# ///////////////////////////////////////////////////////////////
+# TRANSLATION & DETECTION
+# ///////////////////////////////////////////////////////////////
+translation:
+  auto_translation_enabled: false
+  auto_translate_new_strings: true
+  save_to_ts_files: true
+  cache_translations: true
+  max_cache_age_days: 30
+
+# Configuration de la détection de langue
+language_detection:
+  default_source_language: "en"
+  auto_detect_language: true
+  confidence_threshold: 0.8
+
+# ///////////////////////////////////////////////////////////////
+# LANGUAGES
+# ///////////////////////////////////////////////////////////////
+supported_languages:
+  - code: "en"
+    name: "English"
+    native_name: "English"
+    description: "English language"
+
+  - code: "fr"
+    name: "French"
+    native_name: "Français"
+    description: "French language"
+
+  - code: "de"
+    name: "German"
+    native_name: "Deutsch"
+    description: "German language"
+
+  - code: "es"
+    name: "Spanish"
+    native_name: "Español"
+    description: "Spanish language"

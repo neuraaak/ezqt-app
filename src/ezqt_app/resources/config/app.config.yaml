@@ -21,6 +21,14 @@ app:
   settings_panel_width: 240
   time_animation: 400
 
+  # Where settings panel values are persisted.
+  # Must point to a nested mapping in this file.
+  settings_storage_root: "app.settings_panel"
+
+  # Config metadata
+  # //////
+  config_version: 1
+
 # ///////////////////////////////////////////////////////////////
 # SETTINGS PANEL
 # ///////////////////////////////////////////////////////////////

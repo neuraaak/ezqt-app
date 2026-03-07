@@ -10,6 +10,9 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Standard library imports
+from typing import Any
+
 # Third-party imports
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QCursor, QIcon
@@ -32,14 +35,6 @@ class Menu(QFrame):
     to expand or reduce the menu width. The menu contains an upper
     section for menu items and a lower section for the toggle button.
     """
-
-    from ...widgets.extended.menu_button import MenuButton
-    from ...widgets.extended.theme_icon import ThemeIcon
-
-    # ////// CLASS VARIABLES
-    menus: dict[str, MenuButton] = {}
-    _buttons: list[MenuButton] = []
-    _icons: list[ThemeIcon | None] = []
 
     def __init__(
         self,
@@ -64,6 +59,9 @@ class Menu(QFrame):
         # ////// STORE CONFIGURATION
         self._shrink_width = shrink_width
         self._extended_width = extended_width
+        self.menus: dict[str, Any] = {}
+        self._buttons: list[Any] = []
+        self._icons: list[Any | None] = []
 
         # ////// SETUP WIDGET PROPERTIES
         self.setObjectName("menuContainer")
@@ -222,7 +220,7 @@ class Menu(QFrame):
         self.toggleButton.stateChanged.connect(menu.set_state)
 
         self.VL_topMenu.addWidget(menu)
-        Menu.menus[name] = menu
+        self.menus[name] = menu
 
         return menu
 
@@ -230,8 +228,9 @@ class Menu(QFrame):
         """Update theme icons for all buttons."""
         for i, btn in enumerate(self._buttons):
             icon = self._icons[i]
-            if icon is not None:
-                btn.update_theme_icon(icon)
+            updater = getattr(btn, "update_theme_icon", None)
+            if icon is not None and callable(updater):
+                updater(icon)
 
     def sync_all_menu_states(self, extended: bool) -> None:
         """
@@ -243,8 +242,9 @@ class Menu(QFrame):
             True for extended, False for shrunk.
         """
         for btn in self._buttons:
-            if btn != self.toggleButton:  # Don't sync the toggle button itself
-                btn.set_state(extended)
+            setter = getattr(btn, "set_state", None)
+            if btn != self.toggleButton and callable(setter):
+                setter(extended)
 
     def get_menu_state(self) -> bool:
         """

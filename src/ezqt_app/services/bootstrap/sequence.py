@@ -84,6 +84,19 @@ class InitializationSequence:
             required=False,
         )
         self.add_step(
+            name="Generate Files",
+            description="Generate required configuration and resource files",
+            function=lambda: AppService.make_required_files(
+                mk_theme=options.mk_theme,
+                mk_config=options.mk_config,
+                mk_translations=options.mk_translations,
+                base_path=options.project_root,
+                bin_path=options.bin_path,
+                overwrite_policy=options.overwrite_policy.value,
+            ),
+            required=True,
+        )
+        self.add_step(
             name="Check Requirements",
             description="Verify that all required assets and dependencies are available",
             function=lambda: (
@@ -94,19 +107,6 @@ class InitializationSequence:
                 )
                 if options.build_resources
                 else None
-            ),
-            required=True,
-        )
-        self.add_step(
-            name="Generate Files",
-            description="Generate required configuration and resource files",
-            function=lambda: AppService.make_required_files(
-                mk_theme=options.mk_theme,
-                mk_config=options.mk_config,
-                mk_translations=options.mk_translations,
-                base_path=options.project_root,
-                bin_path=options.bin_path,
-                overwrite_policy=options.overwrite_policy.value,
             ),
             required=True,
         )

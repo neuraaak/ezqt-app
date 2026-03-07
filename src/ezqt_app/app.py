@@ -25,7 +25,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 from .services.application.app_service import AppService
 from .services.config import get_config_service
 from .services.settings import get_settings_service
-from .services.translation import get_translation_service
+from .services.translation import enable_auto_translation, get_translation_service
 from .services.ui import (
     Fonts,
     MenuService,
@@ -35,7 +35,7 @@ from .services.ui import (
     UiDefinitionsService,
 )
 from .shared.resources import Images
-from .utils.diagnostics import warn_tech
+from .utils.diagnostics import warn_tech, warn_user
 from .utils.printer import get_printer
 from .widgets.core.ez_app import EzApplication
 from .widgets.ui_main import Ui_MainWindow
@@ -90,18 +90,72 @@ class EzQt_App(QMainWindow):
         # ///////////////////////////////////////////////////////////////
         # Load language from settings
         try:
-            # Try to load settings_panel from app.yaml
+            # Load default language from translation.config.yaml, then allow app override.
+            default_language_code = "en"
+            translation_config_data = config_service.load_config("translation")
+
+            supported_languages = translation_config_data.get("supported_languages", [])
+            supported_codes = {
+                str(item.get("code", "")).lower()
+                for item in supported_languages
+                if isinstance(item, dict)
+            }
+
+            detection = translation_config_data.get("language_detection", {})
+            if isinstance(detection, dict):
+                default_language_code = str(
+                    detection.get("default_source_language", "en")
+                ).lower()
+
+            if default_language_code not in supported_codes:
+                warn_user(
+                    code="app.language.invalid_default_source_language",
+                    user_message=(
+                        "Invalid default_source_language in translation config; "
+                        "falling back to English"
+                    ),
+                    log_message=(
+                        "default_source_language is not declared in supported_languages"
+                    ),
+                )
+                default_language_code = "en"
+
+            # Try to load settings_panel from app.config.yaml
             app_config = config_service.load_config("app")
             if "settings_panel" in app_config:
                 settings_panel = app_config["settings_panel"]
-                language = settings_panel.get("language", {}).get("default", "English")
+                language_value = str(
+                    settings_panel.get("language", {}).get(
+                        "default", default_language_code
+                    )
+                )
             else:
-                language = "English"
+                language_value = default_language_code
+
             translation_service = get_translation_service()
-            translation_service.change_language(language)
+            # Accept both display names ("Français") and codes ("fr").
+            if not translation_service.change_language(language_value):
+                translation_service.change_language_by_code(language_value.lower())
+
+            translation_config = translation_config_data.get("translation", {})
+            auto_translation_flag = False
+            if isinstance(translation_config, dict):
+                raw_flag = translation_config.get("auto_translation_enabled", False)
+                if isinstance(raw_flag, str):
+                    auto_translation_flag = raw_flag.strip().lower() in {
+                        "1",
+                        "true",
+                        "yes",
+                        "on",
+                    }
+                else:
+                    auto_translation_flag = bool(raw_flag)
+
+            enable_auto_translation(auto_translation_flag)
         except Exception:
             translation_service = get_translation_service()
             translation_service.change_language("English")
+            enable_auto_translation(False)
 
         # ////// INITIALIZE COMPONENTS
         # ///////////////////////////////////////////////////////////////
@@ -153,14 +207,16 @@ class EzQt_App(QMainWindow):
         # //////
         # Load theme from settings_panel if it exists, otherwise from app
         try:
-            # Try to load settings_panel from app.yaml
+            # Try to load settings_panel from app.config.yaml
             app_config = config_service.load_config("app")
+            app_defaults = app_config.get("app", {})
+            fallback_theme = str(app_defaults.get("theme", "dark"))
             if "settings_panel" in app_config:
                 settings_panel = app_config["settings_panel"]
-                _theme = settings_panel.get("theme", {}).get("default", "dark")
+                _theme = settings_panel.get("theme", {}).get("default", fallback_theme)
             else:
                 # Fallback to default value
-                _theme = "dark"
+                _theme = fallback_theme
             # Force conversion to lowercase
             _theme = _theme.lower()
         except Exception:

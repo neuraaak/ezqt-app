@@ -42,15 +42,31 @@ class SettingsPanel(QFrame):
     The settings panel is used to display the settings.
     """
 
-    _widgets: list = []  # Type hint removed to avoid circular import
-    _settings: dict[str, Any] = {}  # Settings storage
-
     # Signal emitted when a setting changes
     settingChanged = Signal(str, object)  # key, value
     # Signal emitted when language changes
     languageChanged = Signal()
 
     # ///////////////////////////////////////////////////////////////
+
+    def _settings_storage_prefix(self) -> list[str]:
+        """Return config path prefix used to persist settings values."""
+        try:
+            from ...services.config import get_config_service
+
+            app_config = get_config_service().load_config("app")
+            app_section = app_config.get("app", {})
+            root = str(app_section.get("settings_storage_root", "app.settings_panel"))
+            parts = [part for part in root.split(".") if part]
+            if len(parts) >= 2:
+                return parts
+        except Exception as e:
+            warn_tech(
+                code="widgets.settings_panel.storage_prefix_resolution_failed",
+                message="Could not resolve settings storage prefix from app config",
+                error=e,
+            )
+        return ["app", "settings_panel"]
 
     def __init__(
         self,
@@ -59,6 +75,8 @@ class SettingsPanel(QFrame):
         load_from_yaml: bool = True,
     ) -> None:
         super().__init__(parent)
+        self._widgets: list[QWidget] = []
+        self._settings: dict[str, Any] = {}
 
         # ///////////////////////////////////////////////////////////////
         # Store configuration
@@ -204,14 +222,14 @@ class SettingsPanel(QFrame):
 
             import yaml
 
-            # Try to load the full app.yaml file directly
+            # Try to load the full app.config.yaml file directly
             # Try multiple possible paths
             possible_paths = [
-                Path.cwd() / "bin" / "config" / "app.yaml",  # User project
+                Path.cwd() / "bin" / "config" / "app.config.yaml",  # User project
                 Path(__file__).parent.parent.parent
                 / "resources"
                 / "config"
-                / "app.yaml",  # Package
+                / "app.config.yaml",  # Package
             ]
 
             app_config = None
@@ -223,8 +241,8 @@ class SettingsPanel(QFrame):
 
             if app_config is None:
                 warn_tech(
-                    code="widgets.settings_panel.app_yaml_not_found",
-                    message="Could not find app.yaml file",
+                    code="widgets.settings_panel.app_config_yaml_not_found",
+                    message="Could not find app.config.yaml file",
                 )
                 return
 
@@ -519,7 +537,9 @@ class SettingsPanel(QFrame):
                 from ...services.application.app_service import AppService
 
                 # Save directly to settings_panel[key].default
-                AppService.write_yaml_config(["settings_panel", key, "default"], value)
+                AppService.write_yaml_config(
+                    [*self._settings_storage_prefix(), key, "default"], value
+                )
             except Exception as e:
                 warn_tech(
                     code="widgets.settings_panel.save_setting_failed",
@@ -575,7 +595,8 @@ class SettingsPanel(QFrame):
         for key, widget in self._settings.items():
             try:
                 AppService.write_yaml_config(
-                    ["settings_panel", key, "default"], widget.get_value()
+                    [*self._settings_storage_prefix(), key, "default"],
+                    widget.get_value(),
                 )
             except Exception as e:
                 warn_tech(
@@ -604,8 +625,9 @@ class SettingsPanel(QFrame):
     def update_all_theme_icons(self) -> None:
         """Update theme icons for all widgets that support it."""
         for widget in self._widgets:
-            if hasattr(widget, "update_theme_icon"):
-                widget.update_theme_icon()
+            updater = getattr(widget, "update_theme_icon", None)
+            if callable(updater):
+                updater()
 
         # Force refresh of settings panel style
         self.style().unpolish(self)
@@ -638,7 +660,8 @@ class SettingsPanel(QFrame):
             from ...services.application.app_service import AppService
 
             AppService.write_yaml_config(
-                ["settings_panel", "theme", "default"], english_value
+                [*self._settings_storage_prefix(), "theme", "default"],
+                english_value,
             )
 
             # Emit signal with English value
@@ -662,7 +685,8 @@ class SettingsPanel(QFrame):
                 from ...services.application.app_service import AppService
 
                 AppService.write_yaml_config(
-                    ["settings_panel", "theme", "default"], current_value
+                    [*self._settings_storage_prefix(), "theme", "default"],
+                    current_value,
                 )
 
                 # Emit signal with English value

@@ -190,12 +190,14 @@ class FileService:
                 self.printer.list_items([d.name for d in created_paths])
 
     def make_yaml_from_package(self, yaml_package: Path | None = None) -> Path | None:
-        """Copy the package ``app.yaml`` into ``bin/config/``."""
+        """Copy the package ``app.config.yaml`` into ``bin/config/``."""
         if yaml_package is None:
             import pkg_resources  # type: ignore[import-untyped]
 
             yaml_package = Path(
-                pkg_resources.resource_filename("ezqt_app", "resources/config/app.yaml")
+                pkg_resources.resource_filename(
+                    "ezqt_app", "resources/config/app.config.yaml"
+                )
             )
 
         if not yaml_package.exists():
@@ -205,7 +207,7 @@ class FileService:
                 context={"resource": str(yaml_package)},
             )
 
-        target_path = self._bin / "config" / "app.yaml"
+        target_path = self._bin / "config" / "app.config.yaml"
         target_path.parent.mkdir(parents=True, exist_ok=True)
         if not self._should_write(target_path):
             return target_path
@@ -350,28 +352,24 @@ class FileService:
             '    <qresource prefix="/">',
         ]
 
-        def _add_qresource(directory: Path, prefix: str) -> None:
+        def _add_qresource(directory: Path) -> None:
             if directory.exists():
                 for file_path in directory.rglob("*"):
                     if file_path.is_file():
-                        relative_path = file_path.relative_to(self._bin)
-                        qrc_content.append(
-                            f"        <file>{prefix}/{relative_path}</file>"
-                        )
+                        relative_path = file_path.relative_to(self._bin).as_posix()
+                        qrc_content.append(f"        <file>{relative_path}</file>")
 
-        _add_qresource(self._bin / "fonts", "fonts")
-        _add_qresource(self._bin / "images", "images")
-        _add_qresource(self._bin / "icons", "icons")
-        _add_qresource(self._bin / "themes", "themes")
-        _add_qresource(self._bin / "config", "config")
-        _add_qresource(self._bin / "translations", "translations")
+        _add_qresource(self._bin / "fonts")
+        _add_qresource(self._bin / "images")
+        _add_qresource(self._bin / "icons")
+        _add_qresource(self._bin / "themes")
+        _add_qresource(self._bin / "config")
+        _add_qresource(self._bin / "translations")
 
         qrc_content.extend(["    </qresource>", "</RCC>"])
 
         qrc_file_path = self._bin / "resources.qrc"
-        if not self._should_write(qrc_file_path):
-            self._qrc_file = str(qrc_file_path)
-            return True
+        # resources.qrc is a derived build artifact: always refresh it.
         with open(qrc_file_path, "w", encoding="utf-8") as f:
             f.write("\n".join(qrc_content))
 
@@ -385,9 +383,8 @@ class FileService:
             self.printer.warning("[FileMaker] No QRC file")
             return
 
-        target_file = self._bin / "resources_rc.py"
-        if not self._should_write(target_file):
-            return
+        _target_file = self._bin / "resources_rc.py"
+        # resources_rc.py is a derived build artifact: always regenerate it.
 
         try:
             subprocess.run(
@@ -398,10 +395,25 @@ class FileService:
             )
             self.printer.qrc_compilation_result(True)
         except subprocess.CalledProcessError as e:
+            stderr_text = (
+                e.stderr.decode("utf-8", errors="replace")
+                if isinstance(e.stderr, (bytes, bytearray))
+                else str(e.stderr or "")
+            )
+            stdout_text = (
+                e.stdout.decode("utf-8", errors="replace")
+                if isinstance(e.stdout, (bytes, bytearray))
+                else str(e.stdout or "")
+            )
             raise ResourceCompilationError(
                 code=self._error_code("qrc_compilation_failed"),
                 message="QRC compilation failed",
-                context={"details": str(e), "qrc_file": self._qrc_file},
+                context={
+                    "details": str(e),
+                    "qrc_file": self._qrc_file,
+                    "stderr": stderr_text,
+                    "stdout": stdout_text,
+                },
             ) from e
         except FileNotFoundError:
             self.printer.qrc_compilation_result(False, "pyside6-rcc not found")
@@ -412,13 +424,6 @@ class FileService:
         if rc_py_path.exists():
             rc_py_path.unlink()
             self.printer.info("[FileMaker] Purged resources_rc.py file.")
-
-    def make_app_resources_module(self) -> None:
-        """Legacy no-op — v5 uses ``ezqt_app.shared.resources`` directly."""
-        self._resources_module_file = ""
-        self.printer.info(
-            "[FileMaker] app_resources.py generation skipped (v5 uses ezqt_app.shared.resources)."
-        )
 
     def make_main_from_template(self, main_template: Path | None = None) -> None:
         """Copy the ``main.py`` project template into ``base_path``."""

@@ -13,6 +13,7 @@ from __future__ import annotations
 from ...domain.models.translation import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
 from .helpers import (
     change_language,
+    change_language_by_code,
     clear_auto_translation_cache,
     collect_and_compare_strings,
     collect_strings_from_widget,
@@ -63,6 +64,7 @@ __all__ = [
     "register_tr",
     "unregister_tr",
     "change_language",
+    "change_language_by_code",
     "get_available_languages",
     "get_current_language",
     "enable_auto_translation",

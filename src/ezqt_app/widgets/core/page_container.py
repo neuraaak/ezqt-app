@@ -25,9 +25,6 @@ class PageContainer(QFrame):
     with a tab-based navigation system.
     """
 
-    # ////// CLASS VARIABLES
-    pages: dict[str, QWidget] = {}
-
     def __init__(self, parent: QWidget | None = None) -> None:
         """
         Initialize the page container.
@@ -38,6 +35,7 @@ class PageContainer(QFrame):
             The parent widget (default: None).
         """
         super().__init__(parent)
+        self.pages: dict[str, QWidget] = {}
 
         # ////// SETUP WIDGET PROPERTIES
         self.setObjectName("pagesContainer")
@@ -78,7 +76,7 @@ class PageContainer(QFrame):
         page.setObjectName(f"page_{name}")
 
         self.stackedWidget.addWidget(page)
-        PageContainer.pages[name] = page
+        self.pages[name] = page
 
         return page
 

@@ -25,6 +25,10 @@ class TranslationService(TranslationServiceProtocol):
         """Switch application language using its display name."""
         return get_translation_manager().load_language(language_name)
 
+    def change_language_by_code(self, language_code: str) -> bool:
+        """Switch application language using ISO code (e.g. ``"fr"``)."""
+        return get_translation_manager().load_language_by_code(language_code)
+
     def get_available_languages(self) -> list[str]:
         """Return available language codes."""
         return get_translation_manager().get_available_languages()

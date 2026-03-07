@@ -30,8 +30,8 @@ class ThemeService:
         config_service = get_config_service()
 
         theme_name = settings_service.gui.THEME
-        palette_config = config_service.load_config("palette")
-        colors = palette_config.get("theme_palette", {}).get(theme_name, {})
+        theme_config = config_service.load_config("theme")
+        colors = theme_config.get("palette", {}).get(theme_name, {})
 
         main_style = ThemeService._load_theme_content(custom_theme_file)
 

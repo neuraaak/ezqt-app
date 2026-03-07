@@ -1,13 +1,13 @@
 # ///////////////////////////////////////////////////////////////
-# THEME PALETTE
+# PALETTE
 # ///////////////////////////////////////////////////////////////
-theme_palette:
+palette:
   # DARK
   # //////
   dark:
     $_main_surface: rgb(33, 37, 43)
     $_main_border: rgb(44, 49, 58)
-    $_main_accent_color: '#96CD32'
+    $_main_accent_color: "#96CD32"
     $_accent_color1: rgb(52, 59, 72)
     $_accent_color2: rgb(55, 63, 77)
     $_accent_color3: rgb(35, 40, 49)
@@ -24,7 +24,7 @@ theme_palette:
   light:
     $_main_surface: rgb(240, 240, 243)
     $_main_border: rgb(225, 223, 229)
-    $_main_accent_color: '#1423DC'
+    $_main_accent_color: "#1423DC"
     $_accent_color1: rgb(203, 196, 183)
     $_accent_color2: rgb(200, 192, 178)
     $_accent_color3: rgb(237, 235, 235)
@@ -34,4 +34,4 @@ theme_palette:
     $_transparent: rgba(0, 0, 0, 0)
     $_semi_transparent: rgba(222, 218, 212, 180)
     $_select_text_color: rgb(0, 0, 0)
-    $_base_text_color: rgb(34, 34, 34) 
+    $_base_text_color: rgb(34, 34, 34)

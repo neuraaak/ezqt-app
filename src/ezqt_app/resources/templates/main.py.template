@@ -1,83 +1,57 @@
-# -*- coding: utf-8 -*-
-# ///////////////////////////////////////////////////////////////
+"""Example entrypoint generated for an EzQt_App project."""
 
-# IMPORT BASE
+from __future__ import annotations
+
 # ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import os
 import sys
-from pathlib import Path
 
-# IMPORT SPECS
+# Third-party imports
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QVBoxLayout
+
+# Local imports
+from ezqt_app import EzApplication, EzQt_App, init
+
 # ///////////////////////////////////////////////////////////////
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
-
-# IMPORT / GUI AND MODULES AND WIDGETS
+# GLOBALS
 # ///////////////////////////////////////////////////////////////
-import ezqt_app.main as ezqt_app
-from ezqt_app.app import EzQt_App, EzApplication
+os.environ["QT_FONT_DPI"] = "96"
 
-## ==> GLOBALS
+
 # ///////////////////////////////////////////////////////////////
-os.environ["QT_FONT_DPI"] = "96"  # FIX Problem for High DPI and Scale above 100%
-
-## ==> VARIABLES
+# FUNCTIONS
 # ///////////////////////////////////////////////////////////////
-APP_PATH = Path(getattr(sys, "_MEIPASS", Path(sys.argv[0]).resolve().parent))
+def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
+    """Add user-defined widgets and pages to the application."""
+    # addMenu() returns the page container QWidget.
+    home = window.addMenu("Home", icons.cil_home)
 
-## ==> CLASSES
-# ///////////////////////////////////////////////////////////////
-
-
-## ==> METHODS
-# ///////////////////////////////////////////////////////////////
-def add_things_to_my_app(w: EzQt_App) -> None:
-    pass
-    # Make some shit here. For example:
-
-    ##########
-    # Si initialisé avec ezqt_app.init(). Retourne un QWidget.
-    home = w.addMenu("Home", Icons.cil_home)
-
-    # Pour utiliser les ressources intégrées au framework
-    home = w.addMenu("My first menu", Icons.cil_home)
-    ##########
-
-    # Ensuite on ajoute des elements comme pour n'importe application PySide
-    # en utilisant le QWidget retourné comme container.
-    # Par exemple :
+    # Populate the page like any regular Qt widget.
     home_layout = QVBoxLayout(home)
-    #
     home_label = QLabel("Home")
-    home_layout.addChildWidget(home_label)
+    home_layout.addWidget(home_label)
 
 
-## ==> MAIN SCRIPT
+# ///////////////////////////////////////////////////////////////
+# MAIN SCRIPT
 # ///////////////////////////////////////////////////////////////
 
 if __name__ == "__main__":
+    # Generates/refreshes runtime assets (bin/, resources_rc, etc.) when needed.
+    init()
+    from ezqt_app.shared.resources import Icons, Images
 
-    # Initialisation du projet necessaire si utilisation du module d'import auto des assets.
-    # Utilisable en appelant [AppImages] ou [AppIcons].
-    # par exemple si logo_placeholder.ico dans les dossiers d'assets appeler [AppImages.logo_placeholder] ou [AppIcons.logo_placeholder]
-    # //////
-    ezqt_app.init()
-    from modules.app_resources import *
-
-    # Création de l'application
-    # //////
     app = EzApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
-    # //////
+
     window = EzQt_App(themeFileName="main_theme.qss")
-    window.setAppIcon(
-        Images.logo_placeholder, yShrink=0
-    )  # Pour set le logo du header d'application
+    window.setAppIcon(Images.logo_placeholder, yShrink=0)
     window.show()
 
-    # Création des éléments d'application
-    add_things_to_my_app(window)
+    add_things_to_my_app(window, Icons)
 
-    # //////
     sys.exit(app.exec())

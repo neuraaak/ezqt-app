@@ -107,6 +107,7 @@ class StartupConfig:
                 current = current.parent
 
         AppService.set_project_root(detected_root)
+        (detected_root / "logs").mkdir(parents=True, exist_ok=True)
 
     # ------------------------------------------------------------------
     # Accessors

@@ -19,11 +19,10 @@ UI components.
     - Reusable core widgets (Header, Menu, PageContainer, SettingsPanel)
 
 **Quick Start:**
-    >>> from ezqt_app import EzQt_App, init
-    >>> from PySide6.QtWidgets import QApplication
+    >>> from ezqt_app import EzApplication, EzQt_App, init
     >>> import sys
     >>>
-    >>> app = QApplication(sys.argv)
+    >>> app = EzApplication(sys.argv)
     >>> init()
     >>>
     >>> window = EzQt_App()
@@ -42,11 +41,11 @@ import sys
 
 # Local imports
 from .app import EzApplication, EzQt_App
-from .cli.main import cli
 from .main import configure_startup, generate_assets, init, setup_project
 from .services.settings import SettingsService, get_settings_service
 from .services.translation import (
     change_language,
+    change_language_by_code,
     get_available_languages,
     get_current_language,
     register_tr,
@@ -112,6 +111,7 @@ __all__ = [
     "register_tr",
     "unregister_tr",
     "change_language",
+    "change_language_by_code",
     "get_available_languages",
     "get_current_language",
     # CLI
@@ -131,3 +131,12 @@ __all__ = [
     "__url__",
     "__repository__",
 ]
+
+
+def __getattr__(name: str):
+    """Lazy-load optional CLI entrypoint to avoid hard dependency at import time."""
+    if name == "cli":
+        from .cli.main import cli
+
+        return cli
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
