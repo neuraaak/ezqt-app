@@ -1,131 +1,181 @@
-# 🚀 EzQt_App
+# 🚀 EzQt App
 
-[![Repository](https://img.shields.io/badge/Repository-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/neuraaak/EzQt-App)
-[![PyPI](https://img.shields.io/badge/PyPI-ezqt_app-green?style=for-the-badge&logo=pypi)](https://pypi.org/project/EzQt_App/)
-[![Tests](https://img.shields.io/badge/Tests-240%2B%20passing-green?style=for-the-badge&logo=pytest)](https://github.com/neuraaak/EzQt-App/actions)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Platform](https://img.shields.io/badge/OS-Independent-lightgray.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
+[![Version](https://img.shields.io/badge/Version-5.0.1-orange.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
+[![PyPI](https://img.shields.io/badge/PyPI-ezqt--app-green.svg?style=for-the-badge&logo=pypi)](https://pypi.org/project/ezqt-app/)
+[![Docs](https://img.shields.io/badge/Docs-Online-blue.svg?style=for-the-badge&logo=readthedocs)](https://neuraaak.github.io/ezqt-app/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Beta-yellow.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
+[![Tests](https://img.shields.io/badge/Tests-176%2B%20passing-success.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
 
-A lightweight Python framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management.
+![EzQt Widgets Logo](docs/assets/logo-min.png)
 
-## 📦 **Installation**
+**EzQt App** is a lightweight Python framework based on **PySide6** to quickly build modern desktop applications, with integrated resource, theme, translation, and reusable component management. Built on a hexagonal architecture for clean separation of concerns.
+
+## 📦 Installation
 
 ```bash
-pip install ezqt_app
+pip install ezqt-app
 ```
 
-## 🚀 **Quick Start**
+Or from source:
+
+```bash
+git clone https://github.com/neuraaak/ezqt-app.git
+cd ezqt-app && pip install .
+```
+
+## 🚀 Quick Start
 
 ```python
 import sys
-import ezqt_app.main as ezqt
-from ezqt_app.app import EzQt_App, EzApplication
+from ezqt_app.app import EzQt_App
+from ezqt_app.services.application.app_service import AppService
 
-# Initialize the framework
-ezqt.init()
-
-# Create application
-app = EzApplication(sys.argv)
+# Initialize and run the framework
+app_service = AppService()
+app_service.initialize()
 
 # Create main window
 window = EzQt_App(themeFileName="main_theme.qss")
 
-# Add menus
+# Add navigation menus
 home_page = window.addMenu("Home", "🏠")
 settings_page = window.addMenu("Settings", "⚙️")
 
 # Show application
 window.show()
-app.exec()
+app_service.exec()
 ```
 
-## 📚 **Documentation**
+## 🎯 Key Features
 
-- **[📖 Complete Documentation](docs/README.md)** - Main documentation guide
-- **[🔧 API Documentation](docs/api/API_DOCUMENTATION.md)** - Complete documentation of all components
-- **[🎨 Style Guide](docs/api/STYLE_GUIDE.md)** - QSS customization and best practices
-- **[🧪 Tests](docs/tests/README.md)** - Test documentation and execution guide
-- **[🖥️ CLI Documentation](docs/cli/README.md)** - Command-line interface guide
-- **[📋 Changelog](CHANGELOG.md)** - Version history
+- **✅ PySide6 Compatible**: Full support for the latest PySide6 versions
+- **✅ Hexagonal Architecture**: Clean domain/services/widgets separation
+- **✅ Full Type Hints**: Complete typing support for IDEs and linters
+- **✅ Dynamic Themes**: Light/dark themes with integrated toggle via QSS
+- **✅ Global Translation**: Multi-language support (EN, FR, ES, DE)
+- **✅ Automatic Translation**: Multi-provider system (LibreTranslate, MyMemory, Google)
+- **✅ CLI Tools**: Project initialization, template generation, and management
+- **✅ Template System**: Basic and advanced project scaffolding
+- **✅ Standardized Logging**: Consistent message formatting across all components
+- **✅ Comprehensive Tests**: Complete test suite (~176 tests)
 
-## 🎯 **Available Components**
+## 📚 Documentation
 
-### 🧠 **Core Module (`ezqt_app.kernel`)**
-- **Kernel** - Core application functions and resource management
-- **TranslationManager** - Multilingual translation system
-- **Settings** - Application configuration and parameters
-- **FileMaker** - File and resource generation utilities
+Full documentation is available online: **[neuraaak.github.io/ezqt-app](https://neuraaak.github.io/ezqt-app/)**
 
-### 🎨 **Widget Module (`ezqt_app.widgets`)**
-- **EzApplication** - Extended QApplication with theme support
-- **EzQt_App** - Main application window with modern UI
-- **Core Widgets** - Header, Menu, PageContainer, SettingsPanel
-- **Extended Widgets** - SettingWidgets with validation
+- **[📖 Getting Started](https://neuraaak.github.io/ezqt-app/getting-started/)** – Installation and first steps
+- **[🎯 API Reference](https://neuraaak.github.io/ezqt-app/api/)** – Complete module reference (auto-generated)
+- **[🎨 QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/)** – QSS customization and best practices
+- **[💡 Examples](https://neuraaak.github.io/ezqt-app/examples/)** – Usage examples and demonstrations
+- **[🖥️ CLI](https://neuraaak.github.io/ezqt-app/cli/)** – Command-line interface guide
+- **[🧪 Testing](https://neuraaak.github.io/ezqt-app/guides/testing/)** – Test suite documentation
+- **[🔧 Development](https://neuraaak.github.io/ezqt-app/guides/development/)** – Environment setup and contribution
 
-### 🔧 **CLI Module (`ezqt_app.cli`)**
-- **CLI** - Command line interface for project management
-- **ProjectRunner** - Project creation and template management
-- **Create QM Files** - Translation file conversion utilities
+## 🏗️ Architecture
 
-### 🌍 **Translation Module (`ezqt_app.kernel.translation`)**
-- **TranslationManager** - Complete translation management
-- **Auto-Translator** - Multi-provider automatic translation system
-- **String Collector** - Automatic string collection for translations
-- **Translation Helpers** - Utility functions for translations
-- **Translation Config** - Configuration and setup
+EzQt App follows a **hexagonal architecture** with three main layers:
 
-## ✨ **Features**
+```text
+src/ezqt_app/
+├── domain/          # Contracts, ports, models, errors (no dependencies)
+│   ├── ports/       # Abstract interfaces (AppPort, ConfigPort, etc.)
+│   ├── models/      # Domain models
+│   └── errors/      # Domain exceptions
+├── services/        # Adapters implementing domain ports
+│   ├── application/ # App lifecycle (AppService, InitService)
+│   ├── config/      # Configuration (ConfigService, SettingsService)
+│   ├── translation/ # i18n (TranslationService, AutoTranslator)
+│   └── ui/          # UI coordination (ThemeService, MenuService)
+├── widgets/         # PySide6 presentation layer
+│   ├── core/        # Header, Menu, PageContainer
+│   └── extended/    # SettingWidgets and advanced components
+├── shared/          # Cross-cutting utilities
+├── cli/             # Command-line interface
+└── app.py           # Main EzQt_App entry point
+```
 
-- **✅ PySide6 6.9.1** - Modern Qt framework with latest features
-- **✅ Automatic Generation** - Asset folders, QRC files, and resources
-- **✅ Dynamic Themes** - Light/dark themes with integrated toggle
-- **✅ Global Translation** - Multi-language support (EN, FR, ES, DE)
-- **✅ Automatic Translation System** - Multi-provider support (LibreTranslate, MyMemory, Google)
-- **✅ CLI Tools** - Project initialization and management
-- **✅ Template System** - Basic and advanced project templates
-- **✅ Type Annotations** - Complete type hint support
-- **✅ Tests** - Comprehensive test suite (~240+ tests)
-- **✅ Standardized Logging** - Consistent message formatting across all components
+## 🧩 Available Components
 
-## 🧪 **Tests**
+### 🔧 Application Services (`ezqt_app.services`)
 
-### **Quick Execution**
+| Service                 | Description                          |
+| ----------------------- | ------------------------------------ |
+| **AppService**          | Application lifecycle management     |
+| **InitService**         | Startup initialization and bootstrap |
+| **ConfigService**       | Application configuration management |
+| **SettingsService**     | User settings persistence            |
+| **RuntimeStateService** | Runtime state tracking               |
+| **TranslationService**  | Language management and switching    |
+| **ThemeService**        | Theme loading and switching          |
+| **MenuService**         | Navigation menu management           |
+| **WindowService**       | Main window orchestration            |
+
+### 🌍 Translation System (`ezqt_app.services.translation`)
+
+| Component              | Description                                |
+| ---------------------- | ------------------------------------------ |
+| **TranslationManager** | Central translation registry and dispatch  |
+| **AutoTranslator**     | Multi-provider automatic translation       |
+| **StringCollector**    | Automatic string discovery for translation |
+
+### 🎨 Widgets (`ezqt_app.widgets`)
+
+| Widget             | Description                                |
+| ------------------ | ------------------------------------------ |
+| **EzQt_App**       | Main application window with modern UI     |
+| **Header**         | Top navigation bar with title and controls |
+| **Menu**           | Sidebar navigation menu                    |
+| **PageContainer**  | Content area manager                       |
+| **SettingWidgets** | Settings UI components with validation     |
+
+## 🧪 Testing
+
+Comprehensive test suite with 176+ test cases covering services, widgets, and integration scenarios.
+
 ```bash
-# Quick verification
-python tests/run_tests.py --type unit
+# Install dev dependencies
+pip install -e ".[dev]"
 
-# Tests with coverage
-python tests/run_tests.py --coverage
+# Run all tests
+pytest tests/
 
-# Or use CLI
+# Run by marker
+pytest tests/ -m unit
+pytest tests/ -m integration
+
+# With coverage
+pytest tests/ --cov=src/ezqt_app --cov-report=html
+
+# Using CLI
 ezqt test --unit
 ezqt test --coverage
 ```
 
-### **Test Documentation**
-- **[🚀 Quick Start Guide](docs/tests/QUICK_START_TESTS.md)** - Quick verification
-- **[📖 Complete Documentation](docs/tests/TESTS_DOCUMENTATION.md)** - Detailed guide
+See the **[Testing Guide](https://neuraaak.github.io/ezqt-app/guides/testing/)** for complete details.
 
-### **Statistics**
-- **Total** : ~240+ tests
-- **Coverage** : High coverage across all modules
-- **Status** : 🟢 **OPERATIONAL**
+## 🖥️ CLI Commands
 
-## 🖥️ **CLI Commands**
+### Project Management
 
-### **Project Management**
 ```bash
-# Initialize new project
+# Initialize new project (assets, QRC, resources)
 ezqt init [--force] [--verbose] [--no-main]
 
-# Create project template
-ezqt create --template <type> --name <name>
+# Create project from template
+ezqt create --template basic --name my_app
+ezqt create --template advanced --name my_app
 
 # Show project information
 ezqt info
 ```
 
-### **Development Tools**
+### Development Tools
+
 ```bash
-# Convert translation files
+# Convert .ts translation files to .qm
 ezqt convert [--verbose]
 ezqt mkqm [--verbose]
 
@@ -136,174 +186,75 @@ ezqt test [--unit] [--integration] [--coverage]
 ezqt docs [--serve] [--port <port>]
 ```
 
-### **CLI Documentation**
-- **[🖥️ Complete Guide](docs/cli/README.md)** - All commands and options
-
-## 🌍 **Translation System**
-
-The framework includes a complete translation system with automatic translation capabilities:
+## 🌍 Translation System
 
 ```python
-from ezqt_app.kernel import tr, set_tr
+from ezqt_app.shared.helpers import tr, set_tr
 
-# Translate text
+# Translate a string
 text = tr("Hello World")  # Returns "Bonjour le monde" in French
 
-# Set translated text for widget
+# Bind a widget for auto-retranslation on language change
 from PySide6.QtWidgets import QLabel
-label = QLabel("Hello World")
-set_tr(label, "Hello World")  # Automatically retranslates on language change
+label = QLabel()
+set_tr(label, "Hello World")
 
-# Change language
-from ezqt_app.kernel import change_language
-change_language("Français")  # Automatically retranslates all registered widgets
-
-# Automatic translation (when enabled)
-from ezqt_app.kernel.translation.auto_translator import AutoTranslator
-translator = AutoTranslator()
-auto_translated = translator.translate_sync("Hello World", "fr")
+# Change active language
+from ezqt_app.services.translation.translation_service import TranslationService
+TranslationService.instance().set_language("Français")
 ```
 
-**Supported languages:** English, Français, Español, Deutsch  
-**Translation providers:** LibreTranslate, MyMemory, Google Translate  
-**Note:** Automatic translation system is temporarily disabled for development
+**Supported languages:** English, Français, Español, Deutsch
+**Translation providers:** LibreTranslate, MyMemory, Google Translate
 
-## 🎨 **Template System**
+## 🛠️ Development Setup
 
-### **Basic Template**
 ```bash
-ezqt create --template basic --name my_app
-```
-
-**Structure:**
-```
-my_app/
-├── main.py              # Application entry point
-├── assets/              # Application assets
-│   ├── icons/          # Icon files
-│   ├── images/         # Image files
-│   └── themes/         # QSS theme files
-└── README.md           # Project documentation
-```
-
-### **Advanced Template**
-```bash
-ezqt create --template advanced --name my_app
-```
-
-**Structure:**
-```
-my_app/
-├── main.py              # Advanced application entry point
-├── assets/              # Application assets
-├── src/                 # Source code
-│   ├── widgets/        # Custom widgets
-│   └── utils/          # Utility functions
-├── tests/              # Test files
-├── docs/               # Documentation
-└── README.md           # Project documentation
-```
-
-## 🔧 **Development**
-
-### **Project Structure**
-```
-ezqt_app/
-├── README.md                    # This file
-├── docs/                        # Documentation
-│   ├── README.md               # Documentation index
-│   ├── api/                    # API documentation
-│   │   ├── README.md          # Navigation guide
-│   │   ├── API_DOCUMENTATION.md # Complete documentation
-│   │   └── STYLE_GUIDE.md     # Style guide
-│   ├── cli/                    # CLI documentation
-│   │   └── README.md          # CLI guide
-│   └── tests/                  # Test documentation
-│       ├── README.md          # Navigation guide
-│       ├── TESTS_DOCUMENTATION.md # Complete documentation
-│       └── QUICK_START_TESTS.md # Quick start guide
-├── tests/                       # Tests
-│   ├── run_tests.py           # Test execution script
-│   ├── conftest.py            # Pytest configuration
-│   ├── unit/                  # Unit tests
-│   └── integration/           # Integration tests
-├── ezqt_app/                   # Source code
-│   ├── kernel/                # Core components
-│   ├── widgets/               # Custom widgets
-│   ├── cli/                   # Command line interface
-│   └── resources/             # Embedded resources
-└── pyproject.toml              # Project configuration
-```
-
-### **Development Installation**
-```bash
-git clone https://github.com/neuraaak/EzQt-App.git
-cd ezqt_app
+# Clone and install in development mode
+git clone https://github.com/neuraaak/ezqt-app.git
+cd ezqt-app
 pip install -e ".[dev]"
+
+# Install pre-commit hooks
+pre-commit install
 
 # Verify CLI installation
 ezqt --version
 ezqt info
 ```
 
-## 📦 **Dependencies**
+See the **[Development Guide](https://neuraaak.github.io/ezqt-app/guides/development/)** for detailed instructions.
 
-### **Main Dependencies**
-- **PySide6==6.9.1** - Modern Qt framework
-- **PyYaml==6.0.2** - YAML file management
-- **colorama==0.4.6** - Terminal colors
-- **requests==2.32.3** - HTTP requests
-- **click>=8.0.0** - CLI framework
-- **ezqt-widgets>=2.0.0** - Custom widgets
+## 📦 Dependencies
 
-### **Development Dependencies**
-- **pytest>=7.0.0** - Testing framework
-- **pytest-cov>=4.0.0** - Coverage reporting
-- **pytest-qt>=4.0.0** - Qt testing
-- **pytest-mock>=3.10.0** - Mocking utilities
-- **flake8>=5.0.0** - Code linting
-- **black>=22.0.0** - Code formatting
+### Runtime
 
-## 🎨 **Customization**
+- **PySide6>=6.7.3** – Qt for Python framework
+- **requests>=2.32.4** – HTTP requests (translation providers)
+- **click>=8.2.1** – CLI framework
+- **PyYAML>=6.0** – YAML configuration
+- **ruamel.yaml==0.18.6** – Advanced YAML processing
 
-### **Themes**
-```css
-/* Custom QSS theme */
-QMainWindow {
-    background-color: #2d2d2d;
-    color: #ffffff;
-}
+### Development
 
-QPushButton {
-    background-color: #0078d4;
-    border: none;
-    border-radius: 4px;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-}
+- **pytest>=7.0.0** – Testing framework
+- **pytest-cov>=4.0.0** – Coverage reporting
+- **black>=23.0.0** – Code formatting
+- **ruff>=0.1.0** – Linting
+- **mypy / pyright** – Type checking
 
-QPushButton:hover {
-    background-color: #106ebe;
-}
-```
+## 📄 License
 
-### **Custom Widgets**
-```python
-from ezqt_app.widgets.core.header import Header
-from ezqt_app.widgets.core.menu import Menu
-from ezqt_app.widgets.extended.setting_widgets import SettingWidgets
+MIT License – See [LICENSE](LICENSE) file for details.
 
-# Create custom widgets
-header = Header()
-menu = Menu()
-settings = SettingWidgets()
-```
+## 🔗 Links
 
-## 📄 **License**
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+- **Repository**: [https://github.com/neuraaak/ezqt-app](https://github.com/neuraaak/ezqt-app)
+- **Issues**: [GitHub Issues](https://github.com/neuraaak/ezqt-app/issues)
+- **Documentation**: [neuraaak.github.io/ezqt-app](https://neuraaak.github.io/ezqt-app/)
+- **PyPI**: [pypi.org/project/ezqt-app](https://pypi.org/project/ezqt-app/)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
-**EzQt_App** - Modern framework for Qt applications with PySide6 6.9.1 🚀
+**EzQt App** – Modern PySide6 application framework with hexagonal architecture. 🚀
