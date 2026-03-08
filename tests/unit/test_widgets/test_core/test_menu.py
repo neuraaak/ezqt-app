@@ -1,17 +1,26 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_MENU - Menu widget tests
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Unit tests for the Menu class.
-"""
+"""Unit tests for the Menu class."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtWidgets import QPushButton, QFrame
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Third-party imports
+from PySide6.QtCore import QSize
+from PySide6.QtWidgets import QFrame, QSizePolicy
+
+# Local imports
+from ezqt_app.widgets.core.menu import Menu
 from ezqt_app.widgets.extended.menu_button import MenuButton
 
-from ezqt_app.widgets.core.menu import Menu
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestMenu:
@@ -135,24 +144,24 @@ class TestMenu:
         menu = Menu()
 
         # Check that menu dictionary exists
-        assert hasattr(menu, "menu")
-        assert isinstance(menu.menu, dict)
+        assert hasattr(menu, "menus")
+        assert isinstance(menu.menus, dict)
 
     def test_button_list_management(self, qt_application):
         """Test button list management."""
         menu = Menu()
 
         # Check that button list exists
-        assert hasattr(menu, "buttons")
-        assert isinstance(menu.buttons, list)
+        assert hasattr(menu, "_buttons")
+        assert isinstance(menu._buttons, list)
 
     def test_icon_list_management(self, qt_application):
         """Test icon list management."""
         menu = Menu()
 
         # Check that icon list exists
-        assert hasattr(menu, "icons")
-        assert isinstance(menu.icons, list)
+        assert hasattr(menu, "_icons")
+        assert isinstance(menu._icons, list)
 
     def test_size_constraints(self, qt_application):
         """Test size constraints."""
@@ -160,9 +169,9 @@ class TestMenu:
 
         # Check size constraints
         assert menu.minimumSize().width() == 60
-        assert menu.maximumSize().width() == 240
-        assert menu.sizePolicy().horizontalPolicy() == Qt.Fixed
-        assert menu.sizePolicy().verticalPolicy() == Qt.Expanding
+        assert menu.maximumSize().width() == 60
+        assert menu.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
+        assert menu.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred
 
     def test_toggle_button_properties(self, qt_application):
         """Test toggle button properties."""
@@ -170,8 +179,8 @@ class TestMenu:
 
         # Check toggle button properties
         assert menu.toggleButton.objectName() == "toggleButton"
-        assert menu.toggleButton.icon() is not None
-        assert menu.toggleButton.iconSize() == QSize(20, 20)
+        assert menu.toggleButton.icon is not None
+        assert menu.toggleButton.icon_size == QSize(20, 20)
 
     def test_toggle_button_signal(self, qt_application):
         """Test that toggle button emits signals."""
@@ -186,8 +195,8 @@ class TestMenu:
         menu = Menu()
 
         # Check that menu can expand
-        assert menu._extended_width > menu._shrink_width
-        assert menu.maximumSize().width() == menu._extended_width
+        assert menu.get_extended_width() > menu.get_shrink_width()
+        assert menu.maximumSize().width() == menu._shrink_width
 
     def test_menu_initial_state(self, qt_application):
         """Test menu initial state."""
@@ -208,7 +217,7 @@ class TestMenu:
         assert menu._shrink_width == shrink_width
         assert menu._extended_width == extended_width
         assert menu.minimumSize().width() == shrink_width
-        assert menu.maximumSize().width() == extended_width
+        assert menu.maximumSize().width() == shrink_width
 
     def test_menu_frame_properties(self, qt_application):
         """Test menu frame properties."""
@@ -264,5 +273,5 @@ class TestMenu:
         menu = Menu()
 
         # Check size policy
-        assert menu.sizePolicy().horizontalPolicy() == Qt.Fixed
-        assert menu.sizePolicy().verticalPolicy() == Qt.Expanding
+        assert menu.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
+        assert menu.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred

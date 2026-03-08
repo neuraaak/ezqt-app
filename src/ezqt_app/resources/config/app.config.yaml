@@ -1,0 +1,77 @@
+# ///////////////////////////////////////////////////////////////
+# APPLICATION
+# ///////////////////////////////////////////////////////////////
+app:
+  # APP
+  # //////
+  name: MyApplication
+  description: This is an example description
+  # //////
+  app_width: 1280
+  app_min_width: 940
+  # //////
+  app_height: 720
+  app_min_height: 560
+
+  # GUI
+  # //////
+  theme: "dark"
+  menu_panel_shrinked_width: 60
+  menu_panel_extended_width: 240
+  settings_panel_width: 240
+  time_animation: 400
+
+  # Where settings panel values are persisted.
+  # Must point to a nested mapping in this file.
+  settings_storage_root: "app.settings_panel"
+
+  # Config metadata
+  # //////
+  config_version: 1
+
+# ///////////////////////////////////////////////////////////////
+# SETTINGS PANEL
+# ///////////////////////////////////////////////////////////////
+settings_panel:
+  # Settings automatically generated from this configuration
+  theme:
+    type: "toggle"
+    label: "Active Theme"
+    options: ["Light", "Dark"]
+    default: "dark"
+    description: "Choose the application theme"
+    enabled: true
+  
+  language:
+    type: "select"
+    label: "Language"
+    options: ["English", "Français", "Español", "Deutsch"]
+    default: "English"
+    description: "Interface language"
+    enabled: true
+  
+  notifications:
+    type: "checkbox"
+    label: "Notifications"
+    default: true
+    description: "Enable system notifications"
+    enabled: false
+  
+  auto_save:
+    type: "checkbox"
+    label: "Auto Save"
+    default: false
+    description: "Automatically save modifications"
+    enabled: false
+  
+  save_interval:
+    type: "slider"
+    label: "Save Interval"
+    min: 1
+    max: 60
+    default: 5
+    unit: "minutes"
+    description: "Interval between automatic saves"
+    enabled: false
+
+# Configuration des thèmes et palettes dans palette.yaml

@@ -1,0 +1,8 @@
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_SERVICES - Service unit tests package
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
+
+"""Service unit tests package for ezqt_app."""
+
+from __future__ import annotations

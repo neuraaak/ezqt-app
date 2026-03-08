@@ -1,63 +1,463 @@
+# ///////////////////////////////////////////////////////////////
+# 🔨 BUILD SYSTEM
+# Defines the build backend and requirements
+# ///////////////////////////////////////////////////////////////
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
+# ///////////////////////////////////////////////////////////////
+# 📦 PROJECT METADATA
+# Package information, version, authors, and classifiers
+# ///////////////////////////////////////////////////////////////
+
 [project]
-name = "EzQt_App"
-version = "4.0.3.post1"
+name = "ezqt-app"
+version = "5.0.0"
 description = "Lightweight framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management."
 readme = "README.md"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Florian Salort", email = "floriansalort@gmail.com" }]
-keywords = ["application", "framework"]
+authors = [{ name = "Neuraaak" }]
+maintainers = [{ name = "Neuraaak" }]
+keywords = ["qt", "pyside6", "application", "framework"]
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Office/Business",
+    "Topic :: Software Development :: User Interfaces",
+    "Topic :: Desktop Environment",
 ]
 
+# ///////////////////////////////////////////////////////////////
+# 📚 DEPENDENCIES
+# Core production dependencies for runtime
+# ///////////////////////////////////////////////////////////////
+
 dependencies = [
-    "PySide6==6.9.1",
-    "PyYaml==6.0.2",
+    "PySide6>=6.7.3,<7.0.0",
+    "requests>=2.32.4",
+    "click>=8.2.1",
+    "PyYAML>=6.0",
     "ruamel.yaml==0.18.6",
     "colorama==0.4.6",
-    "requests==2.32.3",
-    "click>=8.0.0",
     "ezqt-widgets>=2.0.0",
-    "langdetect"
+    "ezplog>=1.5.0",
+    "langdetect>=1.0.0",
+    #mypy-types
+    "typing_extensions>=4.0.0",
+    "types-requests",
+    "types-PyYAML",
 ]
+
+# ///////////////////////////////////////////////////////////////
+# 🛠️ OPTIONAL DEPENDENCIES
+# Development tools, testing, and build dependencies
+# ///////////////////////////////////////////////////////////////
 
 [project.optional-dependencies]
 dev = [
+    # Development tools
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.1.0",
+    "ty>=0.0.13",
+    "pyright>=1.1.0",
+    "pre-commit>=3.0.0",
+
+    # Security
+    "bandit>=1.7.0",
+
+    # Tests
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0", 
-    "pytest-qt>=4.0.0",      # Pour les tests Qt
-    "pytest-mock>=3.10.0",   # Pour le mocking
-    "pytest-xdist>=3.0.0",   # Pour les tests parallèles
-    "flake8>=5.0.0",
-    "black>=22.0.0",
-    "mypy>=1.0.0"
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-xdist>=3.0.0",
+
+    # Build and distribution
+    "build>=1.0.0",
+    "twine>=4.0.0",
+
+    # Documentation generation
+    "mkdocs>=1.6.0,<2.0.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.27.0",
+    "mkdocs-section-index>=0.3.0",
 ]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-xdist>=3.0.0",
+]
+docs = [
+    "mkdocs>=1.6.0,<2.0.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.27.0",
+    "mkdocs-section-index>=0.3.0",
+    "mkdocs-coverage>=1.1.0",
+    "git-cliff>=2.7.0",
+]
+
+# ///////////////////////////////////////////////////////////////
+# 🔗 PROJECT URLS
+# Links to repository, documentation, and package index
+# ///////////////////////////////////////////////////////////////
+
+[project.urls]
+Homepage = "https://github.com/neuraaak/ezqt-app"
+Documentation = "https://neuraaak.github.io/ezqt-app/"
+Repository = "https://github.com/neuraaak/ezqt-app"
+PyPI = "https://pypi.org/project/ezqt-app/"
+
+# ///////////////////////////////////////////////////////////////
+# 🖥️ SCRIPTS
+# Entry points for command-line tools
+# ///////////////////////////////////////////////////////////////
 
 [project.scripts]
 ezqt = "ezqt_app.cli.main:cli"
 
+# ///////////////////////////////////////////////////////////////
+# 📦 SETUPTOOLS CONFIGURATION
+# Package discovery and inclusion/exclusion patterns
+# ///////////////////////////////////////////////////////////////
+
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
 include = ["ezqt_app", "ezqt_app.*"]
+exclude = [
+    "tests*",
+    "build*",
+    "dist*",
+    "*.egg-info*",
+    ".pytest_cache*",
+    ".mypy_cache*",
+    ".ruff_cache*",
+    ".cursor*",
+    ".benchmarks*",
+    "coverage*",
+    "htmlcov*",
+    ".venv*",
+    "venv*",
+    "__pycache__*",
+    "**/__pycache__*",
+    ".git*",
+    "*.pyc",
+    "*.pyo",
+    "*.pyd",
+    ".coverage",
+    "*.log",
+    ".DS_Store",
+    "Thumbs.db",
+    "docs*",
+    "examples*",
+    "_temp*",
+    ".hooks*",
+]
 
 [tool.setuptools.package-data]
 ezqt_app = [
+    "py.typed",
     "resources/*",
+    "resources/config/*",
     "resources/fonts/*",
     "resources/themes/*",
     "resources/images/*",
     "resources/icons/*",
     "resources/translations/*",
-    "app.yaml",
+    "resources/templates/*",
 ]
+
+# ///////////////////////////////////////////////////////////////
+# 🎨 CODE FORMATTING & LINTING TOOLS
+# Auto-formatting, import sorting, and style checking
+# ///////////////////////////////////////////////////////////////
+
+# Black: Code formatter (88 char line length, Python 3.10+)
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.pytest_cache
+  | \.benchmarks
+  | \.venv
+  | venv
+  | build
+  | dist
+  | htmlcov
+  | \.vscode
+  | __pycache__
+  | \.egg-info
+  | \.hooks
+  | _temp
+  | docs
+  | examples
+)/
+'''
+
+# isort: Import sorting (black-compatible profile)
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+src_paths = ["src"]
+skip = [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    ".pytest_cache",
+    ".benchmarks",
+    "htmlcov",
+    ".vscode",
+    "__pycache__",
+    ".egg-info",
+    ".hooks",
+    "_temp",
+    "docs",
+    "examples",
+]
+
+# Ruff: All-in-one linter with comprehensive rule sets
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "S",   # bandit security
+    "T20", # flake8-print
+    "ARG", # flake8-unused-arguments
+    "PIE", # flake8-pie
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "E501", # line too long, handled by black
+    "B008", # do not perform function calls in argument defaults
+    "S101", # assert_used (for tests)
+    "S106", # hardcoded_password_funcarg
+    "T201", # print statements (for init.py and scripts)
+    "S603", # subprocess.run without check=True
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["S101", "S311", "E501", "ARG002", "S105", "S602", "S603"]
+"examples/**/*" = ["T201", "E501"]
+"src/ezqt_app/cli/**/*" = ["T201", "E501", "S603"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+# ///////////////////////////////////////////////////////////////
+# ✅ TYPE CHECKING TOOLS
+# Static type checking with minimal configuration
+# ///////////////////////////////////////////////////////////////
+
+# Ty: Type checking tool with minimal configuration
+[tool.ty.environment]
+python-version = "3.10"
+root = ["src"]
+
+[tool.ty.src]
+include = ["src/ezqt_app/**/*.py"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "tests",
+    "docs",
+    "examples",
+]
+respect-ignore-files = true
+
+[tool.ty.terminal]
+output-format = "full"
+error-on-warning = false
+
+[tool.ty.rules]
+# Ignore PySide6 stub issues (isValid, setIcon, setText overloads)
+no-matching-overload = "ignore"
+
+# Pyright: Type checking tool with comprehensive reporting
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+include = ["src/ezqt_app"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "tests",
+    "docs",
+    "examples",
+]
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnusedImport = true
+reportUnusedClass = true
+reportUnusedFunction = true
+reportUnusedVariable = true
+reportDuplicateImport = true
+reportOptionalSubscript = true
+reportOptionalMemberAccess = true
+reportOptionalCall = true
+reportOptionalIterable = true
+reportOptionalContextManager = true
+reportOptionalOperand = true
+reportUntypedFunctionDecorator = false
+reportUntypedClassDecorator = false
+reportUntypedBaseClass = false
+reportUntypedNamedTuple = false
+reportPrivateUsage = false
+reportConstantRedefinition = true
+# Disabled: Qt widgets intentionally override methods with properties
+reportIncompatibleMethodOverride = false
+reportIncompatibleVariableOverride = true
+reportInconsistentConstructor = true
+
+# ///////////////////////////////////////////////////////////////
+# 🧪 TESTING & COVERAGE TOOLS
+# Test execution, coverage analysis, and test configuration
+# ///////////////////////////////////////////////////////////////
+
+# Pytest: Test runner with coverage and detailed reporting
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=ezqt_app",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "--cov-fail-under=60",
+    "--verbose",
+    "--tb=short",
+    "--color=yes",
+    "--durations=10",
+    "--maxfail=5",
+]
+testpaths = ["tests"]
+pythonpath = ["src"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "robustness: marks tests as robustness tests",
+    "unit: marks tests as unit tests (default)",
+    "qt: marks tests requiring Qt runtime",
+    "wizard: marks tests related to RichWizard",
+    "config: marks tests related to ConfigurationManager",
+    "cli: marks tests related to CLI",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]
+
+# Coverage: Code coverage measurement and reporting (60% minimum)
+[tool.coverage.run]
+source = ["src/ezqt_app"]
+branch = true
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/.pytest_cache/*",
+    "*/.benchmarks/*",
+    "*/.vscode/*",
+    "*/.egg-info/*",
+    "*/.hooks/*",
+    "setup.py",
+    "build/*",
+    "dist/*",
+    ".venv/*",
+    "venv/*",
+    "htmlcov/*",
+    "coverage.xml",
+    ".coverage",
+    "docs/*",
+    "examples/*",
+    "_temp/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+    "if platform.system\\(\\) == \"Windows\":",
+    "except ImportError:",
+]
+show_missing = true
+precision = 2
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# ///////////////////////////////////////////////////////////////
+# 🔒 SECURITY TOOLS
+# Code security scanning and vulnerability detection
+# ///////////////////////////////////////////////////////////////
+
+# Bandit: Security linter (detects common security issues)
+[tool.bandit]
+exclude_dirs = [
+    "tests",
+    "build",
+    "dist",
+    "venv",
+    ".venv",
+    ".hooks",
+    "docs",
+    "examples",
+    "_temp",
+]
+skips = ["B101", "B601"]

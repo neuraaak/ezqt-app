@@ -1,17 +1,25 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_HEADER - Header widget tests
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour la classe Header.
-"""
+"""Unit tests for the Header class."""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Third-party imports
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QFrame, QSizePolicy
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtWidgets import QFrame, QPushButton, QSizePolicy
 
+# Local imports
 from ezqt_app.widgets.core.header import Header
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestHeader:

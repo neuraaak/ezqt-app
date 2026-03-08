@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS - Widget unit tests package
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour les widgets d'EzQt_App.
-""" 
+"""Widget unit tests package for ezqt_app."""
+
+from __future__ import annotations

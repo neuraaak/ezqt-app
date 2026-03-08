@@ -1,0 +1,57 @@
+"""Example entrypoint generated for an EzQt_App project."""
+
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
+import os
+import sys
+
+# Third-party imports
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QLabel, QVBoxLayout
+
+# Local imports
+from ezqt_app import EzApplication, EzQt_App, init
+
+# ///////////////////////////////////////////////////////////////
+# GLOBALS
+# ///////////////////////////////////////////////////////////////
+os.environ["QT_FONT_DPI"] = "96"
+
+
+# ///////////////////////////////////////////////////////////////
+# FUNCTIONS
+# ///////////////////////////////////////////////////////////////
+def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
+    """Add user-defined widgets and pages to the application."""
+    # addMenu() returns the page container QWidget.
+    home = window.addMenu("Home", icons.cil_home)
+
+    # Populate the page like any regular Qt widget.
+    home_layout = QVBoxLayout(home)
+    home_label = QLabel("Home")
+    home_layout.addWidget(home_label)
+
+
+# ///////////////////////////////////////////////////////////////
+# MAIN SCRIPT
+# ///////////////////////////////////////////////////////////////
+
+if __name__ == "__main__":
+    # Generates/refreshes runtime assets (bin/, resources_rc, etc.) when needed.
+    init()
+    from ezqt_app.shared.resources import Icons, Images
+
+    app = EzApplication(sys.argv)
+    app.setWindowIcon(QIcon("icon.ico"))
+
+    window = EzQt_App(themeFileName="main_theme.qss")
+    window.setAppIcon(Images.logo_placeholder, yShrink=0)
+    window.show()
+
+    add_things_to_my_app(window, Icons)
+
+    sys.exit(app.exec())

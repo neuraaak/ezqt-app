@@ -1,0 +1,168 @@
+# ///////////////////////////////////////////////////////////////
+# MKDOCS CONFIGURATION
+# ///////////////////////////////////////////////////////////////
+
+site_name: EzQt App Documentation
+site_description: PySide6 application framework with bootstrap, configuration, and translation services
+site_author: Neuraaak
+site_url: https://neuraaak.github.io/ezqt-app/
+repo_url: https://github.com/neuraaak/ezqt-app
+repo_name: neuraaak/ezqt-app
+edit_uri: edit/main/docs/
+
+# ///////////////////////////////////////////////////////////////
+# THEME
+# ///////////////////////////////////////////////////////////////
+
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  # logo: assets/logo.png       # Uncomment when docs/assets/logo.png exists
+  # favicon: assets/favicon.ico  # Uncomment when docs/assets/favicon.ico exists
+
+# ///////////////////////////////////////////////////////////////
+# NAVIGATION
+# ///////////////////////////////////////////////////////////////
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - User Guides:
+      - guides/index.md
+      - QSS Style Guide: guides/style-guide.md
+      - Development: guides/development.md
+      - Testing: guides/testing.md
+  - API Reference:
+      - api/index.md
+      - Reference:
+          - Application Layer: api/reference/application.md
+          - Config & Runtime: api/reference/config.md
+          - Translation: api/reference/translation.md
+          - UI Services: api/reference/ui.md
+  - CLI Reference:
+      - cli/index.md
+  - Examples:
+      - examples/index.md
+  - Coverage: coverage.md
+  - Changelog: changelog.md
+
+# ///////////////////////////////////////////////////////////////
+# PLUGINS
+# ///////////////////////////////////////////////////////////////
+
+plugins:
+  - search
+  - section-index
+  - coverage:
+      page_path: coverage
+      html_report_dir: htmlcov
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            docstring_section_style: spacy
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            members_order: source
+            merge_init_into_class: true
+            filters:
+              - "!^_"
+              - "^__init__$"
+
+# ///////////////////////////////////////////////////////////////
+# MARKDOWN EXTENSIONS
+# ///////////////////////////////////////////////////////////////
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section
+      toc_depth: 3
+
+# ///////////////////////////////////////////////////////////////
+# EXTRA
+# ///////////////////////////////////////////////////////////////
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/neuraaak/ezqt-app
+      name: GitHub Repository
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/ezqt-app/
+      name: PyPI Package
+extra_css:
+  - stylesheets/extra.css
+
+copyright: >
+  Copyright &copy; 2026 Neuraaak -
+  <a href="https://github.com/neuraaak/ezqt-app/blob/main/LICENSE">MIT License</a>
