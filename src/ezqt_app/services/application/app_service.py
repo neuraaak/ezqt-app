@@ -53,19 +53,6 @@ class AppService:
         )
 
     @staticmethod
-    def make_app_resources_module(
-        base_path: Path | None = None,
-        bin_path: Path | None = None,
-        overwrite_policy: str = "ask",
-    ) -> None:
-        """Generate (no-op in v5) the application resources module."""
-        AssetsService.make_app_resources_module(
-            base_path=base_path,
-            bin_path=bin_path,
-            overwrite_policy=overwrite_policy,
-        )
-
-    @staticmethod
     def make_required_files(
         mk_theme: bool = True,
         mk_config: bool = True,

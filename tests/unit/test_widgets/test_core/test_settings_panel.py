@@ -1,9 +1,25 @@
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_SETTINGS_PANEL - Settings panel tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
+
 """Unit tests for the SettingsPanel class."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Third-party imports
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy, QWidget
 
+# Local imports
 from ezqt_app.widgets.core.settings_panel import SettingsPanel
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestSettingsPanel:
@@ -86,4 +102,3 @@ class TestSettingsPanel:
     def test_settings_panel_without_yaml_loading(self, qt_application):
         panel = SettingsPanel(load_from_yaml=False)
         assert panel._settings == {}
-

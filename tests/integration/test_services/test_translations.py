@@ -1,12 +1,22 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.INTEGRATION.TEST_SERVICES.TEST_TRANSLATIONS - Translation integration tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests d'intégration pour le système de traduction.
-"""
+"""Integration tests for the translation system."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 from unittest.mock import MagicMock, patch
 
+# Third-party imports
 import pytest
+
+# Local imports
 from ezqt_app.services.translation import (
     TranslationManager,
     change_language,
@@ -18,6 +28,10 @@ from ezqt_app.services.translation import (
     tr,
     unregister_tr,
 )
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestTranslationSystem:
@@ -65,7 +79,7 @@ class TestTranslationSystem:
         # Changer la langue
         with patch("ezqt_app.services.translation.manager.QCoreApplication"):
             success = manager.load_language_by_code("fr")
-            assert success == True
+            assert success
             assert manager.get_current_language_code() == "fr"
 
     @pytest.mark.integration
@@ -117,7 +131,7 @@ class TestTranslationSystem:
         for lang_code in languages_to_test:
             with patch("ezqt_app.services.translation.manager.QCoreApplication"):
                 success = manager.load_language_by_code(lang_code)
-                assert success == True
+                assert success
                 assert manager.get_current_language_code() == lang_code
 
     @pytest.mark.integration
@@ -130,7 +144,7 @@ class TestTranslationSystem:
         widgets = []
         texts = ["Hello", "World", "Test"]
 
-        for i, text in enumerate(texts):
+        for _i, text in enumerate(texts):
             mock_widget = MagicMock()
             manager.register_widget(mock_widget, text)
             widgets.append(mock_widget)
@@ -168,7 +182,7 @@ class TestTranslationSystem:
             manager.load_language_by_code("fr")
 
         # Vérifier que le signal a été émis
-        assert signal_received == True
+        assert signal_received
         assert received_language == "fr"
 
     @pytest.mark.integration
@@ -213,7 +227,7 @@ class TestTranslationSystem:
             # Simuler le chargement d'une langue par nom
             with patch("ezqt_app.services.translation.manager.QCoreApplication"):
                 success = manager.load_language(name)
-                assert success == True
+                assert success
                 assert manager.get_current_language_code() == code
 
     @pytest.mark.integration
@@ -223,17 +237,18 @@ class TestTranslationSystem:
         manager = TranslationManager()
 
         # Tester avec une langue invalide en utilisant directement load_language_by_code
-        with patch("ezqt_app.services.translation.manager.QCoreApplication"):
-            # Mock pour simuler l'échec de chargement du fichier de traduction
-            with patch.object(manager, "translations_dir") as mock_dir:
-                # Simuler que le dossier existe mais qu'aucun fichier de traduction n'est trouvé
-                mock_dir.exists.return_value = True
-                mock_dir.glob.return_value = []  # Aucun fichier trouvé
+        with (
+            patch("ezqt_app.services.translation.manager.QCoreApplication"),
+            patch.object(manager, "translations_dir") as mock_dir,
+        ):
+            # Simuler que le dossier existe mais qu'aucun fichier de traduction n'est trouvé
+            mock_dir.exists.return_value = True
+            mock_dir.glob.return_value = []  # Aucun fichier trouvé
 
-                # Tester avec un code de langue invalide directement
-                success = manager.load_language_by_code("invalid_lang")
-                # Devrait retourner False car aucun fichier de traduction n'est trouvé
-                assert success == False
+            # Tester avec un code de langue invalide directement
+            success = manager.load_language_by_code("invalid_lang")
+            # Devrait retourner False car aucun fichier de traduction n'est trouvé
+            assert not success
 
     @pytest.mark.integration
     def test_translation_manager_singleton_behavior(self, qt_application):

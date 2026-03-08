@@ -43,20 +43,6 @@ class AssetsService:
         maker.make_assets_binaries()
         res = maker.make_qrc()
         maker.make_rc_py() if res else maker.purge_rc_py()
-        maker.make_app_resources_module()
-
-    @staticmethod
-    def make_app_resources_module(
-        base_path: Path | None = None,
-        bin_path: Path | None = None,
-        overwrite_policy: str = "ask",
-    ) -> None:
-        """Generate (no-op in v5) the application resources module."""
-        FileService(
-            base_path=base_path,
-            bin_path=bin_path,
-            overwrite_policy=overwrite_policy,
-        ).make_app_resources_module()
 
     @staticmethod
     def make_required_files(

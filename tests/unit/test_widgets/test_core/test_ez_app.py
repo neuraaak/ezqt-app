@@ -1,19 +1,31 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_EZ_APP - EzApplication tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour la classe EzApplication.
-"""
+"""Unit tests for the EzApplication class."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import locale
 import os
 from unittest.mock import MagicMock, patch
 
+# Third-party imports
 import pytest
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QApplication
 
-# Import de la vraie classe EzApplication
+# Local imports
 from ezqt_app.widgets.core.ez_app import EzApplication
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class MockQApplication:
@@ -49,9 +61,11 @@ def mock_qapplication():
     """
     Fixture pour mocker QApplication complètement.
     """
-    with patch("PySide6.QtWidgets.QApplication", MockQApplication):
-        with patch("PySide6.QtWidgets.QApplication.instance", return_value=None):
-            yield MockQApplication
+    with (
+        patch("PySide6.QtWidgets.QApplication", MockQApplication),
+        patch("PySide6.QtWidgets.QApplication.instance", return_value=None),
+    ):
+        yield MockQApplication
 
 
 @pytest.fixture
@@ -81,7 +95,7 @@ def clean_qt_environment():
 
 
 @pytest.fixture
-def ez_application_cleanup(clean_qt_environment):
+def ez_application_cleanup(_clean_qt_environment):
     """
     Fixture locale pour créer une instance EzApplication propre pour les tests de ce fichier.
     """
@@ -121,7 +135,7 @@ class TestEzApplication:
         mock_setlocale.return_value = "fr_FR.UTF-8"
 
         # Créer une instance avec la méthode de test
-        app = EzApplication.create_for_testing([])
+        EzApplication.create_for_testing([])
 
         # Vérifier que setlocale a été appelé
         mock_setlocale.assert_called_once_with(locale.LC_ALL, "")
@@ -136,7 +150,7 @@ class TestEzApplication:
         mock_setlocale.side_effect = locale.Error("Locale not available")
 
         # Créer une instance avec la méthode de test
-        app = EzApplication.create_for_testing([])
+        EzApplication.create_for_testing([])
 
         # Vérifier que setlocale a été appelé
         mock_setlocale.assert_called_once_with(locale.LC_ALL, "")
@@ -152,7 +166,7 @@ class TestEzApplication:
 
         try:
             # Créer une instance avec la méthode de test
-            app = EzApplication.create_for_testing([])
+            EzApplication.create_for_testing([])
 
             # Vérifier que les variables d'environnement sont définies
             assert os.environ.get("PYTHONIOENCODING") == "utf-8"
@@ -203,7 +217,7 @@ class TestEzApplication:
         mock_environ.__setitem__ = MagicMock()
 
         # Créer une instance avec la méthode de test
-        app = EzApplication.create_for_testing([])
+        EzApplication.create_for_testing([])
 
         # Vérifier que les variables d'environnement ont été définies
         mock_environ.__setitem__.assert_any_call("PYTHONIOENCODING", "utf-8")

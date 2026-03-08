@@ -1,5 +1,8 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_UTILS - Utility unit tests package
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour les utilitaires d'EzQt_App.
-"""
+"""Utility unit tests package for ezqt_app."""
+
+from __future__ import annotations

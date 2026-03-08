@@ -1,12 +1,20 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_EXTENDED.TEST_SETTING_WIDGETS - Setting widget tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Unit tests for extended setting widgets.
-"""
+"""Unit tests for extended setting widgets."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Third-party imports
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QLabel, QLineEdit, QSlider
 
+# Local imports
 from ezqt_app.widgets.extended.setting_widgets import (
     BaseSettingWidget,
     SettingCheckbox,
@@ -15,6 +23,10 @@ from ezqt_app.widgets.extended.setting_widgets import (
     SettingText,
     SettingToggle,
 )
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestBaseSettingWidget:

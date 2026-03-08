@@ -1,25 +1,45 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_PAGE_CONTAINER - Page container tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Unit tests for the PageContainer class.
-"""
+"""Unit tests for the PageContainer class."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import os
 import sys
 
-# Add project path to sys.path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-
+# Third-party imports
 from PySide6.QtWidgets import QFrame, QSizePolicy, QStackedWidget, QWidget
 
-# Direct import of module without going through main package
+# Local imports
+# Add project path to sys.path.
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+
+# Direct import of module without going through main package.
 sys.path.insert(
     0,
     os.path.join(
-        os.path.dirname(__file__), "..", "..", "..", "..", "ezqt_app", "widgets", "core"
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "..",
+        "ezqt_app",
+        "widgets",
+        "core",
     ),
 )
 from ezqt_app.widgets.core.page_container import PageContainer
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestPageContainer:
@@ -249,9 +269,5 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check size policy
-        assert (
-            container.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
-        )
-        assert (
-            container.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred
-        )
+        assert container.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
+        assert container.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred

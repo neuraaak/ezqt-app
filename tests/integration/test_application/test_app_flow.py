@@ -1,15 +1,27 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.INTEGRATION.TEST_APPLICATION.TEST_APP_FLOW - Application flow integration tests
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests d'intégration pour le flux d'application.
-"""
+"""Integration tests for the application flow."""
 
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import os
 import tempfile
 from pathlib import Path
 from unittest.mock import MagicMock
 
+# Third-party imports
 import pytest
+
+# ///////////////////////////////////////////////////////////////
+# TEST HELPERS
+# ///////////////////////////////////////////////////////////////
 
 
 # Créer une classe mock complète pour EzQt_App
@@ -96,7 +108,7 @@ settings_panel:
     default: "dark"
     description: "Choose the application theme"
     enabled: true
-  
+
   language:
     type: "select"
     label: "Language"
@@ -104,21 +116,21 @@ settings_panel:
     default: "English"
     description: "Interface language"
     enabled: true
-  
+
   notifications:
     type: "checkbox"
     label: "Notifications"
     default: true
     description: "Enable system notifications"
     enabled: false
-  
+
   auto_save:
     type: "checkbox"
     label: "Auto Save"
     default: false
     description: "Automatically save modifications"
     enabled: false
-  
+
   save_interval:
     type: "slider"
     label: "Save Interval"
@@ -243,11 +255,11 @@ class TestAppFlow:
 
         # Vérifier les propriétés de base de la fenêtre
         assert app.windowTitle() == "Test Application"
-        assert app.isVisible() == False  # Pas encore affichée
+        assert not app.isVisible()  # Pas encore affichée
 
         # Vérifier que la fenêtre peut être affichée
         app.show()
-        assert app.isVisible() == True
+        assert app.isVisible()
 
         # Nettoyer
         app.close()
@@ -372,7 +384,7 @@ class TestAppFlow:
 
         # Vérifier que l'application peut être fermée proprement
         app.close()
-        assert app.isVisible() == False
+        assert not app.isVisible()
 
     @pytest.mark.integration
     @pytest.mark.qt

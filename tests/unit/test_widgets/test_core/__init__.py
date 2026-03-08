@@ -1,5 +1,8 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE - Core widget unit tests package
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour les widgets core d'EzQt_App.
-"""
+"""Core widget unit tests package for ezqt_app."""
+
+from __future__ import annotations

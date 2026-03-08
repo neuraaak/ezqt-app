@@ -1,5 +1,8 @@
 # ///////////////////////////////////////////////////////////////
+# TESTS.INTEGRATION - Integration test package
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
 
-"""
-Tests d'intégration pour EzQt_App.
-"""
+"""Integration tests package for ezqt_app."""
+
+from __future__ import annotations
