@@ -1,21 +1,38 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# Test Runner Script
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Unit test runner script for EzQt_App.
+"""Test runner script for ezqt_app.
+
+This script provides a convenient way to run tests with various options:
+- Unit, integration, or robustness tests
+- Coverage reports
+- Parallel execution
+- Custom markers
 """
 
-import sys
-import subprocess
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import argparse
+import subprocess
+import sys
 from pathlib import Path
+
+# ///////////////////////////////////////////////////////////////
+# FUNCTIONS
+# ///////////////////////////////////////////////////////////////
 
 
 def run_command(cmd, description):
     """Execute a command and display the result."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"🚀 {description}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     try:
         result = subprocess.run(

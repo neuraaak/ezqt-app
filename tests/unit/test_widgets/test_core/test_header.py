@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Tests unitaires pour la classe Header.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QPushButton, QFrame, QSizePolicy
-from PySide6.QtGui import QFont, QIcon
+from PySide6.QtWidgets import QFrame, QPushButton, QSizePolicy
 
 from ezqt_app.widgets.core.header import Header
 

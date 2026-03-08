@@ -1,15 +1,15 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Tests d'intégration pour le flux d'application.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+
+import pytest
 
 
 # Créer une classe mock complète pour EzQt_App
@@ -70,10 +70,10 @@ class MockEzQtApp:
         return MagicMock(width=lambda: 940, height=lambda: 560)
 
 
-def create_temp_app_yaml():
-    """Crée un fichier app.yaml temporaire dans le répertoire temporaire de Windows."""
+def create_temp_app_config():
+    """Crée un fichier app.config.yaml temporaire pour les tests."""
     temp_dir = Path(os.environ.get("TEMP", tempfile.gettempdir()))
-    temp_yaml = temp_dir / f"app_{os.getpid()}.yaml"
+    temp_yaml = temp_dir / f"app_{os.getpid()}.config.yaml"
 
     yaml_content = """app:
   name: "Test Application"
@@ -129,7 +129,7 @@ settings_panel:
     description: "Interval between automatic saves"
     enabled: false
 
-theme_palette:
+palette:
   dark:
     $_main_surface: rgb(33, 37, 43)
     $_main_border: rgb(44, 49, 58)
@@ -164,14 +164,11 @@ theme_palette:
 
 def create_app_with_config_mock():
     """Crée une application avec la configuration mockée pour éviter les erreurs de chemin."""
-    temp_yaml = create_temp_app_yaml()
+    temp_yaml = create_temp_app_config()
 
     try:
-        # Mock APP_PATH pour pointer vers le répertoire temporaire
-        with patch("ezqt_app.kernel.app_functions.APP_PATH", temp_yaml.parent):
-            with patch("ezqt_app.kernel.app_functions.Kernel.loadFontsResources"):
-                app = MockEzQtApp()
-                return app, temp_yaml
+        app = MockEzQtApp()
+        return app, temp_yaml
     except Exception:
         # Nettoyer en cas d'erreur
         if temp_yaml.exists():
@@ -181,13 +178,10 @@ def create_app_with_config_mock():
 
 def create_app_with_fonts_mock():
     """Crée une application avec les polices mockées pour éviter les erreurs de chemin."""
-    temp_yaml = create_temp_app_yaml()
+    temp_yaml = create_temp_app_config()
 
     try:
-        # Mock APP_PATH pour pointer vers le répertoire temporaire
-        with patch("ezqt_app.kernel.app_functions.APP_PATH", temp_yaml.parent):
-            with patch("ezqt_app.kernel.app_functions.Kernel.loadFontsResources"):
-                return MockEzQtApp()
+        return MockEzQtApp()
     finally:
         # Nettoyer le fichier temporaire
         if temp_yaml.exists():
@@ -229,16 +223,14 @@ class TestAppFlow:
         theme_file.write_text(theme_content)
 
         # Créer l'application avec le thème personnalisé et configuration temporaire
-        temp_yaml = create_temp_app_yaml()
+        temp_yaml = create_temp_app_config()
         try:
-            with patch("ezqt_app.kernel.app_functions.APP_PATH", temp_yaml.parent):
-                with patch("ezqt_app.kernel.app_functions.Kernel.loadFontsResources"):
-                    app = MockEzQtApp(themeFileName=str(theme_file))
+            app = MockEzQtApp(themeFileName=str(theme_file))
 
-                    # Vérifier que l'application a été créée
-                    assert app is not None
-                    assert hasattr(app, "_themeFileName")
-                    assert app._themeFileName == str(theme_file)
+            # Vérifier que l'application a été créée
+            assert app is not None
+            assert hasattr(app, "_themeFileName")
+            assert app._themeFileName == str(theme_file)
         finally:
             if temp_yaml.exists():
                 temp_yaml.unlink()
@@ -346,15 +338,13 @@ class TestAppFlow:
         theme_file.write_text(theme_content)
 
         # Créer l'application avec le thème et configuration temporaire
-        temp_yaml = create_temp_app_yaml()
+        temp_yaml = create_temp_app_config()
         try:
-            with patch("ezqt_app.kernel.app_functions.APP_PATH", temp_yaml.parent):
-                with patch("ezqt_app.kernel.app_functions.Kernel.loadFontsResources"):
-                    app = MockEzQtApp(themeFileName=str(theme_file))
+            app = MockEzQtApp(themeFileName=str(theme_file))
 
-                    # Vérifier que le thème a été chargé
-                    assert app is not None
-                    assert app._themeFileName == str(theme_file)
+            # Vérifier que le thème a été chargé
+            assert app is not None
+            assert app._themeFileName == str(theme_file)
         finally:
             if temp_yaml.exists():
                 temp_yaml.unlink()
@@ -389,15 +379,13 @@ class TestAppFlow:
     def test_app_without_theme(self, qt_application):
         """Test de l'application sans thème personnalisé."""
         # Créer l'application sans thème et avec configuration temporaire
-        temp_yaml = create_temp_app_yaml()
+        temp_yaml = create_temp_app_config()
         try:
-            with patch("ezqt_app.kernel.app_functions.APP_PATH", temp_yaml.parent):
-                with patch("ezqt_app.kernel.app_functions.Kernel.loadFontsResources"):
-                    app = MockEzQtApp()
+            app = MockEzQtApp()
 
-                    # Vérifier que l'application a été créée sans thème
-                    assert app is not None
-                    assert app._themeFileName is None
+            # Vérifier que l'application a été créée sans thème
+            assert app is not None
+            assert app._themeFileName is None
         finally:
             if temp_yaml.exists():
                 temp_yaml.unlink()

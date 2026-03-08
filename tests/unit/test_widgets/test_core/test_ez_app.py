@@ -1,14 +1,14 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Tests unitaires pour la classe EzApplication.
 """
 
-import pytest
-import os
 import locale
-from unittest.mock import patch, MagicMock
+import os
+from unittest.mock import MagicMock, patch
+
+import pytest
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QApplication
 

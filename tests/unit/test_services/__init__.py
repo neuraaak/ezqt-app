@@ -1,5 +1,3 @@
 # ///////////////////////////////////////////////////////////////
 
-"""
-Tests d'intégration pour EzQt_App.
-"""
+"""Tests unitaires pour les services d'EzQt_App."""

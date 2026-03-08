@@ -1,24 +1,22 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Tests d'intégration pour le système de traduction.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from ezqt_app.kernel.translation import (
+import pytest
+from ezqt_app.services.translation import (
     TranslationManager,
-    get_translation_manager,
-    tr,
-    set_tr,
-    register_tr,
-    unregister_tr,
     change_language,
     get_available_languages,
     get_current_language,
+    get_translation_manager,
+    register_tr,
+    set_tr,
+    tr,
+    unregister_tr,
 )
 
 
@@ -39,7 +37,7 @@ class TestTranslationSystem:
 
         # Vérifier les langues disponibles
         languages = manager.get_available_languages()
-        expected_languages = ["English", "Français", "Español", "Deutsch"]
+        expected_languages = ["en", "fr", "es", "de"]
         for lang in expected_languages:
             assert lang in languages
 
@@ -65,7 +63,7 @@ class TestTranslationSystem:
         assert manager.get_current_language_code() == "en"
 
         # Changer la langue
-        with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+        with patch("ezqt_app.services.translation.manager.QCoreApplication"):
             success = manager.load_language_by_code("fr")
             assert success == True
             assert manager.get_current_language_code() == "fr"
@@ -117,7 +115,7 @@ class TestTranslationSystem:
         languages_to_test = ["en", "fr", "es", "de"]
 
         for lang_code in languages_to_test:
-            with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+            with patch("ezqt_app.services.translation.manager.QCoreApplication"):
                 success = manager.load_language_by_code(lang_code)
                 assert success == True
                 assert manager.get_current_language_code() == lang_code
@@ -166,7 +164,7 @@ class TestTranslationSystem:
         manager.languageChanged.connect(on_language_changed)
 
         # Changer la langue
-        with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+        with patch("ezqt_app.services.translation.manager.QCoreApplication"):
             manager.load_language_by_code("fr")
 
         # Vérifier que le signal a été émis
@@ -213,7 +211,7 @@ class TestTranslationSystem:
         # Tester la conversion de noms vers codes
         for name, code in expected_mapping.items():
             # Simuler le chargement d'une langue par nom
-            with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+            with patch("ezqt_app.services.translation.manager.QCoreApplication"):
                 success = manager.load_language(name)
                 assert success == True
                 assert manager.get_current_language_code() == code
@@ -225,7 +223,7 @@ class TestTranslationSystem:
         manager = TranslationManager()
 
         # Tester avec une langue invalide en utilisant directement load_language_by_code
-        with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+        with patch("ezqt_app.services.translation.manager.QCoreApplication"):
             # Mock pour simuler l'échec de chargement du fichier de traduction
             with patch.object(manager, "translations_dir") as mock_dir:
                 # Simuler que le dossier existe mais qu'aucun fichier de traduction n'est trouvé
@@ -241,7 +239,6 @@ class TestTranslationSystem:
     def test_translation_manager_singleton_behavior(self, qt_application):
         """Test du comportement singleton du gestionnaire de traduction."""
         # Utiliser la fonction singleton pour obtenir le gestionnaire
-        from ezqt_app.kernel.translation import get_translation_manager
 
         # Obtenir plusieurs références au gestionnaire singleton
         manager1 = get_translation_manager()
@@ -298,13 +295,12 @@ class TestTranslationSystem:
     def test_translation_manager_persistence(self, qt_application):
         """Test de la persistance des données de traduction."""
         # Utiliser la fonction singleton pour obtenir le gestionnaire
-        from ezqt_app.kernel.translation import get_translation_manager
 
         # Créer le gestionnaire de traduction
         manager = get_translation_manager()
 
         # Changer la langue
-        with patch("ezqt_app.kernel.translation_manager.QCoreApplication"):
+        with patch("ezqt_app.services.translation.manager.QCoreApplication"):
             manager.load_language_by_code("fr")
 
         # Vérifier que la langue est persistante

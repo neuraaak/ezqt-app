@@ -385,6 +385,7 @@ markers = [
     "integration: marks tests as integration tests",
     "robustness: marks tests as robustness tests",
     "unit: marks tests as unit tests (default)",
+    "qt: marks tests requiring Qt runtime",
     "wizard: marks tests related to RichWizard",
     "config: marks tests related to ConfigurationManager",
     "cli: marks tests related to CLI",

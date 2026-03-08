@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Tests unitaires pour les widgets d'EzQt_App.
-""" 
+"""

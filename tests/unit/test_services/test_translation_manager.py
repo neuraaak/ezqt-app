@@ -1,15 +1,12 @@
-# -*- coding: utf-8 -*-
 # ///////////////////////////////////////////////////////////////
 
 """
 Unit tests for the TranslationManager.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
-from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from ezqt_app.kernel.translation import TranslationManager
+from ezqt_app.services.translation.manager import TranslationManager
 
 
 class TestTranslationManager:
@@ -42,8 +39,8 @@ class TestTranslationManager:
         # Check that it's a list
         assert isinstance(languages, list)
 
-        # Check that base languages are present
-        expected_languages = ["English", "Français", "Español", "Deutsch"]
+        # v6 now returns language codes defined in SUPPORTED_LANGUAGES keys.
+        expected_languages = ["en", "fr", "es", "de"]
         for lang in expected_languages:
             assert lang in languages
 
@@ -64,7 +61,7 @@ class TestTranslationManager:
         translated = manager.translate(text)
         assert translated == text  # Returns original text if no translation
 
-    @patch("ezqt_app.kernel.translation_manager.QTranslator")
+    @patch("ezqt_app.services.translation.manager.QTranslator")
     def test_load_language_success(self, mock_translator):
         """Test successful language loading."""
         manager = TranslationManager()
@@ -75,11 +72,11 @@ class TestTranslationManager:
         mock_translator.return_value = mock_translator_instance
 
         result = manager.load_language("English")
-        assert result == True
+        assert result
         assert manager.get_current_language_code() == "en"
 
-    @patch("ezqt_app.kernel.translation_manager.QTranslator")
-    @patch("ezqt_app.kernel.translation_manager.QCoreApplication")
+    @patch("ezqt_app.services.translation.manager.QTranslator")
+    @patch("ezqt_app.services.translation.manager.QCoreApplication")
     @patch("pathlib.Path.exists")
     def test_load_language_failure(self, mock_exists, mock_qcore, mock_translator):
         """Test failed language loading."""
@@ -99,7 +96,7 @@ class TestTranslationManager:
 
         # Test with valid language but no translation file
         result = manager.load_language("French")
-        assert result == False
+        assert not result
         assert manager.get_current_language_code() == "en"  # Should remain default
 
     def test_register_widget(self):
@@ -107,7 +104,7 @@ class TestTranslationManager:
         manager = TranslationManager()
         mock_widget = MagicMock()
 
-        manager.register_widget(mock_widget)
+        manager.register_widget(mock_widget, "Hello")
         assert mock_widget in manager._translatable_widgets
 
     def test_unregister_widget(self):
@@ -116,7 +113,7 @@ class TestTranslationManager:
         mock_widget = MagicMock()
 
         # Register then unregister
-        manager.register_widget(mock_widget)
+        manager.register_widget(mock_widget, "Hello")
         manager.unregister_widget(mock_widget)
         assert mock_widget not in manager._translatable_widgets
 
@@ -127,8 +124,8 @@ class TestTranslationManager:
         mock_widget2 = MagicMock()
 
         # Register multiple widgets
-        manager.register_widget(mock_widget1)
-        manager.register_widget(mock_widget2)
+        manager.register_widget(mock_widget1, "Hello")
+        manager.register_widget(mock_widget2, "World")
         assert len(manager._translatable_widgets) == 2
 
         # Clear all
@@ -143,7 +140,7 @@ class TestTranslationManager:
         manager.set_translatable_text(mock_widget, "Hello")
         assert manager._translatable_texts[mock_widget] == "Hello"
 
-    @patch("ezqt_app.kernel.translation_manager.QCoreApplication")
+    @patch("ezqt_app.services.translation.manager.QCoreApplication")
     def test_load_language_by_code(self, mock_qcore):
         """Test loading language by code."""
         manager = TranslationManager()
@@ -154,7 +151,7 @@ class TestTranslationManager:
 
         # Test loading by code
         result = manager.load_language_by_code("fr")
-        assert result == True
+        assert result
         assert manager.get_current_language_code() == "fr"
 
     def test_language_changed_signal(self, qt_application):
@@ -168,5 +165,5 @@ class TestTranslationManager:
             assert lang == "fr"
 
         manager.languageChanged.connect(on_language_changed)
-        manager.load_language("French")
+        manager.load_language("Français")
         assert signal_emitted
