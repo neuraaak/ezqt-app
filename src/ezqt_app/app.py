@@ -157,6 +157,9 @@ class EzQt_App(QMainWindow):
             translation_service.change_language("English")
             enable_auto_translation(False)
 
+        # Keep registration/collection active for local TS workflow.
+        # `auto_translation_enabled` only gates external API translation calls.
+
         # ////// INITIALIZE COMPONENTS
         # ///////////////////////////////////////////////////////////////
         Fonts.initFonts()
@@ -250,13 +253,11 @@ class EzQt_App(QMainWindow):
 
         # ==> REGISTER ALL WIDGETS FOR TRANSLATION
         # ///////////////////////////////////////////////////////////////
-        # TODO: Réactiver la traduction automatique - DÉSACTIVÉ TEMPORAIREMENT
-        # self._register_all_widgets_for_translation()
+        self._register_all_widgets_for_translation()
 
         # ==> COLLECT STRINGS FOR TRANSLATION
         # ///////////////////////////////////////////////////////////////
-        # TODO: Réactiver la collecte de chaînes - DÉSACTIVÉ TEMPORAIREMENT
-        # self._collect_strings_for_translation()
+        self._collect_strings_for_translation()
 
     # SET APP THEME
     # ///////////////////////////////////////////////////////////////

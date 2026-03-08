@@ -3,7 +3,7 @@
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""Automatic translation via external providers (currently disabled)."""
+"""Automatic translation via external providers (disabled by default)."""
 
 from __future__ import annotations
 
@@ -303,7 +303,7 @@ class AutoTranslationWorker(QThread):
 
 
 class AutoTranslator(QObject):
-    """Automatic translation manager (currently disabled)."""
+    """Automatic translation manager (disabled by default)."""
 
     translation_ready = Signal(str, str)
     translation_error = Signal(str, str)
@@ -316,11 +316,16 @@ class AutoTranslator(QObject):
         self.cache = TranslationCache(cache_dir / "translations.json")
         self.providers: list[TranslationProvider] = []
         self.worker: AutoTranslationWorker | None = None
-        # TODO: Réactiver la traduction automatique - DÉSACTIVÉ TEMPORAIREMENT
+        self._setup_providers()
         self.enabled = False
 
     def _setup_providers(self) -> None:
-        pass  # TODO: Réactiver les fournisseurs - DÉSACTIVÉ TEMPORAIREMENT
+        # Order matters: fastest/unofficial first, then free fallback providers.
+        self.providers = [
+            GoogleTranslateProvider(),
+            MyMemoryProvider(),
+            LibreTranslateProvider(),
+        ]
 
     def add_provider(self, provider: TranslationProvider) -> None:
         self.providers.append(provider)
