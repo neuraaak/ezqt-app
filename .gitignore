@@ -1,12 +1,43 @@
-# Python
+# =============================================================================
+# GITIGNORE RACINE
+# =============================================================================
+# Ce fichier contient les exclusions GLOBALES et COMMUNES
+# Les sous-dossiers ont leurs propres .gitignore pour les exclusions spécifiques
+
+# =============================================================================
+# PYTHON - FICHIERS DE BASE (COMMUNS)
+# =============================================================================
+# Bytecode Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyo
+*.pyd
 *.so
 .Python
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# =============================================================================
+# BUILD ET DISTRIBUTION (COMMUNS)
+# =============================================================================
+# Artifacts de build
 build/
-develop-eggs/
+!.scripts/build/
 dist/
+*.egg-info/
+*.egg
+*.spec
+
+# Packaging
+develop-eggs/
 downloads/
 eggs/
 .eggs/
@@ -16,83 +47,219 @@ parts/
 sdist/
 var/
 wheels/
-*.egg-info/
+share/python-wheels/
 .installed.cfg
-*.egg
+MANIFEST
 
-# Virtual environments
-.venv/
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Testing
+# =============================================================================
+# CACHE ET FICHIERS TEMPORAIRES (COMMUNS)
+# =============================================================================
+# Caches des outils de développement
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.black_cache/
+.bandit/
+.pre-commit-cache/
+.benchmarks/
+.tox/
+.cache
+.nox/
+.hypothesis/
+
+# Dependency manager cache
+.pip-cache/
+node_modules/
+.npm/
+.yarn/
+
+# =============================================================================
+# RAPPORTS ET ANALYSES DE QUALITÉ DE CODE (COMMUNS)
+# =============================================================================
+# Rapports de sécurité (Bandit)
+bandit-report.json
+bandit-report.xml
+bandit-report.html
+
+# Rapports de couverture de code (pytest-cov, coverage)
 .coverage
 coverage.xml
 htmlcov/
-.tox/
-.cache
+.coverage.*
+
+# Rapports de linting et formatage
+ruff-report.json
+flake8-report.txt
+black-report.txt
+mypy-report.txt
+
+# Rapports de tests
+test-results/
+.pytest_cache/
+junit.xml
+test-report.xml
 nosetests.xml
-coverage.xml
 *.cover
-.hypothesis/
+*.py,cover
 
-# Benchmarks
-.benchmarks/
+# Rapports de documentation
+doc8-report.txt
+doc8-report.html
 
-# Build artifacts
-*.spec
-build_upload.bat
+# Rapports de complexité et métriques
+radon-report.json
+mccabe-report.txt
+complexity-report.html
 
-# OS
-.DS_Store
-Thumbs.db
+# Rapports de dépendances
+safety-report.json
+pip-audit-report.json
+dependency-check-report.xml
 
-# Temporary files
-_temp/
-*.tmp
-*.temp
+# Rapports de performance
+py-spy-report.svg
+py-spy-report.txt
+memory-profiler-report.txt
 
-# CLI specific
+# Rapports de type checking avancés
+pyre-report.json
+pyright-report.json
+pytype-report.txt
+
+# Rapports de formatage et style
+autopep8-report.txt
+yapf-report.txt
+isort-report.txt
+
+# Rapports de sécurité avancés
+semgrep-report.json
+semgrep-report.sarif
+codeql-report.json
+
+# Rapports de qualité générale
+sonarqube-report.json
+codeclimate-report.json
+codacy-report.json
+
+# =============================================================================
+# LOGS ET FICHIERS TEMPORAIRES
+# =============================================================================
+# Logs d'application
+.logs/
 *.log
-*.pid
+*.xlsx
+*.csv
+version_info.txt
 
-# Development
-.env
-.env.local
-.env.*.local
+# =============================================================================
+# IDE ET ÉDITEURS (COMMUNS)
+# =============================================================================
+# Cursor
+.cursorignore
+.cursor/
+.cursor/rules/
+.cursor_cache/
 
-# Backup files
-*.bak
-*.backup
-*~
-
-# Editor files
+# Visual Studio Code
 .vscode/
+.vscode-server/
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# PyCharm/IntelliJ
 .idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim/Neovim
 *.swp
 *.swo
 *~
 
-# OS generated files
+# =============================================================================
+# AI AGENT
+# =============================================================================
+# Cursor
+.cursor/
+.cursorrules
+.cursor/rules/
+.cursor/*.mdc
+cursor.json
+
+# Claude (Anthropic)
+.claude/
+
+# =============================================================================
+# FICHIERS SYSTÈME (COMMUNS)
+# =============================================================================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+.AppleDouble
+.LSOverride
 
-# Assets of the project
-bin/
-modules/
+# Linux
+.directory
+.Trash-*
+
+# =============================================================================
+# EXCLUSIONS GLOBALES (COMMUNES)
+# =============================================================================
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# Fichiers temporaires
+*.pid
+*.tmp
+*.temp
+_temp/
+temp/
+tmp/
+tmpclaude-*
+
+# MkDocs build output
+site/
+
+# =============================================================================
+# EXCLUSIONS SPÉCIFIQUES AU PROJET RACINE
+# =============================================================================
+# Fichiers de configuration globaux et sensibles
+.env
+.env.*
+.env.local
+.env.*.local
+.secret*
+*password*
+*secret*
+*.key
+*.pem
+*.crt
+credentials/
+keys/
+
+# =============================================================================
+# PATTERNS ADDITIONNELS
+# =============================================================================
+# Commit messages temporaires
+commit_message.txt
+
+# Fichiers de test temporaires
+test_output/
+temp_projects/
+
+# Configuration locale utilisateur
+local_config/
+user_settings/

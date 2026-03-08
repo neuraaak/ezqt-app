@@ -1,37 +1,49 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_CORE.TEST_PAGE_CONTAINER - Page container tests
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Unit tests for the PageContainer class.
-"""
+"""Unit tests for the PageContainer class."""
 
-import pytest
-import sys
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import os
-from unittest.mock import patch, MagicMock
+import sys
 
-# Add project path to sys.path
+# Third-party imports
+from PySide6.QtWidgets import QFrame, QSizePolicy, QStackedWidget, QWidget
+
+# Local imports
+# Add project path to sys.path.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QStackedWidget, QFrame
-
-# Direct import of module without going through main package
+# Direct import of module without going through main package.
 sys.path.insert(
     0,
     os.path.join(
-        os.path.dirname(__file__), "..", "..", "..", "..", "ezqt_app", "widgets", "core"
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "..",
+        "ezqt_app",
+        "widgets",
+        "core",
     ),
 )
 from ezqt_app.widgets.core.page_container import PageContainer
 
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
+
 
 class TestPageContainer:
     """Tests for the PageContainer class."""
-
-    def setup_method(self):
-        """Reset pages dictionary before each test."""
-        PageContainer.pages.clear()
 
     def test_init_default_parameters(self, qt_application):
         """Test initialization with default parameters."""
@@ -84,8 +96,8 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check that pages dictionary exists
-        assert hasattr(PageContainer, "pages")
-        assert isinstance(PageContainer.pages, dict)
+        assert hasattr(container, "pages")
+        assert isinstance(container.pages, dict)
 
     def test_add_page(self, qt_application):
         """Test adding a page."""
@@ -103,7 +115,7 @@ class TestPageContainer:
         assert page in container.stackedWidget.children()
 
         # Check that page was added to dictionary
-        assert page_name in PageContainer.pages
+        assert page_name in container.pages
 
     def test_add_multiple_pages(self, qt_application):
         """Test adding multiple pages."""
@@ -129,7 +141,7 @@ class TestPageContainer:
 
         # Check that all pages are in dictionary
         for name in page_names:
-            assert name in PageContainer.pages
+            assert name in container.pages
 
     def test_page_object_names(self, qt_application):
         """Test page object names."""
@@ -159,15 +171,15 @@ class TestPageContainer:
         # Create second container
         container2 = PageContainer()
 
-        # Check that pages are shared in class dictionary
-        assert "page1" in PageContainer.pages
-        assert "page2" in PageContainer.pages
+        # Each container owns its own page registry in v6.
+        assert "page1" in container1.pages
+        assert "page2" in container1.pages
+        assert "page1" not in container2.pages
+        assert "page2" not in container2.pages
 
-        # Check that each container has its own pages in its stackedWidget
+        # Check that each container has its own pages in its stackedWidget.
         assert container1.stackedWidget.count() == 2
-        assert (
-            container2.stackedWidget.count() == 0
-        )  # Second container doesn't have these pages
+        assert container2.stackedWidget.count() == 0
 
     def test_add_page_with_special_characters(self, qt_application):
         """Test adding page with special characters."""
@@ -179,7 +191,7 @@ class TestPageContainer:
 
         # Check that page was created
         assert page is not None
-        assert page_name in PageContainer.pages
+        assert page_name in container.pages
 
     def test_add_page_with_empty_name(self, qt_application):
         """Test adding page with empty name."""
@@ -191,7 +203,7 @@ class TestPageContainer:
 
         # Check that page was created
         assert page is not None
-        assert page_name in PageContainer.pages
+        assert page_name in container.pages
 
     def test_add_page_with_numeric_name(self, qt_application):
         """Test adding page with numeric name."""
@@ -203,7 +215,7 @@ class TestPageContainer:
 
         # Check that page was created
         assert page is not None
-        assert page_name in PageContainer.pages
+        assert page_name in container.pages
 
     def test_page_container_layout_margins(self, qt_application):
         """Test page container layout margins."""
@@ -257,5 +269,5 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check size policy
-        assert container.sizePolicy().horizontalPolicy() == Qt.Expanding
-        assert container.sizePolicy().verticalPolicy() == Qt.Expanding
+        assert container.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
+        assert container.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred

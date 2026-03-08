@@ -1,0 +1,49 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+        "autocomplete",
+        "autodocstring",
+        "circular",
+        "clickable",
+        "docstring",
+        "draggable",
+        "ezqt",
+        "flake8",
+        "git-graph",
+        "gitlens",
+        "intellisense",
+        "isort",
+        "material-theme",
+        "pycache",
+        "pylint",
+        "pyproject",
+        "pyside",
+        "pytest",
+        "selector",
+        "textedit",
+        "timer",
+        "toggle"
+    ],
+    "ignorePaths": [
+        "**/node_modules/**",
+        "**/venv/**",
+        "**/.venv/**",
+        "**/__pycache__/**",
+        "**/.pytest_cache/**",
+        "**/htmlcov/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/*.egg-info/**",
+        "**/coverage.xml",
+        "**/CHANGELOG.md",
+        "**/_temp/**",
+        "**/.benchmarks/**"
+    ],
+    "ignoreRegExpList": [
+        "\\b[A-Z]{2,}\\b",
+        "\\b\\d+\\b",
+        "\\b[a-z]+_[a-z]+\\b",
+        "\\b[A-Z][a-z]+[A-Z][a-z]+\\b"
+    ]
+}

@@ -1,14 +1,25 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# CONFTEST - Pytest Configuration
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Configuration pytest pour les tests unitaires d'EzQt_App.
+"""Pytest configuration for ezqt_app tests.
+
+This module contains pytest fixtures and shared configuration.
 """
 
-import pytest
+from __future__ import annotations
+
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Standard library imports
 import sys
-from PySide6.QtWidgets import QApplication
+
+# Third-party imports
+import pytest
 from PySide6.QtCore import QTimer, Signal
+from PySide6.QtWidgets import QApplication
 
 
 @pytest.fixture(scope="session")
@@ -43,7 +54,7 @@ def qt_application():
 
     # ////// INITIALISER LES COMPOSANTS NÉCESSAIRES POUR LES TESTS
     try:
-        from ezqt_app.kernel.app_components import Fonts, SizePolicy
+        from ezqt_app.services.ui import Fonts, SizePolicy
 
         Fonts.initFonts()
         SizePolicy.initSizePolicy()
@@ -75,10 +86,11 @@ def ez_application_cleanup():
     Fixture pour créer une instance EzApplication propre pour les tests.
     Cette fixture contourne le problème de singleton en utilisant des mocks appropriés.
     """
-    from PySide6.QtWidgets import QApplication
-    from ezqt_app.widgets.core.ez_app import EzApplication
-    from unittest.mock import patch, MagicMock
     import time
+
+    from PySide6.QtWidgets import QApplication
+
+    from ezqt_app.widgets.core.ez_app import EzApplication
 
     # Détruire toute instance existante
     app = QApplication.instance()
@@ -222,7 +234,7 @@ def mock_yaml_config(tmp_path):
     """
     Fixture pour créer un fichier de configuration YAML temporaire.
     """
-    config_file = tmp_path / "app.yaml"
+    config_file = tmp_path / "app.config.yaml"
     config_content = """app:
   name: "Test Application"
   description: "Test Description"

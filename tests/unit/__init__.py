@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT - Unit test package
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Tests unitaires pour EzQt_App.
-""" 
+"""Unit tests package for ezqt_app."""
+
+from __future__ import annotations

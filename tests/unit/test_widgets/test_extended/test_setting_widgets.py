@@ -1,23 +1,32 @@
-# -*- coding: utf-8 -*-
+# ///////////////////////////////////////////////////////////////
+# TESTS.UNIT.TEST_WIDGETS.TEST_EXTENDED.TEST_SETTING_WIDGETS - Setting widget tests
+# Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""
-Unit tests for extended setting widgets.
-"""
+"""Unit tests for extended setting widgets."""
 
-import pytest
-from unittest.mock import patch, MagicMock
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QWidget, QLabel, QComboBox, QSlider, QLineEdit
+from __future__ import annotations
 
+# ///////////////////////////////////////////////////////////////
+# IMPORTS
+# ///////////////////////////////////////////////////////////////
+# Third-party imports
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QComboBox, QLabel, QLineEdit, QSlider
+
+# Local imports
 from ezqt_app.widgets.extended.setting_widgets import (
     BaseSettingWidget,
-    SettingToggle,
+    SettingCheckbox,
     SettingSelect,
     SettingSlider,
     SettingText,
-    SettingCheckbox,
+    SettingToggle,
 )
+
+# ///////////////////////////////////////////////////////////////
+# CLASSES
+# ///////////////////////////////////////////////////////////////
 
 
 class TestBaseSettingWidget:
@@ -52,7 +61,7 @@ class TestSettingToggle:
         # Check basic properties
         assert widget._label == "Test Toggle"
         assert widget._description == ""
-        assert widget._value == False
+        assert not widget._value
         assert widget.objectName() == "SettingToggle"
         assert widget.property("type") == "SettingToggle"
 
@@ -63,7 +72,7 @@ class TestSettingToggle:
         # Check properties
         assert widget._label == "Test Toggle"
         assert widget._description == "Test Description"
-        assert widget._value == True
+        assert widget._value
 
     def test_ui_components(self, qt_application):
         """Test user interface components."""
@@ -82,8 +91,8 @@ class TestSettingToggle:
         widget = SettingToggle("Test Toggle", default=True)
 
         # Check initial value
-        assert widget.value == True
-        assert widget.get_value() == True
+        assert widget.value
+        assert widget.get_value()
 
     def test_set_value(self, qt_application):
         """Test value definition."""
@@ -91,8 +100,8 @@ class TestSettingToggle:
 
         # Define a new value
         widget.value = True
-        assert widget._value == True
-        assert widget.value == True
+        assert widget._value
+        assert widget.value
 
     def test_signal(self, qt_application):
         """Test signal."""
@@ -108,7 +117,7 @@ class TestSettingSelect:
 
     def test_init_default(self, qt_application):
         """Test initialization with default values."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"])
+        widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check basic properties
         assert widget._label == "Test Select"
@@ -119,14 +128,16 @@ class TestSettingSelect:
 
     def test_init_with_default(self, qt_application):
         """Test initialization with a default value."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"], "Option 2")
+        widget = SettingSelect(
+            "Test Select", options=["Option 1", "Option 2"], default="Option 2"
+        )
 
         # Check default value
         assert widget._value == "Option 2"
 
     def test_ui_components(self, qt_application):
         """Test user interface components."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"])
+        widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check that components exist
         assert hasattr(widget, "label")
@@ -144,7 +155,7 @@ class TestSettingSelect:
 
     def test_value_property(self, qt_application):
         """Test value property."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"])
+        widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check initial value
         assert widget.value == "Option 1"
@@ -155,7 +166,7 @@ class TestSettingSelect:
 
     def test_get_set_value(self, qt_application):
         """Test get_value and set_value methods."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"])
+        widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check get_value
         assert widget.get_value() == "Option 1"
@@ -166,7 +177,7 @@ class TestSettingSelect:
 
     def test_signal(self, qt_application):
         """Test signal."""
-        widget = SettingSelect("Test Select", ["Option 1", "Option 2"])
+        widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check that the signal exists
         assert hasattr(widget, "valueChanged")
@@ -183,13 +194,13 @@ class TestSettingSlider:
         # Check basic properties
         assert widget._label == "Test Slider"
         assert widget._description == ""
-        assert widget._value == 0
+        assert widget._value == 50
         assert widget.objectName() == "SettingSlider"
         assert widget.property("type") == "SettingSlider"
 
     def test_init_with_custom_values(self, qt_application):
         """Test initialization with custom values."""
-        widget = SettingSlider("Test Slider", min_value=10, max_value=100, default=50)
+        widget = SettingSlider("Test Slider", min_val=10, max_val=100, default=50)
 
         # Check custom values
         assert widget._value == 50
@@ -210,23 +221,23 @@ class TestSettingSlider:
         assert widget.label.text() == "Test Slider"
 
         # Check displayed value
-        assert widget.value_label.text() == "0"
+        assert widget.value_label.text() == "50"
 
     def test_slider_properties(self, qt_application):
         """Test slider properties."""
-        widget = SettingSlider("Test Slider", min_value=10, max_value=100)
+        widget = SettingSlider("Test Slider", min_val=10, max_val=100)
 
         # Check slider properties
         assert widget.slider.minimum() == 10
         assert widget.slider.maximum() == 100
-        assert widget.slider.value() == 10
+        assert widget.slider.value() == 50
 
     def test_value_property(self, qt_application):
         """Test value property."""
         widget = SettingSlider("Test Slider")
 
         # Check initial value
-        assert widget.value == 0
+        assert widget.value == 50
 
         # Define a new value
         widget.value = 50
@@ -237,7 +248,7 @@ class TestSettingSlider:
         widget = SettingSlider("Test Slider")
 
         # Check get_value
-        assert widget.get_value() == 0
+        assert widget.get_value() == 50
 
         # Check set_value
         widget.set_value(50)
@@ -279,9 +290,9 @@ class TestSettingText:
 
         # Check that components exist
         assert hasattr(widget, "label")
-        assert hasattr(widget, "line_edit")
+        assert hasattr(widget, "text_edit")
         assert isinstance(widget.label, QLabel)
-        assert isinstance(widget.line_edit, QLineEdit)
+        assert isinstance(widget.text_edit, QLineEdit)
 
         # Check label text
         assert widget.label.text() == "Test Text"
@@ -327,7 +338,7 @@ class TestSettingCheckbox:
         # Check basic properties
         assert widget._label == "Test Checkbox"
         assert widget._description == ""
-        assert widget._value == False
+        assert not widget._value
         assert widget.objectName() == "SettingCheckbox"
         assert widget.property("type") == "SettingCheckbox"
 
@@ -336,7 +347,7 @@ class TestSettingCheckbox:
         widget = SettingCheckbox("Test Checkbox", default=True)
 
         # Check default value
-        assert widget._value == True
+        assert widget._value
 
     def test_ui_components(self, qt_application):
         """Test user interface components."""
@@ -355,22 +366,22 @@ class TestSettingCheckbox:
         widget = SettingCheckbox("Test Checkbox")
 
         # Check initial value
-        assert widget.value == False
+        assert not widget.value
 
         # Define a new value
         widget.value = True
-        assert widget._value == True
+        assert widget._value
 
     def test_get_set_value(self, qt_application):
         """Test get_value and set_value methods."""
         widget = SettingCheckbox("Test Checkbox")
 
         # Check get_value
-        assert widget.get_value() == False
+        assert not widget.get_value()
 
         # Check set_value
         widget.set_value(True)
-        assert widget.get_value() == True
+        assert widget.get_value()
 
     def test_signal(self, qt_application):
         """Test signal."""
