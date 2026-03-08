@@ -64,7 +64,7 @@ from .widgets.ui_main import Ui_MainWindow
 # META INFORMATIONS
 # ///////////////////////////////////////////////////////////////
 
-__version__ = "5.0.0"
+__version__ = "5.0.1"
 __author__ = "Neuraaak"
 __maintainer__ = "Neuraaak"
 __description__ = (
