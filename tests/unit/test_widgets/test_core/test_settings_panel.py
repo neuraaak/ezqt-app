@@ -10,9 +10,14 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Standard library imports
+from unittest.mock import MagicMock
+
 # Third-party imports
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy, QWidget
+
+import ezqt_app.services.config as config_module
 
 # Local imports
 from ezqt_app.widgets.core.settings_panel import SettingsPanel
@@ -102,3 +107,84 @@ class TestSettingsPanel:
     def test_settings_panel_without_yaml_loading(self, qt_application):
         panel = SettingsPanel(load_from_yaml=False)
         assert panel._settings == {}
+
+    def test_settings_storage_prefix_prefers_legacy_root_when_present(
+        self, qt_application, monkeypatch
+    ):
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return {
+                    "app": {"settings_storage_root": "app.settings_panel"},
+                    "settings_panel": {},
+                }
+
+        monkeypatch.setattr(
+            config_module,
+            "get_config_service",
+            lambda: _FakeConfigService(),
+        )
+
+        panel = SettingsPanel(load_from_yaml=False)
+        assert panel._settings_storage_prefix() == ["settings_panel"]
+
+    def test_settings_storage_prefix_uses_configured_root_when_available(
+        self, qt_application, monkeypatch
+    ):
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return {
+                    "app": {"settings_storage_root": "app.settings_panel"},
+                    "settings_panel": {},
+                    "app_settings": {},
+                }
+
+        monkeypatch.setattr(
+            config_module,
+            "get_config_service",
+            lambda: _FakeConfigService(),
+        )
+
+        panel = SettingsPanel(load_from_yaml=False)
+        # Legacy root exists, fallback must still prefer root settings_panel.
+        assert panel._settings_storage_prefix() == ["settings_panel"]
+
+    def test_settings_storage_prefix_accepts_nested_root_when_mapping_exists(
+        self, qt_application, monkeypatch
+    ):
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return {
+                    "app": {
+                        "settings_storage_root": "app.settings_panel",
+                        "settings_panel": {},
+                    }
+                }
+
+        monkeypatch.setattr(
+            config_module,
+            "get_config_service",
+            lambda: _FakeConfigService(),
+        )
+
+        panel = SettingsPanel(load_from_yaml=False)
+        assert panel._settings_storage_prefix() == ["app", "settings_panel"]
+
+    def test_language_change_resyncs_theme_selector(self, qt_application, monkeypatch):
+        class _FakeTranslationService:
+            def get_current_language_name(self) -> str:
+                return "English"
+
+            def change_language(self, _name: str) -> bool:
+                return True
+
+        monkeypatch.setattr(
+            "ezqt_app.widgets.core.settings_panel.get_translation_service",
+            lambda: _FakeTranslationService(),
+        )
+
+        panel = SettingsPanel(load_from_yaml=False)
+        panel._sync_theme_selector_with_settings = MagicMock()
+
+        panel._on_setting_changed("language", "Français")
+
+        panel._sync_theme_selector_with_settings.assert_called_once()

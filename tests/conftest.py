@@ -14,7 +14,10 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
+import shutil
 import sys
+import uuid
+from pathlib import Path
 
 # Third-party imports
 import pytest
@@ -261,4 +264,32 @@ settings_panel:
     with open(config_file, "w", encoding="utf-8") as f:
         f.write(config_content)
 
-    return config_file
+        return config_file
+
+
+@pytest.fixture
+def temp_project_root() -> Path:
+    """Create an ephemeral project root under .tmp/ for config-writing tests."""
+    project_root = Path.cwd() / ".tmp" / f"pytest-{uuid.uuid4().hex}"
+    (project_root / "bin" / "config").mkdir(parents=True, exist_ok=True)
+    try:
+        yield project_root
+    finally:
+        shutil.rmtree(project_root, ignore_errors=True)
+
+
+@pytest.fixture(autouse=True)
+def isolate_config_service_root(temp_project_root: Path):
+    """Route singleton config reads/writes to a per-test .tmp project root."""
+    from ezqt_app.services.config import get_config_service
+
+    config_service = get_config_service()
+    previous_root = getattr(config_service, "_project_root", None)
+    config_service.set_project_root(temp_project_root)
+    config_service.clear_cache()
+
+    try:
+        yield
+    finally:
+        config_service._project_root = previous_root
+        config_service.clear_cache()

@@ -20,10 +20,21 @@ from PySide6.QtCore import QCoreApplication, QObject, QTranslator, Signal
 
 # Local imports
 from ...domain.models.translation import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
+from ...services.config import get_config_service
 from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH
 from .auto_translator import get_auto_translator
+
+
+# ///////////////////////////////////////////////////////////////
+# HELPERS
+# ///////////////////////////////////////////////////////////////
+def _parse_bool(raw: object) -> bool:
+    """Parse a config value as bool, supporting string representations."""
+    if isinstance(raw, str):
+        return raw.strip().lower() in {"1", "true", "yes", "on"}
+    return bool(raw)
 
 
 # ///////////////////////////////////////////////////////////////
@@ -47,9 +58,29 @@ class TranslationManager(QObject):
         self._translatable_texts: dict[Any, str] = {}
         self._ts_translations: dict[str, str] = {}
 
-        # TODO: Réactiver la traduction automatique - DÉSACTIVÉ TEMPORAIREMENT
         self.auto_translator = get_auto_translator()
         self.auto_translation_enabled = False
+        self.auto_save_translations = False
+
+        try:
+            translation_cfg = (
+                get_config_service().load_config("translation").get("translation", {})
+            )
+            if isinstance(translation_cfg, dict):
+                self.auto_translation_enabled = _parse_bool(
+                    translation_cfg.get("auto_translation_enabled", False)
+                )
+                self.auto_save_translations = _parse_bool(
+                    translation_cfg.get("save_to_ts_files", False)
+                )
+        except Exception as e:
+            warn_tech(
+                code="translation.manager.config_load_failed",
+                message="Could not load translation config; using defaults (disabled)",
+                error=e,
+            )
+
+        self.auto_translator.enabled = self.auto_translation_enabled
 
         # Resolve translations directory
         if hasattr(sys, "_MEIPASS"):
@@ -157,7 +188,20 @@ class TranslationManager(QObject):
 
         self.translator = QTranslator()
         language_info = SUPPORTED_LANGUAGES[language_code]
-        ts_file_path = self.translations_dir / language_info["file"]  # type: ignore[operator]
+
+        if self.translations_dir is None:
+            warn_tech(
+                code="translation.manager.translations_dir_unavailable",
+                message=(
+                    "Translations directory not resolved; .ts file load skipped "
+                    f"for language '{language_code}'"
+                ),
+            )
+            self._retranslate_all_widgets()
+            self.languageChanged.emit(language_code)
+            return True
+
+        ts_file_path = self.translations_dir / language_info["file"]
 
         if self._load_ts_file(ts_file_path):
             if app is not None:
@@ -207,7 +251,7 @@ class TranslationManager(QObject):
                 text, "en", self.current_language
             )
             if auto_translated:
-                if self.auto_translator.auto_save:  # type: ignore[attr-defined]
+                if self.auto_save_translations:
                     self._save_auto_translation_to_ts(text, auto_translated)
                 return auto_translated
 
@@ -264,8 +308,10 @@ class TranslationManager(QObject):
     def _save_auto_translation_to_ts(self, original: str, translated: str) -> None:
         try:
             if self.current_language in SUPPORTED_LANGUAGES:
+                if self.translations_dir is None:
+                    return
                 language_info = SUPPORTED_LANGUAGES[self.current_language]
-                ts_file_path = self.translations_dir / language_info["file"]  # type: ignore[operator]
+                ts_file_path = self.translations_dir / language_info["file"]
                 self.auto_translator.save_translation_to_ts(
                     original, translated, self.current_language, ts_file_path
                 )

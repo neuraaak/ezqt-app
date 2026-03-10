@@ -19,7 +19,6 @@ from .setting_widgets import (
     SettingText,
     SettingToggle,
 )
-from .theme_icon import ThemeIcon
 
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API
@@ -31,5 +30,4 @@ __all__ = [
     "SettingSlider",
     "SettingText",
     "SettingToggle",
-    "ThemeIcon",
 ]

@@ -24,7 +24,6 @@ from .extended import (
     SettingSlider,
     SettingText,
     SettingToggle,
-    ThemeIcon,
 )
 
 # ///////////////////////////////////////////////////////////////
@@ -47,5 +46,4 @@ __all__ = [
     "SettingSlider",
     "SettingText",
     "SettingToggle",
-    "ThemeIcon",
 ]

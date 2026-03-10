@@ -19,7 +19,7 @@ import yaml
 from ...utils.printer import Printer
 
 # Local imports
-from ..config.config_service import get_package_resource
+from ..config.config_service import get_config_service
 from ..settings import get_settings_service
 
 
@@ -51,12 +51,13 @@ class SettingsLoader:
         dict
             Raw ``app`` section from the YAML file.
         """
-        if not yaml_file:
-            yaml_file = get_package_resource("resources/config/app.config.yaml")
-
-        with open(yaml_file, encoding="utf-8") as file:
-            data = yaml.safe_load(file)
+        if yaml_file is None:
+            data = get_config_service().load_config("app", force_reload=True)
             app_data = data.get("app", {})
+        else:
+            with open(yaml_file, encoding="utf-8") as file:
+                data = yaml.safe_load(file)
+                app_data = data.get("app", {})
 
         settings_service = get_settings_service()
 

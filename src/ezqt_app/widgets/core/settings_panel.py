@@ -56,17 +56,51 @@ class SettingsPanel(QFrame):
 
             app_config = get_config_service().load_config("app")
             app_section = app_config.get("app", {})
-            root = str(app_section.get("settings_storage_root", "app.settings_panel"))
+            root = str(app_section.get("settings_storage_root", "settings_panel"))
             parts = [part for part in root.split(".") if part]
-            if len(parts) >= 2:
+
+            def _exists(path_parts: list[str]) -> bool:
+                current: object = app_config
+                for part in path_parts:
+                    if not isinstance(current, dict) or part not in current:
+                        return False
+                    current = current[part]
+                return isinstance(current, dict)
+
+            if parts and _exists(parts):
                 return parts
+            if _exists(["settings_panel"]):
+                return ["settings_panel"]
+            if _exists(["app", "settings_panel"]):
+                return ["app", "settings_panel"]
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.storage_prefix_resolution_failed",
                 message="Could not resolve settings storage prefix from app config",
                 error=e,
             )
-        return ["app", "settings_panel"]
+        return ["settings_panel"]
+
+    def _sync_theme_selector_with_settings(self) -> None:
+        """Align theme selector UI with the currently active settings theme."""
+        try:
+            if not hasattr(self, "themeToggleButton"):
+                return
+
+            theme_toggle = self.themeToggleButton
+            current_theme = get_settings_service().gui.THEME.lower()
+            theme_id = 0 if current_theme == "light" else 1
+
+            if hasattr(theme_toggle, "initialize_selector"):
+                theme_toggle.initialize_selector(theme_id)
+            elif hasattr(theme_toggle, "value_id"):
+                theme_toggle.value_id = theme_id
+        except Exception as e:
+            warn_tech(
+                code="widgets.settings_panel.theme_selector_sync_failed",
+                message="Could not synchronize theme selector with active settings",
+                error=e,
+            )
 
     def __init__(
         self,
@@ -555,6 +589,7 @@ class SettingsPanel(QFrame):
                     current_lang = translation_service.get_current_language_name()
                     if current_lang != str(value):
                         translation_service.change_language(str(value))
+                        self._sync_theme_selector_with_settings()
                         # Emit language change signal
                         self.languageChanged.emit()
                 except Exception as e:
