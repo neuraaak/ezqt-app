@@ -143,32 +143,32 @@ settings_panel:
 
 palette:
   dark:
-    $_main_surface: rgb(33, 37, 43)
-    $_main_border: rgb(44, 49, 58)
-    $_main_accent_color: '#96CD32'
-    $_accent_color1: rgb(52, 59, 72)
-    $_accent_color2: rgb(55, 63, 77)
-    $_accent_color3: rgb(35, 40, 49)
-    $_accent_color4: rgb(94, 106, 130)
-    $_page_color: rgb(40, 44, 52)
-    $_transparent: rgba(255, 255, 255, 0)
-    $_semi_transparent: rgba(33, 37, 43, 180)
-    $_select_text_color: rgb(255, 255, 255)
-    $_base_text_color: rgb(221, 221, 221)
+    main_surface: rgb(33, 37, 43)
+    main_border: rgb(44, 49, 58)
+    main_accent_color: '#96CD32'
+    accent_color1: rgb(52, 59, 72)
+    accent_color2: rgb(55, 63, 77)
+    accent_color3: rgb(35, 40, 49)
+    accent_color4: rgb(94, 106, 130)
+    page_color: rgb(40, 44, 52)
+    transparent: rgba(255, 255, 255, 0)
+    semi_transparent: rgba(33, 37, 43, 180)
+    select_text_color: rgb(255, 255, 255)
+    base_text_color: rgb(221, 221, 221)
 
   light:
-    $_main_surface: rgb(240, 240, 243)
-    $_main_border: rgb(225, 223, 229)
-    $_main_accent_color: '#1423DC'
-    $_accent_color1: rgb(203, 196, 183)
-    $_accent_color2: rgb(200, 192, 178)
-    $_accent_color3: rgb(237, 235, 235)
-    $_accent_color4: rgb(161, 149, 125)
-    $_page_color: rgb(250, 250, 250)
-    $_transparent: rgba(0, 0, 0, 0)
-    $_semi_transparent: rgba(222, 218, 212, 180)
-    $_select_text_color: rgb(0, 0, 0)
-    $_base_text_color: rgb(34, 34, 34)"""
+    main_surface: rgb(240, 240, 243)
+    main_border: rgb(225, 223, 229)
+    main_accent_color: '#1423DC'
+    accent_color1: rgb(203, 196, 183)
+    accent_color2: rgb(200, 192, 178)
+    accent_color3: rgb(237, 235, 235)
+    accent_color4: rgb(161, 149, 125)
+    page_color: rgb(250, 250, 250)
+    transparent: rgba(0, 0, 0, 0)
+    semi_transparent: rgba(222, 218, 212, 180)
+    select_text_color: rgb(0, 0, 0)
+    base_text_color: rgb(34, 34, 34)"""
 
     temp_yaml.write_text(yaml_content, encoding="utf-8")
     return temp_yaml

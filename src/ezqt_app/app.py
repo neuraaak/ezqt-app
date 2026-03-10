@@ -25,7 +25,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 from .services.application.app_service import AppService
 from .services.config import get_config_service
 from .services.settings import get_settings_service
-from .services.translation import enable_auto_translation, get_translation_service
+from .services.translation import get_translation_service
 from .services.ui import (
     Fonts,
     MenuService,
@@ -44,7 +44,6 @@ from .widgets.ui_main import Ui_MainWindow
 # GLOBALS
 # ///////////////////////////////////////////////////////////////
 os_name: str = platform.system()
-widgets: Any | None = None
 
 # ///////////////////////////////////////////////////////////////
 # VARIABLES
@@ -86,6 +85,44 @@ class EzQt_App(QMainWindow):
 
         config_service = get_config_service()
 
+        def _get_setting_default(
+            config_data: dict[str, Any], key: str, fallback: str
+        ) -> str:
+            """Resolve a settings default from configured root with legacy fallback."""
+            root = "settings_panel"
+            app_section_raw = config_data.get("app")
+            if isinstance(app_section_raw, dict):
+                configured_root = app_section_raw.get("settings_storage_root")
+                if isinstance(configured_root, str) and configured_root.strip():
+                    root = configured_root.strip()
+
+            def _read_nested(path_parts: list[str]) -> object | None:
+                current: object = config_data
+                for part in path_parts:
+                    if not isinstance(current, dict) or part not in current:
+                        return None
+                    current = current[part]
+                return current
+
+            # 1) Configured storage root
+            configured_parts = [part for part in root.split(".") if part]
+            if configured_parts:
+                configured_value = _read_nested([*configured_parts, key, "default"])
+                if isinstance(configured_value, str) and configured_value.strip():
+                    return configured_value.strip()
+
+            # 2) Legacy root used by existing shipped config
+            legacy_value = _read_nested(["settings_panel", key, "default"])
+            if isinstance(legacy_value, str) and legacy_value.strip():
+                return legacy_value.strip()
+
+            # 3) New root used in some generated configs
+            app_value = _read_nested(["app", "settings_panel", key, "default"])
+            if isinstance(app_value, str) and app_value.strip():
+                return app_value.strip()
+
+            return fallback
+
         # ////// LOAD TRANSLATIONS
         # ///////////////////////////////////////////////////////////////
         # Load language from settings
@@ -120,45 +157,22 @@ class EzQt_App(QMainWindow):
                 )
                 default_language_code = "en"
 
-            # Try to load settings_panel from app.config.yaml
             app_config = config_service.load_config("app")
-            if "settings_panel" in app_config:
-                settings_panel = app_config["settings_panel"]
-                language_value = str(
-                    settings_panel.get("language", {}).get(
-                        "default", default_language_code
-                    )
-                )
-            else:
-                language_value = default_language_code
+            language_value = _get_setting_default(
+                app_config, "language", default_language_code
+            )
 
             translation_service = get_translation_service()
             # Accept both display names ("Français") and codes ("fr").
             if not translation_service.change_language(language_value):
                 translation_service.change_language_by_code(language_value.lower())
-
-            translation_config = translation_config_data.get("translation", {})
-            auto_translation_flag = False
-            if isinstance(translation_config, dict):
-                raw_flag = translation_config.get("auto_translation_enabled", False)
-                if isinstance(raw_flag, str):
-                    auto_translation_flag = raw_flag.strip().lower() in {
-                        "1",
-                        "true",
-                        "yes",
-                        "on",
-                    }
-                else:
-                    auto_translation_flag = bool(raw_flag)
-
-            enable_auto_translation(auto_translation_flag)
-        except Exception:
-            translation_service = get_translation_service()
-            translation_service.change_language("English")
-            enable_auto_translation(False)
-
-        # Keep registration/collection active for local TS workflow.
-        # `auto_translation_enabled` only gates external API translation calls.
+        except Exception as e:
+            warn_tech(
+                code="app.language.load_failed",
+                message="Failed to load language configuration; falling back to English",
+                error=e,
+            )
+            get_translation_service().change_language("English")
 
         # ////// INITIALIZE COMPONENTS
         # ///////////////////////////////////////////////////////////////
@@ -169,8 +183,6 @@ class EzQt_App(QMainWindow):
         # ///////////////////////////////////////////////////////////////
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        global widgets
-        widgets = self.ui
 
         settings_service = get_settings_service()
 
@@ -181,21 +193,17 @@ class EzQt_App(QMainWindow):
         # ////// APP DATA
         # ///////////////////////////////////////////////////////////////
         self.setWindowTitle(settings_service.app.NAME)
-        (
-            self.setAppIcon(Images.logo_placeholder, yShrink=0)
-            if settings_service.gui.THEME == "dark"
-            else self.setAppIcon(Images.logo_placeholder, yShrink=0)
-        )
+        self.setAppIcon(Images.logo_placeholder, yShrink=0)
 
         # ==> TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
-        widgets.menuContainer.toggleButton.clicked.connect(
+        self.ui.menuContainer.toggleButton.clicked.connect(
             lambda: PanelService.toggle_menu_panel(self, True)
         )
 
         # ==> TOGGLE SETTINGS
         # ///////////////////////////////////////////////////////////////
-        widgets.headerContainer.settingsTopBtn.clicked.connect(
+        self.ui.headerContainer.settingsTopBtn.clicked.connect(
             lambda: PanelService.toggle_settings_panel(self, True)
         )
 
@@ -206,28 +214,28 @@ class EzQt_App(QMainWindow):
         # SET THEME
         # ///////////////////////////////////////////////////////////////
         self._themeFileName = themeFileName
-        ThemeService.apply_theme(self, self._themeFileName)
-        # //////
+
         # Load theme from settings_panel if it exists, otherwise from app
         try:
-            # Try to load settings_panel from app.config.yaml
             app_config = config_service.load_config("app")
             app_defaults = app_config.get("app", {})
             fallback_theme = str(app_defaults.get("theme", "dark"))
-            if "settings_panel" in app_config:
-                settings_panel = app_config["settings_panel"]
-                _theme = settings_panel.get("theme", {}).get("default", fallback_theme)
-            else:
-                # Fallback to default value
-                _theme = fallback_theme
+            _theme = _get_setting_default(app_config, "theme", fallback_theme)
             # Force conversion to lowercase
             _theme = _theme.lower()
-        except Exception:
-            # Fallback to default value
+        except Exception as e:
+            warn_tech(
+                code="app.theme.load_failed",
+                message="Failed to load theme configuration; falling back to dark",
+                error=e,
+            )
             _theme = "dark"
 
         # Update active theme with lowercase value
         settings_service.set_theme(_theme)
+
+        # Apply stylesheet after active theme has been resolved.
+        ThemeService.apply_theme(self, self._themeFileName)
 
         theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
         if theme_toggle and hasattr(theme_toggle, "initialize_selector"):

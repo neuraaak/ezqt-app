@@ -137,13 +137,20 @@ class ConfigService(ConfigServiceProtocol):
         bool
             ``True`` if the write succeeded.
         """
-        if not self._project_root:
-            get_printer().error("No project root defined")
-            return False
-
-        config_dir = self._project_root / "bin" / "config"
-        config_dir.mkdir(parents=True, exist_ok=True)
-        config_file = config_dir / f"{config_name}.config.yaml"
+        config_file: Path
+        if self._project_root:
+            config_dir = self._project_root / "bin" / "config"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            config_file = config_dir / f"{config_name}.config.yaml"
+        elif config_name in self._config_files:
+            # Keep writes consistent with the file originally loaded.
+            config_file = self._config_files[config_name]
+            config_file.parent.mkdir(parents=True, exist_ok=True)
+        else:
+            # Last-resort fallback for runtime usage without explicit bootstrap.
+            config_dir = Path.cwd() / "bin" / "config"
+            config_dir.mkdir(parents=True, exist_ok=True)
+            config_file = config_dir / f"{config_name}.config.yaml"
 
         try:
             with open(config_file, "w", encoding="utf-8") as f:

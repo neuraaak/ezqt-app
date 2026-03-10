@@ -105,8 +105,9 @@ class Menu(QFrame):
 
         # ////// SETUP TOGGLE BUTTON
         # Lazy import to avoid circular imports
+        from ezqt_widgets import ThemeIcon
+
         from ...widgets.extended.menu_button import MenuButton
-        from ...widgets.extended.theme_icon import ThemeIcon
 
         settings_service = get_settings_service()
 
@@ -131,7 +132,7 @@ class Menu(QFrame):
         # Don't set contents margins here - MenuButton handles its own positioning
         # self.toggleButton.setContentsMargins(20, 0, 0, 0)
         #
-        icon_menu = ThemeIcon(Icons.icon_menu)
+        icon_menu = ThemeIcon(Icons.icon_menu, theme=settings_service.gui.THEME)
         self._buttons.append(self.toggleButton)
         self._icons.append(icon_menu)
         # Connect to the new toggle_state method
@@ -188,8 +189,11 @@ class Menu(QFrame):
             The created menu button.
         """
         # Lazy import to avoid circular imports
+        from ezqt_widgets import ThemeIcon
+
         from ...widgets.extended.menu_button import MenuButton
-        from ...widgets.extended.theme_icon import ThemeIcon
+
+        current_theme = get_settings_service().gui.THEME
 
         menu = MenuButton(
             parent=self.topMenu,
@@ -212,7 +216,7 @@ class Menu(QFrame):
         menu.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
 
         # ////// SETUP THEME ICON
-        theme_icon = ThemeIcon(icon) if icon is not None else None
+        theme_icon = ThemeIcon(icon, theme=current_theme) if icon is not None else None
         self._buttons.append(menu)
         self._icons.append(theme_icon)
 
@@ -226,8 +230,12 @@ class Menu(QFrame):
 
     def update_all_theme_icons(self) -> None:
         """Update theme icons for all buttons."""
+        current_theme = get_settings_service().gui.THEME
         for i, btn in enumerate(self._buttons):
             icon = self._icons[i]
+            setter = getattr(icon, "set_theme", None)
+            if callable(setter):
+                setter(current_theme)
             updater = getattr(btn, "update_theme_icon", None)
             if icon is not None and callable(updater):
                 updater(icon)

@@ -228,6 +228,7 @@ $RECYCLE.BIN/
 _temp/
 temp/
 tmp/
+.tmp/
 tmpclaude-*
 
 # MkDocs build output

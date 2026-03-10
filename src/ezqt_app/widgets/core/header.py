@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 )
 
 # Local imports
+from ...services.settings import get_settings_service
 from ...services.ui import Fonts, SizePolicy
 from ...shared.resources import Icons
 
@@ -197,8 +198,9 @@ class Header(QFrame):
 
         # /////////////////////////////////////////////////////////////////////
 
-        # Lazy import to avoid circular imports
-        from ...widgets.extended.theme_icon import ThemeIcon
+        from ezqt_widgets import ThemeIcon
+
+        current_theme = get_settings_service().gui.THEME
 
         self.settingsTopBtn = QPushButton(self.headerButtons)
         self._buttons.append(self.settingsTopBtn)
@@ -207,7 +209,7 @@ class Header(QFrame):
         self.settingsTopBtn.setMaximumSize(QSize(28, 28))
         self.settingsTopBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         #
-        icon_settings = ThemeIcon(Icons.icon_settings)
+        icon_settings = ThemeIcon(Icons.icon_settings, theme=current_theme)
         self._icons.append(icon_settings)
         self.settingsTopBtn.setIcon(icon_settings)
         self.settingsTopBtn.setIconSize(QSize(20, 20))
@@ -221,7 +223,7 @@ class Header(QFrame):
         self.minimizeAppBtn.setMaximumSize(QSize(28, 28))
         self.minimizeAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         #
-        icon_minimize = ThemeIcon(Icons.icon_minimize)
+        icon_minimize = ThemeIcon(Icons.icon_minimize, theme=current_theme)
         self._icons.append(icon_minimize)
         self.minimizeAppBtn.setIcon(icon_minimize)
         self.minimizeAppBtn.setIconSize(QSize(20, 20))
@@ -251,7 +253,7 @@ class Header(QFrame):
 
         self.maximizeRestoreAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         #
-        icon_maximize = ThemeIcon(Icons.icon_maximize)
+        icon_maximize = ThemeIcon(Icons.icon_maximize, theme=current_theme)
         self._icons.append(icon_maximize)
         self.maximizeRestoreAppBtn.setIcon(icon_maximize)
         self.maximizeRestoreAppBtn.setIconSize(QSize(20, 20))
@@ -265,7 +267,7 @@ class Header(QFrame):
         self.closeAppBtn.setMaximumSize(QSize(28, 28))
         self.closeAppBtn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         #
-        icon_close = ThemeIcon(Icons.icon_close)
+        icon_close = ThemeIcon(Icons.icon_close, theme=current_theme)
         self._icons.append(icon_close)
         self.closeAppBtn.setIcon(icon_close)
         self.closeAppBtn.setIconSize(QSize(20, 20))
@@ -340,8 +342,13 @@ class Header(QFrame):
 
     def update_all_theme_icons(self) -> None:
         """Update all button icons according to current theme."""
+        current_theme = get_settings_service().gui.THEME
         for i, btn in enumerate(self._buttons):
-            btn.setIcon(self._icons[i])
+            icon = self._icons[i]
+            setter = getattr(icon, "set_theme", None)
+            if callable(setter):
+                setter(current_theme)
+            btn.setIcon(icon)
 
 
 # ///////////////////////////////////////////////////////////////
