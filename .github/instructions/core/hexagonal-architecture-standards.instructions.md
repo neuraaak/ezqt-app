@@ -19,15 +19,15 @@ The dependency rule is non-negotiable. If you find domain code importing from in
 ```ini
 # .importlinter configuration in pyproject.toml
 [tool.importlinter]
-root_packages = ["your_project_name"]
+root_packages = ["{{my_project}}"]
 
 [[tool.importlinter.contracts]]
 name = "Hexagonal layers"
 type = "layers"
 layers = [
-    "your_project_name.infrastructure",
-    "your_project_name.application",
-    "your_project_name.domain",
+    "{{my_project}}.infrastructure",
+    "{{my_project}}.application",
+    "{{my_project}}.domain",
 ]
 ```
 
@@ -43,6 +43,30 @@ Hexagonal architecture introduces structural overhead that pays off in medium-to
 
 A good rule of thumb: if your application mostly shuttles data between a database and an API without meaningful transformation or business rules, hexagonal architecture is overkill. When in doubt, start with a simpler layered structure and introduce ports/adapters as the domain logic grows.
 
+### Architecture Decision Watchguard
+
+Before applying hexagonal architecture to a project, evaluate it against the following criteria. If fewer than **3 criteria are met**, prefer a simpler layered approach.
+
+- [ ] The project has non-trivial business rules or domain logic that must be protected from framework concerns
+- [ ] Multiple entry points are needed or planned (e.g., API + CLI + queue consumer)
+- [ ] Infrastructure components are likely to change (database swap, external API migration)
+- [ ] The codebase is expected to grow significantly and be maintained long-term
+- [ ] Testability of the domain in isolation is a hard requirement
+
+**If hexagonal architecture is not justified → use a simple layered structure instead:**
+
+```text
+my_project/
+├── models.py        # Data models (dataclasses, Pydantic)
+├── services.py      # Business logic
+├── repositories.py  # Data access
+└── api.py / cli.py  # Entry points
+```
+
+Start simple. Introduce ports and adapters only when a concrete need emerges (e.g., needing to swap a dependency, add a second entry point, or isolate domain tests from infrastructure). Premature application of hexagonal architecture adds structural overhead without benefit.
+
+> **Watchguard rule**: If you are unsure whether hexagonal architecture is warranted for the current project, default to the simple layered structure. Document the decision in `.github/instructions/README.md` so the choice is explicit and revisable.
+
 ## Project Structure
 
 ### Standard Layout
@@ -56,7 +80,7 @@ A well-organized project structure makes the architecture visible and discoverab
 - **KEEP** the composition root (dependency wiring) in a dedicated module at the infrastructure level
 
 ```text
-your_project_name/
+{{my_project}}/
 ├── domain/
 │   ├── __init__.py
 │   ├── models.py              # Entities, aggregates
@@ -103,7 +127,7 @@ For larger projects with distinct business domains, organize by bounded context 
 - **AVOID** direct imports between bounded contexts — use application-level ports instead
 
 ```text
-your_project_name/
+{{my_project}}/
 ├── orders/
 │   ├── domain/
 │   ├── application/
@@ -137,7 +161,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from your_project_name.domain.exceptions import InvalidOrderError
+from {{my_project}}.domain.exceptions import InvalidOrderError
 
 
 # Value Object — immutable, equality by value
@@ -230,7 +254,7 @@ Ports define the contracts between the application and the outside world. In Pyt
 from typing import Protocol
 from uuid import UUID
 
-from your_project_name.domain.models import Order
+from {{my_project}}.domain.models import Order
 
 
 class OrderRepository(Protocol):
@@ -263,10 +287,10 @@ Use cases should read like a recipe: get data, apply business rules (via domain 
 from dataclasses import dataclass
 from uuid import UUID
 
-from your_project_name.application.ports.repositories import OrderRepository
-from your_project_name.application.ports.services import NotificationService
-from your_project_name.domain.exceptions import InvalidOrderError
-from your_project_name.domain.models import Order
+from {{my_project}}.application.ports.repositories import OrderRepository
+from {{my_project}}.application.ports.services import NotificationService
+from {{my_project}}.domain.exceptions import InvalidOrderError
+from {{my_project}}.domain.models import Order
 
 
 @dataclass
@@ -319,8 +343,8 @@ from uuid import UUID
 
 from sqlalchemy.orm import Session
 
-from your_project_name.application.ports.repositories import OrderRepository
-from your_project_name.domain.models import Money, Order, OrderItem
+from {{my_project}}.application.ports.repositories import OrderRepository
+from {{my_project}}.domain.models import Money, Order, OrderItem
 
 
 class SQLAlchemyOrderRepository:
@@ -386,11 +410,11 @@ Manual DI is simpler, more transparent, and easier to debug. DI frameworks add v
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from your_project_name.application.use_cases.create_order import CreateOrderUseCase
-from your_project_name.infrastructure.adapters.sqlalchemy_order_repository import (
+from {{my_project}}.application.use_cases.create_order import CreateOrderUseCase
+from {{my_project}}.infrastructure.adapters.sqlalchemy_order_repository import (
     SQLAlchemyOrderRepository,
 )
-from your_project_name.infrastructure.adapters.smtp_notification_service import (
+from {{my_project}}.infrastructure.adapters.smtp_notification_service import (
     SMTPNotificationService,
 )
 
@@ -424,8 +448,8 @@ Driving adapters are entry points that invoke use cases. They handle request par
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from your_project_name.domain.exceptions import InvalidOrderError
-from your_project_name.infrastructure.container import Container
+from {{my_project}}.domain.exceptions import InvalidOrderError
+from {{my_project}}.infrastructure.container import Container
 
 
 router = APIRouter()
@@ -494,7 +518,7 @@ Fakes are lightweight implementations of ports that store data in memory. They a
 ```python
 from uuid import UUID
 
-from your_project_name.domain.models import Order
+from {{my_project}}.domain.models import Order
 
 
 class InMemoryOrderRepository:
@@ -524,7 +548,7 @@ Contract tests verify that both the fake and the real adapter behave identically
 import pytest
 from uuid import uuid4
 
-from your_project_name.domain.models import Order
+from {{my_project}}.domain.models import Order
 from tests.fakes.repositories import InMemoryOrderRepository
 
 
