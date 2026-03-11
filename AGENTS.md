@@ -4,15 +4,27 @@ This file contains instructions for all AI coding agents working on this project
 
 ## Project Context
 
-**Project Name**: [Your Project Name]
-**Tech Stack**: Python 3.11+, FastAPI, PostgreSQL
-**Environment**: Corporate environment with proxy restrictions
+**Project Name**: {{my-project}}
+**Tech Stack**: [Python 3.11+, ...]
+**Environment**: [Corporate environment with proxy restrictions]
+
+## Instruction Hierarchy
+
+All project rules are centralized in `.github/instructions/`. The entry point is always the README, which is project-specific. The other files are generic and shared across projects.
+
+| File                              | Role                                                                                               |
+| --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `.github/instructions/README.md`  | **Project-specific** — tech stack, architecture, conventions, overrides. **Read this first.**      |
+| `.github/instructions/core/`      | Generic core principles (architecture, commits, cognitive conduct). Apply unless README overrides. |
+| `.github/instructions/languages/` | Generic language standards (Python, JS). Apply unless README specifies otherwise.                  |
+
+**Workflow**: Read `README.md` → identify relevant `core/` and `languages/` files → then code.
 
 ## Core Principles
 
 1. **Always read project documentation first**
-   - Check `.github/instructions/README.md` for project-specific context
-   - Consult relevant files in `.github/instructions/` before coding
+   - Start with `.github/instructions/README.md` — it is the authoritative source for this project
+   - Consult relevant `core/` and `languages/` instruction files before coding
 
 2. **Follow established patterns**
    - Review existing code before implementing new features
@@ -25,12 +37,13 @@ This file contains instructions for all AI coding agents working on this project
 
 ## Development Workflow
 
-1. Read relevant instruction files from `.github/instructions/`
-2. Understand the task requirements completely
-3. Plan the implementation approach
-4. Write clean, well-documented code
-5. Include tests where appropriate
-6. Verify compliance with project standards
+1. Read `.github/instructions/README.md` for project-specific context and overrides
+2. Consult relevant instruction files from `.github/instructions/core/` and `.github/instructions/languages/`
+3. Understand the task requirements completely
+4. Plan the implementation approach
+5. Write clean, well-documented code
+6. Include tests where appropriate
+7. Verify compliance with project standards
 
 ## File Organization
 

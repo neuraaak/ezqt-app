@@ -10,10 +10,14 @@ This project follows a structured approach with centralized instructions in `.gi
 
 ## Instruction Hierarchy
 
-1. `.github/instructions/README.md` - Project context and overrides
-2. `.github/instructions/core/` - Core principles and architecture
-3. `.github/instructions/languages/python/` - Python-specific standards
-4. This file (CLAUDE.md) - Claude-specific preferences
+The central entry point for all project-specific rules is `.github/instructions/README.md`. This file is edited per project to document the tech stack, architecture, conventions, and any overrides to the generic standards. **Always read it first.**
+
+The generic instruction files in `core/` and `languages/` apply universally across projects and should not be edited per project — they are overridden or extended via the README.
+
+1. `.github/instructions/README.md` — **Project-specific** context, architecture, conventions, and overrides. The authoritative source for this project.
+2. `.github/instructions/core/` — Generic core principles (architecture, commits, cognitive conduct). Apply unless the README overrides them.
+3. `.github/instructions/languages/python/` — Generic Python standards. Apply unless the README specifies otherwise.
+4. This file (CLAUDE.md) — Claude-specific preferences (tooling, response format, communication style).
 
 ## Code Generation Preferences
 
@@ -59,7 +63,7 @@ except SpecificError as e:
 ## Tool Preferences
 
 - **Type Checking**: mypy (configured in project)
-- **Formatting**: black, ruff
+- **Formatting**: ruff
 - **Build**: cx_Freeze for executables
 - **Version Control**: Git with conventional commits
 
