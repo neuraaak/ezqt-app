@@ -32,7 +32,7 @@ from ezqt_app.widgets.extended.setting_widgets import (
 class TestBaseSettingWidget:
     """Tests for the BaseSettingWidget class."""
 
-    def test_init(self, qt_application):
+    def test_should_have_default_properties_when_instantiated(self, qt_application):
         """Test initialization."""
         widget = BaseSettingWidget("Test Label", "Test Description")
 
@@ -42,7 +42,7 @@ class TestBaseSettingWidget:
         assert widget._key is None
         assert widget.objectName() == "BaseSettingWidget"
 
-    def test_set_key(self, qt_application):
+    def test_should_store_key_when_set_key_is_called(self, qt_application):
         """Test key definition."""
         widget = BaseSettingWidget("Test Label")
 
@@ -54,7 +54,9 @@ class TestBaseSettingWidget:
 class TestSettingToggle:
     """Tests for the SettingToggle class."""
 
-    def test_init_default(self, qt_application):
+    def test_should_have_default_toggle_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default values."""
         widget = SettingToggle("Test Toggle")
 
@@ -65,7 +67,9 @@ class TestSettingToggle:
         assert widget.objectName() == "SettingToggle"
         assert widget.property("type") == "SettingToggle"
 
-    def test_init_with_description(self, qt_application):
+    def test_should_accept_description_when_instantiated_with_description(
+        self, qt_application
+    ):
         """Test initialization with description."""
         widget = SettingToggle("Test Toggle", "Test Description", True)
 
@@ -74,7 +78,9 @@ class TestSettingToggle:
         assert widget._description == "Test Description"
         assert widget._value
 
-    def test_ui_components(self, qt_application):
+    def test_should_have_label_and_toggle_switch_when_instantiated(
+        self, qt_application
+    ):
         """Test user interface components."""
         widget = SettingToggle("Test Toggle")
 
@@ -86,7 +92,7 @@ class TestSettingToggle:
         # Check label text
         assert widget.label.text() == "Test Toggle"
 
-    def test_toggle_value(self, qt_application):
+    def test_should_return_checked_when_default_is_true(self, qt_application):
         """Test toggle value."""
         widget = SettingToggle("Test Toggle", default=True)
 
@@ -94,7 +100,7 @@ class TestSettingToggle:
         assert widget.value
         assert widget.get_value()
 
-    def test_set_value(self, qt_application):
+    def test_should_update_value_when_set_value_is_called(self, qt_application):
         """Test value definition."""
         widget = SettingToggle("Test Toggle")
 
@@ -103,7 +109,9 @@ class TestSettingToggle:
         assert widget._value
         assert widget.value
 
-    def test_signal(self, qt_application):
+    def test_should_have_value_changed_signal_when_toggle_is_instantiated(
+        self, qt_application
+    ):
         """Test signal."""
         widget = SettingToggle("Test Toggle")
 
@@ -115,7 +123,9 @@ class TestSettingToggle:
 class TestSettingSelect:
     """Tests for the SettingSelect class."""
 
-    def test_init_default(self, qt_application):
+    def test_should_have_default_select_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default values."""
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
@@ -126,7 +136,9 @@ class TestSettingSelect:
         assert widget.objectName() == "SettingSelect"
         assert widget.property("type") == "SettingSelect"
 
-    def test_init_with_default(self, qt_application):
+    def test_should_use_given_default_when_default_option_is_given(
+        self, qt_application
+    ):
         """Test initialization with a default value."""
         widget = SettingSelect(
             "Test Select", options=["Option 1", "Option 2"], default="Option 2"
@@ -135,7 +147,7 @@ class TestSettingSelect:
         # Check default value
         assert widget._value == "Option 2"
 
-    def test_ui_components(self, qt_application):
+    def test_should_have_label_and_combo_box_when_instantiated(self, qt_application):
         """Test user interface components."""
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
@@ -153,7 +165,7 @@ class TestSettingSelect:
         assert widget.combo.itemText(0) == "Option 1"
         assert widget.combo.itemText(1) == "Option 2"
 
-    def test_value_property(self, qt_application):
+    def test_should_update_value_when_select_value_is_set(self, qt_application):
         """Test value property."""
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
@@ -164,7 +176,9 @@ class TestSettingSelect:
         widget.value = "Option 2"
         assert widget._value == "Option 2"
 
-    def test_get_set_value(self, qt_application):
+    def test_should_get_and_set_value_when_select_methods_are_called(
+        self, qt_application
+    ):
         """Test get_value and set_value methods."""
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
@@ -175,7 +189,9 @@ class TestSettingSelect:
         widget.set_value("Option 2")
         assert widget.get_value() == "Option 2"
 
-    def test_signal(self, qt_application):
+    def test_should_have_value_changed_signal_when_select_is_instantiated(
+        self, qt_application
+    ):
         """Test signal."""
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
@@ -187,7 +203,9 @@ class TestSettingSelect:
 class TestSettingSlider:
     """Tests for the SettingSlider class."""
 
-    def test_init_default(self, qt_application):
+    def test_should_have_default_slider_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default values."""
         widget = SettingSlider("Test Slider")
 
@@ -198,14 +216,18 @@ class TestSettingSlider:
         assert widget.objectName() == "SettingSlider"
         assert widget.property("type") == "SettingSlider"
 
-    def test_init_with_custom_values(self, qt_application):
+    def test_should_accept_custom_range_when_min_and_max_are_given(
+        self, qt_application
+    ):
         """Test initialization with custom values."""
         widget = SettingSlider("Test Slider", min_val=10, max_val=100, default=50)
 
         # Check custom values
         assert widget._value == 50
 
-    def test_ui_components(self, qt_application):
+    def test_should_have_label_slider_and_value_label_when_instantiated(
+        self, qt_application
+    ):
         """Test user interface components."""
         widget = SettingSlider("Test Slider")
 
@@ -223,7 +245,9 @@ class TestSettingSlider:
         # Check displayed value
         assert widget.value_label.text() == "50"
 
-    def test_slider_properties(self, qt_application):
+    def test_should_have_correct_range_when_instantiated_with_custom_values(
+        self, qt_application
+    ):
         """Test slider properties."""
         widget = SettingSlider("Test Slider", min_val=10, max_val=100)
 
@@ -232,7 +256,7 @@ class TestSettingSlider:
         assert widget.slider.maximum() == 100
         assert widget.slider.value() == 50
 
-    def test_value_property(self, qt_application):
+    def test_should_update_value_when_slider_value_is_set(self, qt_application):
         """Test value property."""
         widget = SettingSlider("Test Slider")
 
@@ -243,7 +267,9 @@ class TestSettingSlider:
         widget.value = 50
         assert widget._value == 50
 
-    def test_get_set_value(self, qt_application):
+    def test_should_get_and_set_slider_value_when_slider_methods_are_called(
+        self, qt_application
+    ):
         """Test get_value and set_value methods."""
         widget = SettingSlider("Test Slider")
 
@@ -254,7 +280,9 @@ class TestSettingSlider:
         widget.set_value(50)
         assert widget.get_value() == 50
 
-    def test_signal(self, qt_application):
+    def test_should_have_value_changed_signal_when_slider_is_instantiated(
+        self, qt_application
+    ):
         """Test signal."""
         widget = SettingSlider("Test Slider")
 
@@ -266,7 +294,9 @@ class TestSettingSlider:
 class TestSettingText:
     """Tests for the SettingText class."""
 
-    def test_init_default(self, qt_application):
+    def test_should_have_default_text_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default values."""
         widget = SettingText("Test Text")
 
@@ -277,14 +307,14 @@ class TestSettingText:
         assert widget.objectName() == "SettingText"
         assert widget.property("type") == "SettingText"
 
-    def test_init_with_default(self, qt_application):
+    def test_should_use_given_default_when_default_text_is_given(self, qt_application):
         """Test initialization with a default value."""
         widget = SettingText("Test Text", default="Default Text")
 
         # Check default value
         assert widget._value == "Default Text"
 
-    def test_ui_components(self, qt_application):
+    def test_should_have_label_and_line_edit_when_instantiated(self, qt_application):
         """Test user interface components."""
         widget = SettingText("Test Text")
 
@@ -297,7 +327,7 @@ class TestSettingText:
         # Check label text
         assert widget.label.text() == "Test Text"
 
-    def test_value_property(self, qt_application):
+    def test_should_update_value_when_text_value_is_set(self, qt_application):
         """Test value property."""
         widget = SettingText("Test Text")
 
@@ -308,7 +338,9 @@ class TestSettingText:
         widget.value = "New Text"
         assert widget._value == "New Text"
 
-    def test_get_set_value(self, qt_application):
+    def test_should_get_and_set_text_value_when_text_methods_are_called(
+        self, qt_application
+    ):
         """Test get_value and set_value methods."""
         widget = SettingText("Test Text")
 
@@ -319,7 +351,9 @@ class TestSettingText:
         widget.set_value("New Text")
         assert widget.get_value() == "New Text"
 
-    def test_signal(self, qt_application):
+    def test_should_have_value_changed_signal_when_text_is_instantiated(
+        self, qt_application
+    ):
         """Test signal."""
         widget = SettingText("Test Text")
 
@@ -331,7 +365,9 @@ class TestSettingText:
 class TestSettingCheckbox:
     """Tests for the SettingCheckbox class."""
 
-    def test_init_default(self, qt_application):
+    def test_should_have_default_checkbox_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default values."""
         widget = SettingCheckbox("Test Checkbox")
 
@@ -342,14 +378,16 @@ class TestSettingCheckbox:
         assert widget.objectName() == "SettingCheckbox"
         assert widget.property("type") == "SettingCheckbox"
 
-    def test_init_with_default(self, qt_application):
+    def test_should_use_given_default_when_default_checkbox_value_is_given(
+        self, qt_application
+    ):
         """Test initialization with a default value."""
         widget = SettingCheckbox("Test Checkbox", default=True)
 
         # Check default value
         assert widget._value
 
-    def test_ui_components(self, qt_application):
+    def test_should_have_label_and_checkbox_when_instantiated(self, qt_application):
         """Test user interface components."""
         widget = SettingCheckbox("Test Checkbox")
 
@@ -361,7 +399,7 @@ class TestSettingCheckbox:
         # Check label text
         assert widget.label.text() == "Test Checkbox"
 
-    def test_value_property(self, qt_application):
+    def test_should_update_value_when_checkbox_value_is_set(self, qt_application):
         """Test value property."""
         widget = SettingCheckbox("Test Checkbox")
 
@@ -372,7 +410,9 @@ class TestSettingCheckbox:
         widget.value = True
         assert widget._value
 
-    def test_get_set_value(self, qt_application):
+    def test_should_get_and_set_checkbox_value_when_checkbox_methods_are_called(
+        self, qt_application
+    ):
         """Test get_value and set_value methods."""
         widget = SettingCheckbox("Test Checkbox")
 
@@ -383,7 +423,9 @@ class TestSettingCheckbox:
         widget.set_value(True)
         assert widget.get_value()
 
-    def test_signal(self, qt_application):
+    def test_should_have_value_changed_signal_when_checkbox_is_instantiated(
+        self, qt_application
+    ):
         """Test signal."""
         widget = SettingCheckbox("Test Checkbox")
 

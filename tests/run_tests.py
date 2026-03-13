@@ -1,15 +1,27 @@
+#!/usr/bin/env python
 # ///////////////////////////////////////////////////////////////
-# Test Runner Script
+# RUN_TESTS - Test runner script
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""Test runner script for ezqt_app.
+"""
+Test runner script for EzQt_App.
 
-This script provides a convenient way to run tests with various options:
-- Unit, integration, or robustness tests
-- Coverage reports
-- Parallel execution
-- Custom markers
+Provides a convenient CLI wrapper around pytest for executing different
+types of tests (unit, integration, robustness) with various configurations.
+
+Supports:
+    - Running specific test types or all tests
+    - Coverage reporting
+    - Verbose output
+    - Parallel execution via pytest-xdist
+    - Marker-based filtering
+    - Fast mode (excluding slow tests)
+
+Example:
+    python run_tests.py --type unit --verbose --coverage
+    python run_tests.py --type all --parallel
+    python run_tests.py --marker qt --fast
 """
 
 from __future__ import annotations
@@ -19,36 +31,59 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 import argparse
+import logging
 import subprocess
 import sys
 from pathlib import Path
 
 # ///////////////////////////////////////////////////////////////
-# FUNCTIONS
+# HELPER FUNCTIONS
 # ///////////////////////////////////////////////////////////////
 
+logger = logging.getLogger(__name__)
 
-def run_command(cmd, description):
-    """Execute a command and display the result."""
-    print(f"\n{'=' * 60}")
-    print(f"🚀 {description}")
-    print(f"{'=' * 60}")
 
+def run_command(cmd: list[str], description: str) -> bool:
+    """
+    Execute a command and display output in real-time.
+
+    Args:
+        cmd: Command and arguments as list of strings
+        description: Human-readable description of what's running
+
+    Returns:
+        bool: True if command succeeded (exit code 0), False otherwise
+    """
+    logger.info("\n%s", "=" * 60)
+    logger.info("%s", description)
+    logger.info("%s", "=" * 60)
     try:
-        # Stream stdout/stderr in real time instead of buffering everything.
-        result = subprocess.run(cmd, shell=True, check=False)
+        result = subprocess.run(cmd, check=False)  # noqa: S603
         return result.returncode == 0
     except KeyboardInterrupt:
-        print("\n⚠️  User interruption (Ctrl+C)")
+        logger.warning("Interrupted by user (Ctrl+C)")
         return False
     except Exception as e:
-        print(f"❌ Error during execution: {e}")
+        logger.exception("Execution error: %s", e)
         return False
 
 
-def main():
-    """Main function."""
-    parser = argparse.ArgumentParser(description="Test runner for EzQt_App")
+def main() -> None:
+    """
+    Main entry point for the test runner.
+
+    Parses CLI arguments and executes pytest with appropriate configuration.
+    Validates that pyproject.toml exists before running tests.
+
+    Exit codes:
+        0: All tests passed
+        1: Tests failed or pyproject.toml not found
+    """
+    logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
+
+    parser = argparse.ArgumentParser(
+        description="Test runner for EzQt_App with flexible configuration"
+    )
     parser.add_argument(
         "--type",
         choices=["unit", "integration", "robustness", "all"],
@@ -74,11 +109,10 @@ def main():
 
     # ////// CHECK THAT WE ARE IN THE RIGHT DIRECTORY
     if not Path("pyproject.toml").exists():
-        print(
-            "❌ Error: pyproject.toml not found. Run this script from the project root."
-        )
+        logger.error("pyproject.toml not found. Run this script from the project root.")
         sys.exit(1)
 
+    # Build pytest command
     cmd_parts = [sys.executable, "-m", "pytest"]
     if args.verbose:
         cmd_parts.append("-v")
@@ -98,22 +132,22 @@ def main():
         cmd_parts.append("tests/")
     if args.coverage:
         cmd_parts.extend(
-            ["--cov=ezqt_app", "--cov-report=term-missing", "--cov-report=html:htmlcov"]
+            [
+                "--cov=src/ezqt_app",
+                "--cov-report=term-missing",
+                "--cov-report=html:htmlcov",
+            ]
         )
 
-    cmd = " ".join(cmd_parts)
-
-    # ////// RUN THE TESTS
-    success = run_command(cmd, f"Running {args.type} tests")
+    success = run_command(cmd_parts, f"Running {args.type} tests")
 
     if success:
-        print("\n✅ Tests executed successfully!")
-
+        logger.info("Tests passed successfully")
         if args.coverage:
-            print("\n📊 Coverage report generated in htmlcov/")
-            print("   Open htmlcov/index.html in your browser")
+            logger.info("Coverage report generated in htmlcov/")
+            logger.info("Open htmlcov/index.html in your browser")
     else:
-        print("\n❌ Test failure")
+        logger.error("Tests failed")
         sys.exit(1)
 
 

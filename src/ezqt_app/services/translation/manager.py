@@ -188,6 +188,7 @@ class TranslationManager(QObject):
 
         self.translator = QTranslator()
         language_info = SUPPORTED_LANGUAGES[language_code]
+        self.current_language = language_code
 
         if self.translations_dir is None:
             warn_tech(
@@ -213,7 +214,6 @@ class TranslationManager(QObject):
                         message="Error installing translator",
                         error=e,
                     )
-            self.current_language = language_code
             get_printer().info(f"Language switched to {language_info['name']}")
         else:
             warn_user(

@@ -60,9 +60,9 @@ class TestEzApplication:
     def test_should_have_required_qt_methods(self):
         """EzApplication must inherit core QApplication methods."""
         for method_name in ("setAttribute", "testAttribute", "applicationName"):
-            assert hasattr(
-                EzApplication, method_name
-            ), f"EzApplication should have method '{method_name}'"
+            assert hasattr(EzApplication, method_name), (
+                f"EzApplication should have method '{method_name}'"
+            )
 
     def test_should_accept_variadic_constructor(self):
         """Constructor must accept *args and **kwargs to forward to QApplication."""

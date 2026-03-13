@@ -205,7 +205,7 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_initialization(self, qt_application):
+    def test_should_have_ui_components_when_app_is_initialized(self, qt_application):
         """Test de l'initialisation complète de l'application."""
         # Créer l'application avec configuration temporaire
         app = create_app_with_fonts_mock()
@@ -223,7 +223,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_with_custom_theme(self, qt_application, tmp_path):
+    def test_should_store_theme_filename_when_custom_theme_is_given(
+        self, qt_application, tmp_path
+    ):
         """Test de l'application avec un thème personnalisé."""
         # Créer un fichier de thème temporaire
         theme_file = tmp_path / "custom_theme.qss"
@@ -249,7 +251,7 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_window_properties(self, qt_application):
+    def test_should_have_window_properties_when_app_is_created(self, qt_application):
         """Test des propriétés de la fenêtre d'application."""
         app = create_app_with_fonts_mock()
 
@@ -266,7 +268,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_menu_functionality(self, qt_application):
+    def test_should_have_toggle_button_and_menus_when_menu_container_is_checked(
+        self, qt_application
+    ):
         """Test de la fonctionnalité du menu."""
         app = create_app_with_fonts_mock()
 
@@ -284,7 +288,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_header_functionality(self, qt_application):
+    def test_should_have_settings_button_and_fixed_height_when_header_container_is_checked(
+        self, qt_application
+    ):
         """Test de la fonctionnalité de l'en-tête."""
         app = create_app_with_fonts_mock()
 
@@ -298,7 +304,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_pages_container(self, qt_application):
+    def test_should_have_stacked_widget_when_pages_container_is_checked(
+        self, qt_application
+    ):
         """Test du conteneur de pages."""
         app = create_app_with_fonts_mock()
 
@@ -312,7 +320,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_settings_panel(self, qt_application):
+    def test_should_have_scroll_area_when_settings_panel_is_checked(
+        self, qt_application
+    ):
         """Test du panneau de paramètres."""
         app = create_app_with_fonts_mock()
 
@@ -326,7 +336,7 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_signal_connections(self, qt_application):
+    def test_should_have_expected_signals_when_app_is_created(self, qt_application):
         """Test des connexions de signaux."""
         app = create_app_with_fonts_mock()
 
@@ -337,7 +347,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_theme_loading(self, qt_application, tmp_path):
+    def test_should_apply_theme_file_when_theme_is_given(
+        self, qt_application, tmp_path
+    ):
         """Test du chargement de thème."""
         # Créer un fichier de thème temporaire
         theme_file = tmp_path / "test_theme.qss"
@@ -363,7 +375,9 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_window_size(self, qt_application):
+    def test_should_have_expected_dimensions_when_window_is_queried(
+        self, qt_application
+    ):
         """Test de la taille de la fenêtre."""
         app = create_app_with_fonts_mock()
 
@@ -378,7 +392,7 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_cleanup(self, qt_application):
+    def test_should_close_window_when_close_is_called(self, qt_application):
         """Test du nettoyage de l'application."""
         app = create_app_with_fonts_mock()
 
@@ -388,7 +402,7 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_app_without_theme(self, qt_application):
+    def test_should_have_none_theme_when_no_theme_is_given(self, qt_application):
         """Test de l'application sans thème personnalisé."""
         # Créer l'application sans thème et avec configuration temporaire
         temp_yaml = create_temp_app_config()

@@ -12,10 +12,10 @@ from __future__ import annotations  # noqa: I001
 # ///////////////////////////////////////////////////////////////
 # Local imports
 from .component_factory import UiComponentFactory, get_ui_component_factory
+from .registries import Fonts, SizePolicy
 from .definitions_service import UiDefinitionsService
 from .menu_service import MenuService
 from .panel_service import PanelService
-from .registries import Fonts, SizePolicy
 from .theme_service import ThemeService
 from .ui_functions import UIFunctions
 from .window_service import WindowService

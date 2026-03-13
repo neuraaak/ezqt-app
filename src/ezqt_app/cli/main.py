@@ -23,6 +23,7 @@ from ezqt_app.services.bootstrap import OverwritePolicy
 from ezqt_app.services.bootstrap import init as bootstrap_init
 from ezqt_app.utils.diagnostics import warn_tech
 
+from ..version import __version__
 from .runner import ProjectRunner
 
 
@@ -30,7 +31,7 @@ from .runner import ProjectRunner
 # CLI GROUP
 # ///////////////////////////////////////////////////////////////
 @click.group()
-@click.version_option(version="5.0.0", prog_name="EzQt_App CLI")
+@click.version_option(version=__version__, prog_name="EzQt_App CLI")
 def cli():
     """EzQt_App CLI - Framework utilities and project management.
 

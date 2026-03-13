@@ -200,12 +200,9 @@ class BottomBar(QFrame):
         else:
             # Fallback to EzQt_App version if no version found
             try:
-                import ezqt_app
+                from ...version import __version__
 
-                if hasattr(ezqt_app, "__version__"):
-                    self.set_version(f"v{ezqt_app.__version__}")
-                else:
-                    self.set_version("")  # Default version
+                self.set_version(f"v{__version__}")
             except ImportError:
                 self.set_version("")  # Default version
 
@@ -255,19 +252,18 @@ class BottomBar(QFrame):
 
             # Method 4: Try to import main module
             try:
-                import main  # type: ignore[import]
+                import main  # type: ignore[import-not-found]
 
                 if hasattr(main, "__version__"):
-                    return f"v{main.__version__}"
+                    return f"v{main.__version__}"  # type: ignore[attr-defined]
             except ImportError:
                 pass
 
             # Method 5: Fallback to EzQt_App version
             try:
-                import ezqt_app
+                from ...version import __version__
 
-                if hasattr(ezqt_app, "__version__"):
-                    return f"v{ezqt_app.__version__}"
+                return f"v{__version__}"
             except ImportError:
                 pass
 

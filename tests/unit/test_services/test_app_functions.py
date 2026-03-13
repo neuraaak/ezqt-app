@@ -30,7 +30,7 @@ class TestConfigServiceV5:
     def setup_method(self) -> None:
         self.service = ConfigService()
 
-    def test_load_config_success_from_project_root(
+    def test_should_load_config_from_project_root_when_config_file_exists(
         self, temp_project_root: Path
     ) -> None:
         config_dir = temp_project_root / "bin" / "config"
@@ -53,13 +53,15 @@ class TestConfigServiceV5:
         assert loaded["app"]["name"] == "Test App"
         assert loaded["app"]["theme"] == "dark"
 
-    def test_load_config_missing_returns_empty_dict(
+    def test_should_return_empty_dict_when_config_file_is_missing(
         self, temp_project_root: Path
     ) -> None:
         self.service.set_project_root(temp_project_root)
         assert self.service.load_config("missing") == {}
 
-    def test_get_config_value(self, temp_project_root: Path) -> None:
+    def test_should_return_config_value_when_key_path_is_queried(
+        self, temp_project_root: Path
+    ) -> None:
         config_dir = temp_project_root / "bin" / "config"
         config_dir.mkdir(parents=True, exist_ok=True)
 
@@ -75,7 +77,9 @@ class TestConfigServiceV5:
         )
         assert value == "rgb(0, 0, 0)"
 
-    def test_save_config_writes_config_yaml(self, temp_project_root: Path) -> None:
+    def test_should_write_config_yaml_when_save_config_is_called(
+        self, temp_project_root: Path
+    ) -> None:
         self.service.set_project_root(temp_project_root)
 
         data = {"app": {"name": "Updated App", "theme": "light"}}
@@ -87,7 +91,7 @@ class TestConfigServiceV5:
         loaded = yaml.safe_load(saved_file.read_text(encoding="utf-8"))
         assert loaded["app"]["theme"] == "light"
 
-    def test_save_config_writes_back_loaded_file_without_project_root(
+    def test_should_save_loaded_config_back_when_project_root_is_none(
         self, temp_project_root: Path
     ) -> None:
         config_dir = temp_project_root / "bin" / "config"
@@ -110,7 +114,7 @@ class TestConfigServiceV5:
         reloaded = yaml.safe_load(config_file.read_text(encoding="utf-8"))
         assert reloaded["app"]["theme"] == "light"
 
-    def test_get_package_resource_returns_existing_path(self) -> None:
+    def test_should_return_existing_path_when_package_resource_is_queried(self) -> None:
         resource = get_package_resource("resources/config/app.config.yaml")
         assert isinstance(resource, Path)
         assert resource.exists()

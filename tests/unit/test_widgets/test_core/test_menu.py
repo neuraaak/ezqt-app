@@ -26,7 +26,9 @@ from ezqt_app.widgets.extended.menu_button import MenuButton
 class TestMenu:
     """Tests for the Menu class."""
 
-    def test_init_default_parameters(self, qt_application):
+    def test_should_have_default_menu_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default parameters."""
         menu = Menu()
 
@@ -39,7 +41,9 @@ class TestMenu:
         assert menu._shrink_width == 60
         assert menu._extended_width == 240
 
-    def test_init_with_custom_widths(self, qt_application):
+    def test_should_use_custom_widths_when_shrink_and_extended_widths_are_given(
+        self, qt_application
+    ):
         """Test initialization with custom widths."""
         shrink_width = 80
         extended_width = 300
@@ -53,7 +57,7 @@ class TestMenu:
         # Check that minimum width is set
         assert menu.minimumSize().width() == shrink_width
 
-    def test_layout_structure(self, qt_application):
+    def test_should_have_vertical_layout_when_instantiated(self, qt_application):
         """Test layout structure."""
         menu = Menu()
 
@@ -69,7 +73,7 @@ class TestMenu:
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-    def test_main_menu_frame(self, qt_application):
+    def test_should_have_main_menu_frame_when_instantiated(self, qt_application):
         """Test main menu frame."""
         menu = Menu()
 
@@ -82,7 +86,7 @@ class TestMenu:
         assert menu.mainMenuFrame.frameShape() == QFrame.NoFrame
         assert menu.mainMenuFrame.frameShadow() == QFrame.Raised
 
-    def test_main_menu_layout(self, qt_application):
+    def test_should_have_main_menu_layout_when_instantiated(self, qt_application):
         """Test main menu layout."""
         menu = Menu()
 
@@ -98,7 +102,7 @@ class TestMenu:
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-    def test_toggle_container(self, qt_application):
+    def test_should_have_toggle_container_when_instantiated(self, qt_application):
         """Test toggle container."""
         menu = Menu()
 
@@ -111,7 +115,7 @@ class TestMenu:
         assert menu.toggleBox.frameShape() == QFrame.NoFrame
         assert menu.toggleBox.frameShadow() == QFrame.Raised
 
-    def test_toggle_layout(self, qt_application):
+    def test_should_have_toggle_layout_when_instantiated(self, qt_application):
         """Test toggle layout."""
         menu = Menu()
 
@@ -127,7 +131,7 @@ class TestMenu:
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-    def test_toggle_button(self, qt_application):
+    def test_should_have_toggle_button_when_instantiated(self, qt_application):
         """Test toggle button."""
         menu = Menu()
 
@@ -139,7 +143,9 @@ class TestMenu:
         # Check button properties
         assert menu.toggleButton.objectName() == "toggleButton"
 
-    def test_menu_dictionary(self, qt_application):
+    def test_should_initialize_with_empty_menus_dict_when_instantiated(
+        self, qt_application
+    ):
         """Test menu dictionary."""
         menu = Menu()
 
@@ -147,7 +153,9 @@ class TestMenu:
         assert hasattr(menu, "menus")
         assert isinstance(menu.menus, dict)
 
-    def test_button_list_management(self, qt_application):
+    def test_should_initialize_with_empty_button_list_when_instantiated(
+        self, qt_application
+    ):
         """Test button list management."""
         menu = Menu()
 
@@ -155,7 +163,9 @@ class TestMenu:
         assert hasattr(menu, "_buttons")
         assert isinstance(menu._buttons, list)
 
-    def test_icon_list_management(self, qt_application):
+    def test_should_initialize_with_empty_icon_list_when_instantiated(
+        self, qt_application
+    ):
         """Test icon list management."""
         menu = Menu()
 
@@ -163,7 +173,9 @@ class TestMenu:
         assert hasattr(menu, "_icons")
         assert isinstance(menu._icons, list)
 
-    def test_size_constraints(self, qt_application):
+    def test_should_have_shrink_width_as_size_constraint_when_instantiated(
+        self, qt_application
+    ):
         """Test size constraints."""
         menu = Menu()
 
@@ -173,7 +185,9 @@ class TestMenu:
         assert menu.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
         assert menu.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred
 
-    def test_toggle_button_properties(self, qt_application):
+    def test_should_have_toggle_button_with_icon_when_instantiated(
+        self, qt_application
+    ):
         """Test toggle button properties."""
         menu = Menu()
 
@@ -182,7 +196,9 @@ class TestMenu:
         assert menu.toggleButton.icon is not None
         assert menu.toggleButton.icon_size == QSize(20, 20)
 
-    def test_toggle_button_signal(self, qt_application):
+    def test_should_expose_clicked_signal_on_toggle_button_when_instantiated(
+        self, qt_application
+    ):
         """Test that toggle button emits signals."""
         menu = Menu()
 
@@ -190,7 +206,9 @@ class TestMenu:
         assert hasattr(menu.toggleButton, "clicked")
         assert callable(menu.toggleButton.clicked)
 
-    def test_menu_expansion_capability(self, qt_application):
+    def test_should_have_extended_width_greater_than_shrink_width_when_instantiated(
+        self, qt_application
+    ):
         """Test menu expansion capability."""
         menu = Menu()
 
@@ -198,7 +216,7 @@ class TestMenu:
         assert menu.get_extended_width() > menu.get_shrink_width()
         assert menu.maximumSize().width() == menu._shrink_width
 
-    def test_menu_initial_state(self, qt_application):
+    def test_should_start_at_shrink_width_when_instantiated(self, qt_application):
         """Test menu initial state."""
         menu = Menu()
 
@@ -206,7 +224,9 @@ class TestMenu:
         assert menu.width() == menu._shrink_width
         assert menu.minimumSize().width() == menu._shrink_width
 
-    def test_menu_with_different_widths(self, qt_application):
+    def test_should_apply_custom_widths_when_different_widths_are_provided(
+        self, qt_application
+    ):
         """Test menu with different widths."""
         shrink_width = 50
         extended_width = 200
@@ -219,7 +239,7 @@ class TestMenu:
         assert menu.minimumSize().width() == shrink_width
         assert menu.maximumSize().width() == shrink_width
 
-    def test_menu_frame_properties(self, qt_application):
+    def test_should_have_no_frame_on_all_frames_when_instantiated(self, qt_application):
         """Test menu frame properties."""
         menu = Menu()
 
@@ -231,7 +251,9 @@ class TestMenu:
         assert menu.toggleBox.frameShape() == QFrame.NoFrame
         assert menu.toggleBox.frameShadow() == QFrame.Raised
 
-    def test_menu_layout_properties(self, qt_application):
+    def test_should_have_zero_spacing_and_margins_on_all_layouts_when_instantiated(
+        self, qt_application
+    ):
         """Test menu layout properties."""
         menu = Menu()
 
@@ -258,7 +280,7 @@ class TestMenu:
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-    def test_menu_object_names(self, qt_application):
+    def test_should_have_correct_object_names_when_instantiated(self, qt_application):
         """Test menu object names."""
         menu = Menu()
 
@@ -268,7 +290,7 @@ class TestMenu:
         assert menu.toggleBox.objectName() == "toggleBox"
         assert menu.toggleButton.objectName() == "toggleButton"
 
-    def test_menu_size_policy(self, qt_application):
+    def test_should_have_preferred_size_policy_when_instantiated(self, qt_application):
         """Test menu size policy."""
         menu = Menu()
 

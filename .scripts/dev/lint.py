@@ -6,7 +6,7 @@
 """
 Code quality check script.
 
-Runs Black, isort, and Ruff on the codebase.
+Runs Ruff on the codebase.
 
 Usage:
     python .scripts/dev/lint.py [options]
@@ -71,7 +71,7 @@ class CodeQualityChecker:
         self.project_root = Path(__file__).resolve().parents[2]
         # Directories to scan (relative to project root)
         self.scan_dirs = [
-            "src",
+            f"src/{project_name.lower()}",
             "tests",
             ".scripts",
         ]
@@ -140,47 +140,93 @@ class CodeQualityChecker:
     # PUBLIC METHODS
     # ///////////////////////////////////////////////////////////////
 
-    def run_black(self) -> bool:
-        """Run Black code formatter.
-
-        Black will automatically read configuration from pyproject.toml.
+    def run_import_linter(self) -> bool:
+        """Run import-linter to check layer dependency contracts.
 
         Returns:
-            bool: True if formatting succeeded, False otherwise
+            bool: True if contracts are respected, False otherwise
         """
-        mode = "--check" if self.check_only else ""
-        command = [
-            sys.executable,
-            "-m",
-            "black",
-            "--line-length=88",
-        ]
+        command = ["lint-imports"]
+        env = {"PYTHONPATH": str(self.project_root / "src")}
 
-        if mode:
-            command.append(mode)
+        if self.verbose:
+            self.console.print("[cyan]Running import-linter...[/cyan]")
+            self.console.print(
+                f"  [dim]Command: PYTHONPATH=src {' '.join(command)}[/dim]"
+            )
 
-        # Use directories instead of individual files for better performance
-        # Black will read target-version from pyproject.toml automatically
-        command.extend([str(p) for p in self._get_scan_paths()])
+        try:
+            import os
 
-        return self._run_command(command, "Black code formatting")
+            full_env = {**os.environ, **env}
+            result = subprocess.run(  # noqa: S603
+                command,
+                check=True,
+                capture_output=not self.verbose,
+                text=True,
+                cwd=self.project_root,
+                env=full_env,
+            )
+        except subprocess.CalledProcessError as e:
+            self.console.print("[red]❌ ERROR:[/red] import-linter failed:")
+            if e.stdout:
+                self.console.print(f"[dim]STDOUT:[/dim]\n{e.stdout}")
+            if e.stderr:
+                self.console.print(f"[dim]STDERR:[/dim]\n{e.stderr}")
+            return False
+        except FileNotFoundError:
+            self.console.print(
+                "[yellow]⚠[/yellow]  import-linter not found — skipping (install with: pip install import-linter)"
+            )
+            return True
+        else:
+            if self.verbose and result.stdout:
+                self.console.print(result.stdout)
+            self.console.print(
+                "[green]✓[/green] [green]SUCCESS:[/green] import-linter completed successfully"
+            )
+            return True
 
-    def run_isort(self) -> bool:
-        """Run isort import organizer.
+    def run_ty(self) -> bool:
+        """Run ty type checker.
 
         Returns:
-            bool: True if organization succeeded, False otherwise
+            bool: True if type checking succeeded, False otherwise
         """
-        mode = "--check-only" if self.check_only else ""
-        command = [sys.executable, "-m", "isort", "--profile=black", "--line-length=88"]
-
-        if mode:
-            command.append(mode)
-
-        # Use directories instead of individual files for better performance
+        command = ["ty", "check", "--output-format=concise"]
         command.extend([str(p) for p in self._get_scan_paths()])
 
-        return self._run_command(command, "isort import organization")
+        if self.verbose:
+            self.console.print("[cyan]Running ty...[/cyan]")
+            self.console.print(f"  [dim]Command: {' '.join(command)}[/dim]")
+
+        try:
+            result = subprocess.run(  # noqa: S603
+                command,
+                check=True,
+                capture_output=not self.verbose,
+                text=True,
+                cwd=self.project_root,
+            )
+        except subprocess.CalledProcessError as e:
+            self.console.print("[red]❌ ERROR:[/red] ty type checking failed:")
+            if e.stdout:
+                self.console.print(f"[dim]STDOUT:[/dim]\n{e.stdout}")
+            if e.stderr:
+                self.console.print(f"[dim]STDERR:[/dim]\n{e.stderr}")
+            return False
+        except FileNotFoundError:
+            self.console.print(
+                "[yellow]⚠[/yellow]  ty not found — skipping (install with: pip install ty)"
+            )
+            return True
+        else:
+            if self.verbose and result.stdout:
+                self.console.print(result.stdout)
+            self.console.print(
+                "[green]✓[/green] [green]SUCCESS:[/green] ty type checking completed successfully"
+            )
+            return True
 
     def run_ruff(self) -> bool:
         """Run Ruff linter.
@@ -189,7 +235,14 @@ class CodeQualityChecker:
             bool: True if linting succeeded, False otherwise
         """
         if self.check_only:
-            command = [sys.executable, "-m", "ruff", "check", "--line-length=88"]
+            command = [
+                sys.executable,
+                "-m",
+                "ruff",
+                "check",
+                "--line-length=88",
+                "--output-format=concise",
+            ]
         else:
             command = [
                 sys.executable,
@@ -198,6 +251,7 @@ class CodeQualityChecker:
                 "check",
                 "--fix",
                 "--line-length=88",
+                "--output-format=concise",
             ]
 
         # Use directories instead of individual files for better performance
@@ -248,13 +302,12 @@ class CodeQualityChecker:
         self.console.print(f"[bold]Scanning directories:[/bold] {dirs_text}")
         self.console.print()
 
-        # Order matters: format first, then lint
-        # Ruff format should run before Ruff check to avoid conflicts
+        # Order matters: format first, then lint, then types, then architecture contracts
         checks = [
             ("Ruff Format", self.run_ruff_format, "🎨"),
-            ("Black", self.run_black, "⚫"),
-            ("isort", self.run_isort, "📦"),
             ("Ruff", self.run_ruff, "🔍"),
+            ("Ty", self.run_ty, "🔎"),
+            ("Import Linter", self.run_import_linter, "🏗️"),
         ]
 
         all_passed = True

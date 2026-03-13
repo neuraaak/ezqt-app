@@ -66,6 +66,8 @@ MANIFEST
 .cache
 .nox/
 .hypothesis/
+.import_linter_cache/
+.grimp_cache/
 
 # Dependency manager cache
 .pip-cache/

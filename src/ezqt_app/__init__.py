@@ -54,6 +54,7 @@ from .services.translation import (
     unregister_tr,
 )
 from .services.ui import UIFunctions
+from .version import __version__
 from .widgets.core.header import Header
 from .widgets.core.menu import Menu
 from .widgets.core.page_container import PageContainer
@@ -64,7 +65,6 @@ from .widgets.ui_main import Ui_MainWindow
 # META INFORMATIONS
 # ///////////////////////////////////////////////////////////////
 
-__version__ = "5.1.0"
 __author__ = "Neuraaak"
 __maintainer__ = "Neuraaak"
 __description__ = (

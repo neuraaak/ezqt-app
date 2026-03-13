@@ -30,22 +30,26 @@ from ezqt_app.widgets.core.settings_panel import SettingsPanel
 class TestSettingsPanel:
     """Tests for the SettingsPanel class."""
 
-    def test_init_default_parameters(self, qt_application):
+    def test_should_have_default_frame_properties_when_instantiated(
+        self, qt_application
+    ):
         panel = SettingsPanel()
         assert panel.objectName() == "settingsPanel"
         assert panel.frameShape() == QFrame.NoFrame
         assert panel.frameShadow() == QFrame.Raised
 
-    def test_init_with_custom_width(self, qt_application):
+    def test_should_use_custom_width_when_width_is_given(self, qt_application):
         panel = SettingsPanel(width=300)
         assert panel.get_width() == 300
 
-    def test_init_with_parent(self, qt_application):
+    def test_should_accept_parent_when_parent_is_given(self, qt_application):
         parent = QWidget()
         panel = SettingsPanel(parent=parent)
         assert panel.parent() == parent
 
-    def test_scroll_area(self, qt_application):
+    def test_should_have_correctly_configured_scroll_area_when_instantiated(
+        self, qt_application
+    ):
         panel = SettingsPanel()
         assert isinstance(panel.settingsScrollArea, QScrollArea)
         assert panel.settingsScrollArea.objectName() == "settingsScrollArea"
@@ -59,21 +63,25 @@ class TestSettingsPanel:
             == Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
 
-    def test_content_container(self, qt_application):
+    def test_should_have_content_container_when_instantiated(self, qt_application):
         panel = SettingsPanel()
         assert hasattr(panel, "contentSettings")
         assert panel.contentSettings.objectName() == "contentSettings"
         assert panel.contentSettings.frameShape() == QFrame.NoFrame
         assert panel.VL_contentSettings.spacing() == 0
 
-    def test_theme_container_and_label(self, qt_application):
+    def test_should_have_theme_container_and_label_when_instantiated(
+        self, qt_application
+    ):
         panel = SettingsPanel()
         assert panel.themeSettingsContainer.objectName() == "themeSettingsContainer"
         assert panel.themeLabel.objectName() == "themeLabel"
         assert isinstance(panel.themeLabel, QLabel)
         assert panel.themeLabel.text() == "Active Theme"
 
-    def test_theme_layout_properties(self, qt_application):
+    def test_should_have_correct_theme_layout_properties_when_instantiated(
+        self, qt_application
+    ):
         panel = SettingsPanel()
         assert panel.VL_themeSettingsContainer.spacing() == 8
         margins = panel.VL_themeSettingsContainer.contentsMargins()
@@ -82,33 +90,37 @@ class TestSettingsPanel:
         assert margins.right() == 10
         assert margins.bottom() == 10
 
-    def test_signals_exist(self, qt_application):
+    def test_should_have_setting_and_language_signals_when_instantiated(
+        self, qt_application
+    ):
         panel = SettingsPanel()
         assert hasattr(panel, "settingChanged")
         assert hasattr(panel, "languageChanged")
 
-    def test_internal_collections(self, qt_application):
+    def test_should_initialize_with_empty_internal_collections_when_loaded_without_yaml(
+        self, qt_application
+    ):
         panel = SettingsPanel(load_from_yaml=False)
         assert isinstance(panel._widgets, list)
         assert isinstance(panel._settings, dict)
 
-    def test_size_constraints_and_policy(self, qt_application):
+    def test_should_have_zero_size_constraints_when_instantiated(self, qt_application):
         panel = SettingsPanel()
         assert panel.minimumSize().width() == 0
         assert panel.maximumSize().width() == 0
         assert panel.sizePolicy().horizontalPolicy() == QSizePolicy.Policy.Preferred
         assert panel.sizePolicy().verticalPolicy() == QSizePolicy.Policy.Preferred
 
-    def test_set_width(self, qt_application):
+    def test_should_update_width_when_set_width_is_called(self, qt_application):
         panel = SettingsPanel()
         panel.set_width(350)
         assert panel.get_width() == 350
 
-    def test_settings_panel_without_yaml_loading(self, qt_application):
+    def test_should_have_empty_settings_when_loaded_without_yaml(self, qt_application):
         panel = SettingsPanel(load_from_yaml=False)
         assert panel._settings == {}
 
-    def test_settings_storage_prefix_prefers_legacy_root_when_present(
+    def test_should_prefer_legacy_root_when_legacy_root_key_exists(
         self, qt_application, monkeypatch
     ):
         class _FakeConfigService:
@@ -127,7 +139,7 @@ class TestSettingsPanel:
         panel = SettingsPanel(load_from_yaml=False)
         assert panel._settings_storage_prefix() == ["settings_panel"]
 
-    def test_settings_storage_prefix_uses_configured_root_when_available(
+    def test_should_use_configured_root_when_settings_storage_root_is_available(
         self, qt_application, monkeypatch
     ):
         class _FakeConfigService:
@@ -148,7 +160,7 @@ class TestSettingsPanel:
         # Legacy root exists, fallback must still prefer root settings_panel.
         assert panel._settings_storage_prefix() == ["settings_panel"]
 
-    def test_settings_storage_prefix_accepts_nested_root_when_mapping_exists(
+    def test_should_accept_nested_root_when_mapping_exists_in_config(
         self, qt_application, monkeypatch
     ):
         class _FakeConfigService:
@@ -169,7 +181,9 @@ class TestSettingsPanel:
         panel = SettingsPanel(load_from_yaml=False)
         assert panel._settings_storage_prefix() == ["app", "settings_panel"]
 
-    def test_language_change_resyncs_theme_selector(self, qt_application, monkeypatch):
+    def test_should_resync_theme_selector_when_language_is_changed(
+        self, qt_application, monkeypatch
+    ):
         class _FakeTranslationService:
             def get_current_language_name(self) -> str:
                 return "English"

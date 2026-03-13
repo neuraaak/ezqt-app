@@ -21,13 +21,13 @@ from ezqt_app.cli.main import cli
 # ///////////////////////////////////////////////////////////////
 
 
-def test_cli_initialization() -> None:
+def test_should_be_importable_and_callable_when_cli_is_loaded() -> None:
     """CLI object is importable and callable."""
     assert cli is not None
     assert callable(cli)
 
 
-def test_cli_lists_expected_commands() -> None:
+def test_should_expose_expected_commands_when_cli_is_loaded() -> None:
     """Top-level CLI exposes the expected command names."""
     expected_commands = {
         "init",
@@ -41,7 +41,7 @@ def test_cli_lists_expected_commands() -> None:
     assert expected_commands.issubset(set(cli.commands))
 
 
-def test_cli_help_runs_successfully() -> None:
+def test_should_render_help_page_when_help_flag_is_given() -> None:
     """The CLI help page can be rendered."""
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
