@@ -11,14 +11,14 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 
 # ///////////////////////////////////////////////////////////////
 # TYPES
 # ///////////////////////////////////////////////////////////////
-class OverwritePolicy(str, Enum):
+class OverwritePolicy(StrEnum):
     """Policy used when generated files already exist."""
 
     ASK = "ask"

@@ -24,7 +24,7 @@ from ezqt_app.services.translation.manager import TranslationManager
 class TestTranslationManager:
     """Tests for the TranslationManager class."""
 
-    def test_init_default_language(self):
+    def test_should_initialize_with_english_language_when_instantiated(self):
         """Test initialization with default language."""
         manager = TranslationManager()
         assert manager.current_language == "en"
@@ -32,7 +32,7 @@ class TestTranslationManager:
         assert len(manager._translatable_widgets) == 0
         assert len(manager._translatable_texts) == 0
 
-    def test_language_mapping(self):
+    def test_should_have_correct_language_mapping_when_instantiated(self):
         """Test language mapping."""
         manager = TranslationManager()
         expected_mapping = {
@@ -43,7 +43,7 @@ class TestTranslationManager:
         }
         assert manager.language_mapping == expected_mapping
 
-    def test_get_available_languages(self):
+    def test_should_return_list_of_available_languages_when_called(self):
         """Test retrieval of available languages."""
         manager = TranslationManager()
         languages = manager.get_available_languages()
@@ -56,17 +56,17 @@ class TestTranslationManager:
         for lang in expected_languages:
             assert lang in languages
 
-    def test_get_current_language_code(self):
+    def test_should_return_en_code_when_default_language_is_queried(self):
         """Test retrieval of current language code."""
         manager = TranslationManager()
         assert manager.get_current_language_code() == "en"
 
-    def test_get_current_language_name(self):
+    def test_should_return_english_name_when_default_language_is_queried(self):
         """Test retrieval of current language name."""
         manager = TranslationManager()
         assert manager.get_current_language_name() == "English"
 
-    def test_translate_text_no_translation(self):
+    def test_should_return_original_text_when_no_translation_file_is_loaded(self):
         """Test text translation without available translation."""
         manager = TranslationManager()
         text = "Hello World"
@@ -74,7 +74,7 @@ class TestTranslationManager:
         assert translated == text  # Returns original text if no translation
 
     @patch("ezqt_app.services.translation.manager.QTranslator")
-    def test_load_language_success(self, mock_translator):
+    def test_should_load_language_when_translator_load_succeeds(self, mock_translator):
         """Test successful language loading."""
         manager = TranslationManager()
 
@@ -90,7 +90,9 @@ class TestTranslationManager:
     @patch("ezqt_app.services.translation.manager.QTranslator")
     @patch("ezqt_app.services.translation.manager.QCoreApplication")
     @patch("pathlib.Path.exists")
-    def test_load_language_failure(self, mock_exists, mock_qcore, mock_translator):
+    def test_should_fail_to_load_when_translation_file_does_not_exist(
+        self, mock_exists, mock_qcore, mock_translator
+    ):
         """Test failed language loading."""
         manager = TranslationManager()
 
@@ -111,7 +113,7 @@ class TestTranslationManager:
         assert not result
         assert manager.get_current_language_code() == "en"  # Should remain default
 
-    def test_register_widget(self):
+    def test_should_add_widget_to_registry_when_register_widget_is_called(self):
         """Test widget registration."""
         manager = TranslationManager()
         mock_widget = MagicMock()
@@ -119,7 +121,7 @@ class TestTranslationManager:
         manager.register_widget(mock_widget, "Hello")
         assert mock_widget in manager._translatable_widgets
 
-    def test_unregister_widget(self):
+    def test_should_remove_widget_from_registry_when_unregister_widget_is_called(self):
         """Test widget unregistration."""
         manager = TranslationManager()
         mock_widget = MagicMock()
@@ -129,7 +131,7 @@ class TestTranslationManager:
         manager.unregister_widget(mock_widget)
         assert mock_widget not in manager._translatable_widgets
 
-    def test_clear_registered_widgets(self):
+    def test_should_clear_all_widgets_when_clear_registered_widgets_is_called(self):
         """Test clearing all registered widgets."""
         manager = TranslationManager()
         mock_widget1 = MagicMock()
@@ -144,7 +146,7 @@ class TestTranslationManager:
         manager.clear_registered_widgets()
         assert len(manager._translatable_widgets) == 0
 
-    def test_set_translatable_text(self):
+    def test_should_store_text_mapping_when_set_translatable_text_is_called(self):
         """Test setting translatable text for a widget."""
         manager = TranslationManager()
         mock_widget = MagicMock()
@@ -153,7 +155,7 @@ class TestTranslationManager:
         assert manager._translatable_texts[mock_widget] == "Hello"
 
     @patch("ezqt_app.services.translation.manager.QCoreApplication")
-    def test_load_language_by_code(self, mock_qcore):
+    def test_should_load_language_when_code_is_given(self, mock_qcore):
         """Test loading language by code."""
         manager = TranslationManager()
 
@@ -166,7 +168,9 @@ class TestTranslationManager:
         assert result
         assert manager.get_current_language_code() == "fr"
 
-    def test_language_changed_signal(self, qt_application):
+    def test_should_emit_language_changed_signal_when_language_is_loaded(
+        self, qt_application
+    ):
         """Test that the languageChanged signal is emitted."""
         manager = TranslationManager()
         signal_emitted = False

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # ///////////////////////////////////////////////////////////////
-# UPDATE_README_VERSION - Sync README badge and pyproject.toml with __init__.py version
+# UPDATE_README_VERSION - Sync README badge and pyproject.toml with version.py
 # ///////////////////////////////////////////////////////////////
 
-"""Update the version badge in README.md and pyproject.toml from your-project/__init__.py.
+"""Update the version badge in README.md and pyproject.toml from src/{project_name}/version.py.
 
 This keeps the visible version in sync with the canonical __version__ value
-defined in your-project/__init__.py, which is the single source of truth.
+defined in src/{project_name}/version.py, which is the single source of truth.
 """
 
 from __future__ import annotations
@@ -47,14 +47,14 @@ console = Console(legacy_windows=False)
 
 
 def read_version() -> str:
-    """Read version from {project_name}/__init__.py __version__.
+    """Read version from src/{project_name}/version.py __version__.
 
     This is the canonical source of truth for the package version.
     """
     # Project root is the parent of the .scripts/dev directory
     project_root = Path(__file__).resolve().parents[2]
-    init_path = project_root / "src" / project_name.lower() / "__init__.py"
-    content = init_path.read_text(encoding="utf-8")
+    version_path = project_root / "src" / project_name.lower() / "version.py"
+    content = version_path.read_text(encoding="utf-8")
 
     # Match __version__ = "X.Y.Z"
     match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content)
@@ -65,7 +65,7 @@ def read_version() -> str:
         )
         return version
 
-    error_msg = f"Unable to find __version__ in {project_name}/__init__.py"
+    error_msg = f"Unable to find __version__ in src/{project_name.lower()}/version.py"
     console.print(f"[red]❌[/red] {error_msg}")
     raise RuntimeError(error_msg)
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Standard library imports
 # Local imports
 from .definitions_service import UiDefinitionsService
 from .menu_service import MenuService
@@ -29,9 +30,7 @@ class UIFunctions:
     """
 
     def __init__(self) -> None:
-        from ...widgets.ui_main import Ui_MainWindow
-
-        self.ui: Ui_MainWindow
+        pass
 
     # ///////////////////////////////////////////////////////////////
     # WINDOW MANAGEMENT

@@ -14,17 +14,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezqt-app"
-version = "5.1.0"
+version = "5.1.1"
 description = "Lightweight framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [{ name = "Neuraaak" }]
 maintainers = [{ name = "Neuraaak" }]
 keywords = ["qt", "pyside6", "application", "framework"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -70,6 +69,7 @@ dev = [
     "ty>=0.0.13",
     "pyright>=1.1.0",
     "pre-commit>=3.0.0",
+    "import-linter>=2.0.0",
 
     # Security
     "bandit>=1.7.0",
@@ -95,6 +95,7 @@ test = [
     "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "pytest-xdist>=3.0.0",
+    "import-linter>=2.0.0",
 ]
 docs = [
     "mkdocs>=1.6.0,<2.0.0",
@@ -122,16 +123,19 @@ PyPI = "https://pypi.org/project/ezqt-app/"
 # ///////////////////////////////////////////////////////////////
 
 [project.scripts]
-ezqt = "ezqt_app.cli.main:cli"
+ezqt-app = "ezqt_app.cli.main:cli"
 
 # ///////////////////////////////////////////////////////////////
 # 📦 SETUPTOOLS CONFIGURATION
 # Package discovery and inclusion/exclusion patterns
 # ///////////////////////////////////////////////////////////////
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["ezqt_app", "ezqt_app.*"]
+include = ["ezqt_app*"]
 exclude = [
     "tests*",
     "build*",
@@ -182,7 +186,7 @@ ezqt_app = [
 
 # Ruff: All-in-one linter with comprehensive rule sets
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 line-length = 88
 
 [tool.ruff.lint]
@@ -190,7 +194,7 @@ select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
     "F",   # pyflakes
-    "I",   # isort
+    "I",   # isort-compatible import sorting (via ruff)
     "B",   # flake8-bugbear
     "C4",  # flake8-comprehensions
     "UP",  # pyupgrade
@@ -225,13 +229,13 @@ line-ending = "auto"
 
 # ///////////////////////////////////////////////////////////////
 # ✅ TYPE CHECKING TOOLS
-# Static type checking with minimal configuration
+# Static type analysis with minimal and comprehensive modes
 # ///////////////////////////////////////////////////////////////
 
-# Ty: Type checking tool with minimal configuration
+# Ty: Type checking with minimal configuration
 [tool.ty.environment]
-python-version = "3.10"
-root = ["src"]
+python-version = "3.11"
+root = ["src", "src/ezqt_app"]
 
 [tool.ty.src]
 include = ["src/ezqt_app/**/*.py"]
@@ -255,9 +259,9 @@ error-on-warning = false
 # Ignore PySide6 stub issues (isValid, setIcon, setText overloads)
 no-matching-overload = "ignore"
 
-# Pyright: Type checking tool with comprehensive reporting
+# Pyright: Comprehensive type checking with detailed reporting
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 include = ["src/ezqt_app"]
 exclude = [
@@ -269,6 +273,8 @@ exclude = [
     "tests",
     "docs",
     "examples",
+    "**/node_modules",
+    "**/.*",
 ]
 reportMissingImports = true
 reportMissingTypeStubs = false
@@ -295,7 +301,30 @@ reportIncompatibleVariableOverride = true
 reportInconsistentConstructor = true
 
 # ///////////////////////////////////////////////////////////////
-# 🧪 TESTING & COVERAGE TOOLS
+# � IMPORT LINTER CONTRACTS
+# Layer dependency contracts enforced in CI
+# ///////////////////////////////////////////////////////////////
+
+[tool.importlinter]
+root_packages = ["ezqt_app"]
+# Note: import-linter 2.x ne supporte pas source_paths (feature pending PR #323).
+# Le package doit être installé en mode editable (pip install -e .)
+# ou lancer avec PYTHONPATH=src lint-imports
+
+[[tool.importlinter.contracts]]
+name = "layer dependency flow"
+type = "layers"
+layers = [
+    "ezqt_app.cli",
+    "ezqt_app.widgets",
+    "ezqt_app.services",
+    "ezqt_app.domain",
+    "ezqt_app.shared",
+    "ezqt_app.utils",
+]
+
+# ///////////////////////////////////////////////////////////////
+# �🧪 TESTING & COVERAGE TOOLS
 # Test execution, coverage analysis, and test configuration
 # ///////////////////////////////////////////////////////////////
 
@@ -305,7 +334,7 @@ minversion = "7.0"
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--cov=ezqt_app",
+    "--cov=src/ezqt_app",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
@@ -361,6 +390,11 @@ omit = [
     "docs/*",
     "examples/*",
     "_temp/*",
+    # Modules non testables unitairement (point d'entrée TTY interactif / subprocess vers processus externes)
+    "*/cli/main.py",        # Entrée Click avec affichage Rich/TTY — non invocable sans terminal interactif
+    "*/cli/runner.py",      # Lance des exemples Qt via subprocess.run — processus GUI externes
+    # Fichier auto-généré par Qt Resource Compiler (données binaires, pas de logique utilisateur)
+    "*/shared/resources/base_resources.py",
 ]
 
 [tool.coverage.report]

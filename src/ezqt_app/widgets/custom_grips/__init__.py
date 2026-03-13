@@ -11,7 +11,7 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Local imports
-from .custom_grips import CustomGrip
+from ...utils.custom_grips import CustomGrip
 
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API

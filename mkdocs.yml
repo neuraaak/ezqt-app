@@ -75,6 +75,7 @@ nav:
       - cli/index.md
   - Examples:
       - examples/index.md
+  - Architecture: architecture.md
   - Coverage: coverage.md
   - Changelog: changelog.md
 

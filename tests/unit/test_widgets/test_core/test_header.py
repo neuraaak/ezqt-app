@@ -25,7 +25,9 @@ from ezqt_app.widgets.core.header import Header
 class TestHeader:
     """Tests pour la classe Header."""
 
-    def test_init_default_parameters(self, qt_application):
+    def test_should_have_header_container_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test de l'initialisation avec des paramètres par défaut."""
         header = Header()
 
@@ -35,7 +37,9 @@ class TestHeader:
         assert header.frameShape() == QFrame.NoFrame
         assert header.frameShadow() == QFrame.Raised
 
-    def test_init_with_custom_parameters(self, qt_application):
+    def test_should_accept_app_name_and_description_when_instantiated_with_parameters(
+        self, qt_application
+    ):
         """Test de l'initialisation avec des paramètres personnalisés."""
         app_name = "Test App"
         description = "Test Description"
@@ -46,7 +50,7 @@ class TestHeader:
         assert header.objectName() == "headerContainer"
         assert header.height() == 50
 
-    def test_layout_structure(self, qt_application):
+    def test_should_have_horizontal_layout_when_instantiated(self, qt_application):
         """Test de la structure du layout."""
         header = Header()
 
@@ -63,7 +67,7 @@ class TestHeader:
         assert margins.right() == 10
         assert margins.bottom() == 0
 
-    def test_meta_info_frame(self, qt_application):
+    def test_should_have_meta_info_frame_when_instantiated(self, qt_application):
         """Test du frame d'informations meta."""
         header = Header()
 
@@ -76,7 +80,7 @@ class TestHeader:
         assert header.headerMetaInfo.frameShape() == QFrame.NoFrame
         assert header.headerMetaInfo.frameShadow() == QFrame.Raised
 
-    def test_app_logo(self, qt_application):
+    def test_should_have_app_logo_frame_when_instantiated(self, qt_application):
         """Test du logo de l'application."""
         header = Header()
 
@@ -89,7 +93,7 @@ class TestHeader:
         assert header.headerAppLogo.frameShape() == QFrame.NoFrame
         assert header.headerAppLogo.frameShadow() == QFrame.Raised
 
-    def test_app_name_label(self, qt_application):
+    def test_should_have_app_name_label_when_instantiated(self, qt_application):
         """Test du label du nom d'application."""
         header = Header()
 
@@ -103,7 +107,7 @@ class TestHeader:
             Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop
         )
 
-    def test_app_description_label(self, qt_application):
+    def test_should_have_description_label_when_instantiated(self, qt_application):
         """Test du label de description."""
         header = Header()
 
@@ -117,7 +121,7 @@ class TestHeader:
             Qt.AlignLeading | Qt.AlignLeft | Qt.AlignTop
         )
 
-    def test_buttons_frame(self, qt_application):
+    def test_should_have_buttons_frame_when_instantiated(self, qt_application):
         """Test du frame des boutons."""
         header = Header()
 
@@ -130,7 +134,7 @@ class TestHeader:
         assert header.headerButtons.frameShape() == QFrame.NoFrame
         assert header.headerButtons.frameShadow() == QFrame.Raised
 
-    def test_buttons_layout(self, qt_application):
+    def test_should_have_buttons_layout_when_instantiated(self, qt_application):
         """Test du layout des boutons."""
         header = Header()
 
@@ -146,7 +150,7 @@ class TestHeader:
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-    def test_settings_button(self, qt_application):
+    def test_should_have_settings_button_when_instantiated(self, qt_application):
         """Test du bouton de paramètres."""
         header = Header()
 
@@ -158,7 +162,7 @@ class TestHeader:
         assert header.settingsTopBtn.objectName() == "settingsTopBtn"
         assert isinstance(header.settingsTopBtn, QPushButton)
 
-    def test_minimize_button(self, qt_application):
+    def test_should_have_minimize_button_when_instantiated(self, qt_application):
         """Test du bouton de minimisation."""
         header = Header()
 
@@ -170,7 +174,7 @@ class TestHeader:
         assert header.minimizeAppBtn.objectName() == "minimizeAppBtn"
         assert isinstance(header.minimizeAppBtn, QPushButton)
 
-    def test_maximize_button(self, qt_application):
+    def test_should_have_maximize_button_when_instantiated(self, qt_application):
         """Test du bouton de maximisation."""
         header = Header()
 
@@ -182,7 +186,7 @@ class TestHeader:
         assert header.maximizeRestoreAppBtn.objectName() == "maximizeRestoreAppBtn"
         assert isinstance(header.maximizeRestoreAppBtn, QPushButton)
 
-    def test_close_button(self, qt_application):
+    def test_should_have_close_button_when_instantiated(self, qt_application):
         """Test du bouton de fermeture."""
         header = Header()
 
@@ -194,7 +198,7 @@ class TestHeader:
         assert header.closeAppBtn.objectName() == "closeAppBtn"
         assert isinstance(header.closeAppBtn, QPushButton)
 
-    def test_button_list_management(self, qt_application):
+    def test_should_have_all_buttons_in_list_when_instantiated(self, qt_application):
         """Test de la gestion de la liste des boutons."""
         header = Header()
 
@@ -213,14 +217,14 @@ class TestHeader:
             assert hasattr(header, button_name)
             assert getattr(header, button_name) is not None
 
-    def test_size_policy(self, qt_application):
+    def test_should_have_size_policy_when_instantiated(self, qt_application):
         """Test de la politique de taille."""
         header = Header()
 
         # Vérifier que la politique de taille est définie
         assert header.sizePolicy().hasHeightForWidth() is not None
 
-    def test_custom_app_name(self, qt_application):
+    def test_should_display_custom_name_when_app_name_is_given(self, qt_application):
         """Test du nom d'application personnalisé."""
         app_name = "Custom App Name"
         header = Header(app_name=app_name)
@@ -228,7 +232,9 @@ class TestHeader:
         # Vérifier que le nom est défini
         assert header.headerAppName.text() == app_name
 
-    def test_custom_description(self, qt_application):
+    def test_should_display_custom_description_when_description_is_given(
+        self, qt_application
+    ):
         """Test de la description personnalisée."""
         description = "Custom Description"
         header = Header(description=description)
@@ -236,7 +242,7 @@ class TestHeader:
         # Vérifier que la description est définie
         assert header.headerAppDescription.text() == description
 
-    def test_button_click_signals(self, qt_application):
+    def test_should_have_clicked_signals_when_buttons_are_created(self, qt_application):
         """Test des signaux de clic des boutons."""
         header = Header()
 
@@ -252,7 +258,7 @@ class TestHeader:
             assert hasattr(button, "clicked")
             assert hasattr(button.clicked, "connect")
 
-    def test_header_height_fixed(self, qt_application):
+    def test_should_have_fixed_height_of_50_when_instantiated(self, qt_application):
         """Test que la hauteur de l'en-tête est fixe."""
         header = Header()
 
@@ -261,7 +267,7 @@ class TestHeader:
         assert header.minimumHeight() == 50
         assert header.maximumHeight() == 50
 
-    def test_header_width_policy(self, qt_application):
+    def test_should_have_expanding_width_policy_when_instantiated(self, qt_application):
         """Test de la politique de largeur de l'en-tête."""
         header = Header()
 

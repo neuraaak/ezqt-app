@@ -16,7 +16,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGraphicsDropShadowEffect, QSizeGrip
 
 # Local imports
-from ...widgets.custom_grips.custom_grips import CustomGrip
+from ...utils.custom_grips import CustomGrip
 from ..settings import get_settings_service
 from .window_service import WindowService
 

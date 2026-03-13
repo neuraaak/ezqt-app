@@ -38,7 +38,7 @@ class TestTranslationSystem:
     """Tests d'intégration pour le système de traduction."""
 
     @pytest.mark.integration
-    def test_translation_manager_integration(
+    def test_should_verify_initial_state_and_languages_when_translation_manager_is_created(
         self, qt_application, mock_translation_files
     ):
         """Test d'intégration du gestionnaire de traduction."""
@@ -56,7 +56,9 @@ class TestTranslationSystem:
             assert lang in languages
 
     @pytest.mark.integration
-    def test_translation_helpers_integration(self, qt_application):
+    def test_should_expose_callable_helpers_when_translation_module_is_loaded(
+        self, qt_application
+    ):
         """Test d'intégration des helpers de traduction."""
         # Vérifier que les fonctions helper existent
         assert callable(tr)
@@ -68,7 +70,9 @@ class TestTranslationSystem:
         assert callable(get_current_language)
 
     @pytest.mark.integration
-    def test_language_change_workflow(self, qt_application):
+    def test_should_update_language_code_when_language_is_loaded_by_code(
+        self, qt_application
+    ):
         """Test du workflow de changement de langue."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -83,7 +87,9 @@ class TestTranslationSystem:
             assert manager.get_current_language_code() == "fr"
 
     @pytest.mark.integration
-    def test_widget_registration_workflow(self, qt_application):
+    def test_should_register_and_unregister_widget_when_registration_api_is_used(
+        self, qt_application
+    ):
         """Test du workflow d'enregistrement de widgets."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -107,7 +113,9 @@ class TestTranslationSystem:
         assert mock_widget not in manager._translatable_texts
 
     @pytest.mark.integration
-    def test_translation_text_workflow(self, qt_application):
+    def test_should_return_original_text_when_no_translation_file_is_loaded(
+        self, qt_application
+    ):
         """Test du workflow de traduction de texte."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -120,7 +128,9 @@ class TestTranslationSystem:
         assert translated == text
 
     @pytest.mark.integration
-    def test_multiple_language_changes(self, qt_application):
+    def test_should_update_language_for_each_code_when_multiple_languages_are_loaded(
+        self, qt_application
+    ):
         """Test de multiples changements de langue."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -135,7 +145,9 @@ class TestTranslationSystem:
                 assert manager.get_current_language_code() == lang_code
 
     @pytest.mark.integration
-    def test_widget_retranslation_workflow(self, qt_application):
+    def test_should_unregister_all_widgets_when_clear_registered_widgets_is_called(
+        self, qt_application
+    ):
         """Test du workflow de retraduction des widgets."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -160,7 +172,9 @@ class TestTranslationSystem:
         assert len(manager._translatable_texts) == 0
 
     @pytest.mark.integration
-    def test_translation_signal_workflow(self, qt_application):
+    def test_should_emit_language_changed_signal_when_language_is_loaded(
+        self, qt_application
+    ):
         """Test du workflow des signaux de traduction."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -186,7 +200,7 @@ class TestTranslationSystem:
         assert received_language == "fr"
 
     @pytest.mark.integration
-    def test_translation_file_loading_workflow(
+    def test_should_find_translation_files_when_translations_dir_is_set(
         self, qt_application, mock_translation_files
     ):
         """Test du workflow de chargement de fichiers de traduction."""
@@ -207,7 +221,9 @@ class TestTranslationSystem:
         assert fr_file.exists()
 
     @pytest.mark.integration
-    def test_translation_mapping_workflow(self, qt_application):
+    def test_should_map_all_language_names_to_codes_when_mapping_is_queried(
+        self, qt_application
+    ):
         """Test du workflow de mapping des langues."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -231,7 +247,9 @@ class TestTranslationSystem:
                 assert manager.get_current_language_code() == code
 
     @pytest.mark.integration
-    def test_translation_error_handling(self, qt_application):
+    def test_should_return_false_when_no_translation_file_matches_code(
+        self, qt_application
+    ):
         """Test de la gestion d'erreurs de traduction."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -251,7 +269,9 @@ class TestTranslationSystem:
             assert not success
 
     @pytest.mark.integration
-    def test_translation_manager_singleton_behavior(self, qt_application):
+    def test_should_return_same_instance_when_get_translation_manager_is_called_twice(
+        self, qt_application
+    ):
         """Test du comportement singleton du gestionnaire de traduction."""
         # Utiliser la fonction singleton pour obtenir le gestionnaire
 
@@ -267,7 +287,9 @@ class TestTranslationSystem:
         assert manager1.get_available_languages() == manager2.get_available_languages()
 
     @pytest.mark.integration
-    def test_translation_text_setting_workflow(self, qt_application):
+    def test_should_register_widget_with_text_when_set_translatable_text_is_called(
+        self, qt_application
+    ):
         """Test du workflow de définition de texte traduisible."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -284,7 +306,9 @@ class TestTranslationSystem:
         assert manager._translatable_texts[mock_widget] == text
 
     @pytest.mark.integration
-    def test_translation_manager_cleanup(self, qt_application):
+    def test_should_empty_widget_registries_when_clear_registered_widgets_is_called(
+        self, qt_application
+    ):
         """Test du nettoyage du gestionnaire de traduction."""
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
@@ -307,7 +331,9 @@ class TestTranslationSystem:
         assert len(manager._translatable_texts) == 0
 
     @pytest.mark.integration
-    def test_translation_manager_persistence(self, qt_application):
+    def test_should_persist_language_code_when_manager_is_retrieved_again(
+        self, qt_application
+    ):
         """Test de la persistance des données de traduction."""
         # Utiliser la fonction singleton pour obtenir le gestionnaire
 

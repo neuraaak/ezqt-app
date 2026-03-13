@@ -45,7 +45,9 @@ from ezqt_app.widgets.core.page_container import PageContainer
 class TestPageContainer:
     """Tests for the PageContainer class."""
 
-    def test_init_default_parameters(self, qt_application):
+    def test_should_have_pages_container_properties_when_instantiated(
+        self, qt_application
+    ):
         """Test initialization with default parameters."""
         container = PageContainer()
 
@@ -54,7 +56,7 @@ class TestPageContainer:
         assert container.frameShape() == QFrame.NoFrame
         assert container.frameShadow() == QFrame.Raised
 
-    def test_init_with_parent(self, qt_application):
+    def test_should_accept_parent_when_parent_widget_is_given(self, qt_application):
         """Test initialization with parent."""
         parent = QWidget()
         container = PageContainer(parent=parent)
@@ -62,7 +64,7 @@ class TestPageContainer:
         # Check that parent is correctly defined
         assert container.parent() == parent
 
-    def test_layout_structure(self, qt_application):
+    def test_should_have_vertical_layout_when_instantiated(self, qt_application):
         """Test layout structure."""
         container = PageContainer()
 
@@ -78,7 +80,7 @@ class TestPageContainer:
         assert margins.right() == 10
         assert margins.bottom() == 10
 
-    def test_stacked_widget(self, qt_application):
+    def test_should_have_stacked_widget_when_instantiated(self, qt_application):
         """Test stacked widget."""
         container = PageContainer()
 
@@ -91,7 +93,9 @@ class TestPageContainer:
         assert container.stackedWidget.objectName() == "stackedWidget"
         assert container.stackedWidget.styleSheet() == "background: transparent;"
 
-    def test_pages_dictionary(self, qt_application):
+    def test_should_initialize_with_empty_pages_dict_when_instantiated(
+        self, qt_application
+    ):
         """Test pages dictionary."""
         container = PageContainer()
 
@@ -99,7 +103,7 @@ class TestPageContainer:
         assert hasattr(container, "pages")
         assert isinstance(container.pages, dict)
 
-    def test_add_page(self, qt_application):
+    def test_should_create_page_widget_when_add_page_is_called(self, qt_application):
         """Test adding a page."""
         container = PageContainer()
 
@@ -117,7 +121,9 @@ class TestPageContainer:
         # Check that page was added to dictionary
         assert page_name in container.pages
 
-    def test_add_multiple_pages(self, qt_application):
+    def test_should_create_all_pages_when_add_page_is_called_multiple_times(
+        self, qt_application
+    ):
         """Test adding multiple pages."""
         container = PageContainer()
 
@@ -143,7 +149,7 @@ class TestPageContainer:
         for name in page_names:
             assert name in container.pages
 
-    def test_page_object_names(self, qt_application):
+    def test_should_assign_page_name_prefix_when_page_is_added(self, qt_application):
         """Test page object names."""
         container = PageContainer()
 
@@ -154,14 +160,18 @@ class TestPageContainer:
         # Check that object name is correct
         assert page.objectName() == f"page_{page_name}"
 
-    def test_page_container_initial_state(self, qt_application):
+    def test_should_start_with_empty_stacked_widget_when_instantiated(
+        self, qt_application
+    ):
         """Test page container initial state."""
         container = PageContainer()
 
         # Check that container starts empty
         assert container.stackedWidget.count() == 0
 
-    def test_page_container_with_existing_pages(self, qt_application):
+    def test_should_be_independent_when_two_containers_are_created(
+        self, qt_application
+    ):
         """Test page container with existing pages."""
         # Create first container and add pages
         container1 = PageContainer()
@@ -181,7 +191,9 @@ class TestPageContainer:
         assert container1.stackedWidget.count() == 2
         assert container2.stackedWidget.count() == 0
 
-    def test_add_page_with_special_characters(self, qt_application):
+    def test_should_accept_special_characters_when_page_name_has_hyphens(
+        self, qt_application
+    ):
         """Test adding page with special characters."""
         container = PageContainer()
 
@@ -193,7 +205,7 @@ class TestPageContainer:
         assert page is not None
         assert page_name in container.pages
 
-    def test_add_page_with_empty_name(self, qt_application):
+    def test_should_accept_empty_string_when_page_name_is_empty(self, qt_application):
         """Test adding page with empty name."""
         container = PageContainer()
 
@@ -205,7 +217,9 @@ class TestPageContainer:
         assert page is not None
         assert page_name in container.pages
 
-    def test_add_page_with_numeric_name(self, qt_application):
+    def test_should_accept_numeric_name_when_page_name_is_a_number(
+        self, qt_application
+    ):
         """Test adding page with numeric name."""
         container = PageContainer()
 
@@ -217,7 +231,7 @@ class TestPageContainer:
         assert page is not None
         assert page_name in container.pages
 
-    def test_page_container_layout_margins(self, qt_application):
+    def test_should_have_10px_margins_when_instantiated(self, qt_application):
         """Test page container layout margins."""
         container = PageContainer()
 
@@ -228,21 +242,23 @@ class TestPageContainer:
         assert margins.right() == 10
         assert margins.bottom() == 10
 
-    def test_page_container_layout_spacing(self, qt_application):
+    def test_should_have_zero_spacing_when_instantiated(self, qt_application):
         """Test page container layout spacing."""
         container = PageContainer()
 
         # Check layout spacing
         assert container.VL_pagesContainer.spacing() == 0
 
-    def test_stacked_widget_style(self, qt_application):
+    def test_should_have_transparent_background_when_stacked_widget_is_created(
+        self, qt_application
+    ):
         """Test stacked widget style."""
         container = PageContainer()
 
         # Check stacked widget style
         assert container.stackedWidget.styleSheet() == "background: transparent;"
 
-    def test_page_container_frame_properties(self, qt_application):
+    def test_should_have_no_frame_when_instantiated(self, qt_application):
         """Test page container frame properties."""
         container = PageContainer()
 
@@ -250,21 +266,23 @@ class TestPageContainer:
         assert container.frameShape() == QFrame.NoFrame
         assert container.frameShadow() == QFrame.Raised
 
-    def test_page_container_object_name(self, qt_application):
+    def test_should_have_pages_container_object_name_when_instantiated(
+        self, qt_application
+    ):
         """Test page container object name."""
         container = PageContainer()
 
         # Check object name
         assert container.objectName() == "pagesContainer"
 
-    def test_page_container_inheritance(self, qt_application):
+    def test_should_be_qframe_instance_when_instantiated(self, qt_application):
         """Test page container inheritance."""
         container = PageContainer()
 
         # Check inheritance
         assert isinstance(container, QFrame)
 
-    def test_page_container_size_policy(self, qt_application):
+    def test_should_have_preferred_size_policy_when_instantiated(self, qt_application):
         """Test page container size policy."""
         container = PageContainer()
 
