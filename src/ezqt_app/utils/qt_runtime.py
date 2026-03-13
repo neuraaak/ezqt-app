@@ -27,11 +27,11 @@ def configure_qt_environment() -> None:
     os.environ["QT_SCALE_FACTOR"] = "1"
 
     if sys.platform.startswith("win"):
-        os.environ["QT_QPA_PLATFORM"] = "windows:dpiawareness=0"
+        os.environ.setdefault("QT_QPA_PLATFORM", "windows:dpiawareness=0")
     elif sys.platform.startswith("linux"):
-        os.environ["QT_QPA_PLATFORM"] = "xcb"
+        os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
     elif sys.platform.startswith("darwin"):
-        os.environ["QT_QPA_PLATFORM"] = "cocoa"
+        os.environ.setdefault("QT_QPA_PLATFORM", "cocoa")
 
 
 def configure_qt_high_dpi() -> bool:
