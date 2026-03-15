@@ -33,7 +33,7 @@ class TestMenu:
         menu = Menu()
 
         # Check basic properties
-        assert menu.objectName() == "menuContainer"
+        assert menu.objectName() == "menu_container"
         assert menu.frameShape() == QFrame.NoFrame
         assert menu.frameShadow() == QFrame.Raised
 
@@ -62,12 +62,12 @@ class TestMenu:
         menu = Menu()
 
         # Check that main layout exists
-        assert hasattr(menu, "VL_menuContainer")
-        assert menu.VL_menuContainer is not None
+        assert hasattr(menu, "_menu_layout")
+        assert menu._menu_layout is not None
 
         # Check layout properties
-        assert menu.VL_menuContainer.spacing() == 0
-        margins = menu.VL_menuContainer.contentsMargins()
+        assert menu._menu_layout.spacing() == 0
+        margins = menu._menu_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
@@ -78,25 +78,25 @@ class TestMenu:
         menu = Menu()
 
         # Check that main frame exists
-        assert hasattr(menu, "mainMenuFrame")
-        assert menu.mainMenuFrame is not None
+        assert hasattr(menu, "_main_menu_frame")
+        assert menu._main_menu_frame is not None
 
         # Check frame properties
-        assert menu.mainMenuFrame.objectName() == "mainMenuFrame"
-        assert menu.mainMenuFrame.frameShape() == QFrame.NoFrame
-        assert menu.mainMenuFrame.frameShadow() == QFrame.Raised
+        assert menu._main_menu_frame.objectName() == "main_menu_frame"
+        assert menu._main_menu_frame.frameShape() == QFrame.NoFrame
+        assert menu._main_menu_frame.frameShadow() == QFrame.Raised
 
     def test_should_have_main_menu_layout_when_instantiated(self, qt_application):
         """Test main menu layout."""
         menu = Menu()
 
         # Check that main layout exists
-        assert hasattr(menu, "VL_mainMenuFrame")
-        assert menu.VL_mainMenuFrame is not None
+        assert hasattr(menu, "_main_menu_layout")
+        assert menu._main_menu_layout is not None
 
         # Check layout properties
-        assert menu.VL_mainMenuFrame.spacing() == 0
-        margins = menu.VL_mainMenuFrame.contentsMargins()
+        assert menu._main_menu_layout.spacing() == 0
+        margins = menu._main_menu_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
@@ -107,25 +107,25 @@ class TestMenu:
         menu = Menu()
 
         # Check that toggle container exists
-        assert hasattr(menu, "toggleBox")
-        assert menu.toggleBox is not None
+        assert hasattr(menu, "_toggle_container")
+        assert menu._toggle_container is not None
 
         # Check container properties
-        assert menu.toggleBox.objectName() == "toggleBox"
-        assert menu.toggleBox.frameShape() == QFrame.NoFrame
-        assert menu.toggleBox.frameShadow() == QFrame.Raised
+        assert menu._toggle_container.objectName() == "toggle_container"
+        assert menu._toggle_container.frameShape() == QFrame.NoFrame
+        assert menu._toggle_container.frameShadow() == QFrame.Raised
 
     def test_should_have_toggle_layout_when_instantiated(self, qt_application):
         """Test toggle layout."""
         menu = Menu()
 
         # Check that toggle layout exists
-        assert hasattr(menu, "VL_toggleBox")
-        assert menu.VL_toggleBox is not None
+        assert hasattr(menu, "_toggle_layout")
+        assert menu._toggle_layout is not None
 
         # Check layout properties
-        assert menu.VL_toggleBox.spacing() == 0
-        margins = menu.VL_toggleBox.contentsMargins()
+        assert menu._toggle_layout.spacing() == 0
+        margins = menu._toggle_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
@@ -136,12 +136,12 @@ class TestMenu:
         menu = Menu()
 
         # Check that toggle button exists
-        assert hasattr(menu, "toggleButton")
-        assert menu.toggleButton is not None
-        assert isinstance(menu.toggleButton, MenuButton)
+        assert hasattr(menu, "toggle_button")
+        assert menu.toggle_button is not None
+        assert isinstance(menu.toggle_button, MenuButton)
 
         # Check button properties
-        assert menu.toggleButton.objectName() == "toggleButton"
+        assert menu.toggle_button.objectName() == "toggle_button"
 
     def test_should_initialize_with_empty_menus_dict_when_instantiated(
         self, qt_application
@@ -192,9 +192,9 @@ class TestMenu:
         menu = Menu()
 
         # Check toggle button properties
-        assert menu.toggleButton.objectName() == "toggleButton"
-        assert menu.toggleButton.icon is not None
-        assert menu.toggleButton.icon_size == QSize(20, 20)
+        assert menu.toggle_button.objectName() == "toggle_button"
+        assert menu.toggle_button.icon is not None
+        assert menu.toggle_button.icon_size == QSize(20, 20)
 
     def test_should_expose_clicked_signal_on_toggle_button_when_instantiated(
         self, qt_application
@@ -203,8 +203,8 @@ class TestMenu:
         menu = Menu()
 
         # Check that toggle button has signal
-        assert hasattr(menu.toggleButton, "clicked")
-        assert callable(menu.toggleButton.clicked)
+        assert hasattr(menu.toggle_button, "clicked")
+        assert callable(menu.toggle_button.clicked)
 
     def test_should_have_extended_width_greater_than_shrink_width_when_instantiated(
         self, qt_application
@@ -246,10 +246,10 @@ class TestMenu:
         # Check that all frames have correct properties
         assert menu.frameShape() == QFrame.NoFrame
         assert menu.frameShadow() == QFrame.Raised
-        assert menu.mainMenuFrame.frameShape() == QFrame.NoFrame
-        assert menu.mainMenuFrame.frameShadow() == QFrame.Raised
-        assert menu.toggleBox.frameShape() == QFrame.NoFrame
-        assert menu.toggleBox.frameShadow() == QFrame.Raised
+        assert menu._main_menu_frame.frameShape() == QFrame.NoFrame
+        assert menu._main_menu_frame.frameShadow() == QFrame.Raised
+        assert menu._toggle_container.frameShape() == QFrame.NoFrame
+        assert menu._toggle_container.frameShadow() == QFrame.Raised
 
     def test_should_have_zero_spacing_and_margins_on_all_layouts_when_instantiated(
         self, qt_application
@@ -258,23 +258,23 @@ class TestMenu:
         menu = Menu()
 
         # Check that all layouts have correct properties
-        assert menu.VL_menuContainer.spacing() == 0
-        assert menu.VL_mainMenuFrame.spacing() == 0
-        assert menu.VL_toggleBox.spacing() == 0
+        assert menu._menu_layout.spacing() == 0
+        assert menu._main_menu_layout.spacing() == 0
+        assert menu._toggle_layout.spacing() == 0
 
-        margins = menu.VL_menuContainer.contentsMargins()
+        margins = menu._menu_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-        margins = menu.VL_mainMenuFrame.contentsMargins()
+        margins = menu._main_menu_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
         assert margins.bottom() == 0
 
-        margins = menu.VL_toggleBox.contentsMargins()
+        margins = menu._toggle_layout.contentsMargins()
         assert margins.left() == 0
         assert margins.top() == 0
         assert margins.right() == 0
@@ -285,10 +285,10 @@ class TestMenu:
         menu = Menu()
 
         # Check that all objects have correct names
-        assert menu.objectName() == "menuContainer"
-        assert menu.mainMenuFrame.objectName() == "mainMenuFrame"
-        assert menu.toggleBox.objectName() == "toggleBox"
-        assert menu.toggleButton.objectName() == "toggleButton"
+        assert menu.objectName() == "menu_container"
+        assert menu._main_menu_frame.objectName() == "main_menu_frame"
+        assert menu._toggle_container.objectName() == "toggle_container"
+        assert menu.toggle_button.objectName() == "toggle_button"
 
     def test_should_have_preferred_size_policy_when_instantiated(self, qt_application):
         """Test menu size policy."""

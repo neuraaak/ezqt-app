@@ -5,7 +5,7 @@ This document defines practical QSS style conventions for EzQt App components.
 ## General Principles
 
 - Use consistent colors, spacing, and borders across all core containers.
-- Prefer specific object names (`#settingsPanel`, `#menuContainer`, etc.).
+- Prefer specific object names (`#settings_panel`, `#menu_container`, etc.).
 - Centralize palette values in theme/config files whenever possible.
 
 ---
@@ -32,7 +32,7 @@ QMainWindow {
 ### Settings Panel
 
 ```css
-QFrame#settingsPanel {
+QFrame#settings_panel {
   border-left: 1px solid #2f3640;
   background: #262b33;
 }
@@ -41,7 +41,7 @@ QFrame#settingsPanel {
 ### Menu Container
 
 ```css
-QFrame#menuContainer {
+QFrame#menu_container {
   background: #1d222a;
   border-right: 1px solid #2f3640;
 }

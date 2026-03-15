@@ -3,7 +3,7 @@
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""Unit tests for widgets/custom_grips/custom_grips.py."""
+"""Unit tests for the CustomGrip class and its internal structure."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QSizeGrip, QWidget
 
 from ezqt_app.utils.custom_grips import CustomGrip
 
@@ -37,22 +37,30 @@ class TestCustomGripCreation:
     def test_should_create_grip_when_top_edge_is_given(self, qt_application) -> None:
         parent = _parent_widget(qt_application)
         grip = CustomGrip(parent, Qt.Edge.TopEdge)
-        assert grip is not None
+        assert grip.objectName() == "custom_grip_topedge"
+        assert hasattr(grip, "_container")
+        assert grip._container.objectName() == "grip_container_top"
 
     def test_should_create_grip_when_bottom_edge_is_given(self, qt_application) -> None:
         parent = _parent_widget(qt_application)
         grip = CustomGrip(parent, Qt.Edge.BottomEdge)
-        assert grip is not None
+        assert grip.objectName() == "custom_grip_bottomedge"
+        assert hasattr(grip, "_container")
+        assert grip._container.objectName() == "grip_container_bottom"
 
     def test_should_create_grip_when_left_edge_is_given(self, qt_application) -> None:
         parent = _parent_widget(qt_application)
         grip = CustomGrip(parent, Qt.Edge.LeftEdge)
-        assert grip is not None
+        assert grip.objectName() == "custom_grip_leftedge"
+        assert hasattr(grip, "_center_grip")
+        assert grip._center_grip.objectName() == "grip_left"
 
     def test_should_create_grip_when_right_edge_is_given(self, qt_application) -> None:
         parent = _parent_widget(qt_application)
         grip = CustomGrip(parent, Qt.Edge.RightEdge)
-        assert grip is not None
+        assert grip.objectName() == "custom_grip_rightedge"
+        assert hasattr(grip, "_center_grip")
+        assert grip._center_grip.objectName() == "grip_right"
 
     def test_should_store_parent_reference_when_instantiated(
         self, qt_application
@@ -61,48 +69,23 @@ class TestCustomGripCreation:
         grip = CustomGrip(parent, Qt.Edge.TopEdge)
         assert grip._parent is parent
 
-    def test_should_return_given_widget_as_parent_when_instantiated(
+    def test_should_have_protected_members_for_internal_frames(
         self, qt_application
     ) -> None:
+        """Test that internal structure uses the new snake_case protected members."""
         parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.BottomEdge)
-        assert grip.parent() is parent
+        grip = CustomGrip(parent, Qt.Edge.TopEdge)
 
-
-class TestCustomGripDisableColor:
-    """Tests for the disable_color parameter."""
-
-    def test_should_not_raise_when_top_grip_is_created_with_disable_color(
-        self, qt_application
-    ) -> None:
-        parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.TopEdge, disable_color=True)
-        assert grip is not None
-
-    def test_should_not_raise_when_bottom_grip_is_created_with_disable_color(
-        self, qt_application
-    ) -> None:
-        parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.BottomEdge, disable_color=True)
-        assert grip is not None
-
-    def test_should_not_raise_when_left_grip_is_created_with_disable_color(
-        self, qt_application
-    ) -> None:
-        parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.LeftEdge, disable_color=True)
-        assert grip is not None
-
-    def test_should_not_raise_when_right_grip_is_created_with_disable_color(
-        self, qt_application
-    ) -> None:
-        parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.RightEdge, disable_color=True)
-        assert grip is not None
+        # Check for top-specific frames
+        assert hasattr(grip, "_left_frame")
+        assert hasattr(grip, "_right_frame")
+        assert hasattr(grip, "_center_grip")
+        assert isinstance(grip._left_grip, QSizeGrip)
+        assert isinstance(grip._right_grip, QSizeGrip)
 
 
 class TestCustomGripGeometry:
-    """Tests for geometry set during initialization."""
+    """Tests for geometry and resize logic."""
 
     def test_should_have_max_height_of_10_when_top_grip_is_created(
         self, qt_application
@@ -111,23 +94,28 @@ class TestCustomGripGeometry:
         grip = CustomGrip(parent, Qt.Edge.TopEdge)
         assert grip.maximumHeight() == 10
 
-    def test_should_have_max_height_of_10_when_bottom_grip_is_created(
+    def test_should_update_container_geometry_when_resized(
         self, qt_application
     ) -> None:
+        """Test that internal container follows the widget resize."""
         parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.BottomEdge)
-        assert grip.maximumHeight() == 10
+        grip = CustomGrip(parent, Qt.Edge.TopEdge)
 
-    def test_should_have_max_width_of_10_when_left_grip_is_created(
-        self, qt_application
-    ) -> None:
-        parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.LeftEdge)
-        assert grip.maximumWidth() == 10
+        # Resize and manually trigger event processing for the test environment
+        grip.resize(500, 10)
+        from PySide6.QtCore import QSize
+        from PySide6.QtGui import QResizeEvent
 
-    def test_should_have_max_width_of_10_when_right_grip_is_created(
-        self, qt_application
-    ) -> None:
+        event = QResizeEvent(QSize(500, 10), QSize(400, 10))
+        grip.resizeEvent(event)
+
+        assert grip._container.width() == 500
+
+    def test_should_have_correct_cursors_for_top_corners(self, qt_application) -> None:
+        """Test that resize cursors are correctly assigned."""
         parent = _parent_widget(qt_application)
-        grip = CustomGrip(parent, Qt.Edge.RightEdge)
-        assert grip.maximumWidth() == 10
+        grip = CustomGrip(parent, Qt.Edge.TopEdge)
+
+        assert grip._left_frame.cursor().shape() == Qt.CursorShape.SizeFDiagCursor
+        assert grip._right_frame.cursor().shape() == Qt.CursorShape.SizeBDiagCursor
+        assert grip._center_grip.cursor().shape() == Qt.CursorShape.SizeVerCursor

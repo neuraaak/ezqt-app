@@ -66,8 +66,8 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "headerContainer")
-        assert ui.headerContainer is not None
+        assert hasattr(ui, "header_container")
+        assert ui.header_container is not None
 
     def test_should_create_menu_container_when_setup_ui_is_called(
         self, qt_application
@@ -76,8 +76,8 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "menuContainer")
-        assert ui.menuContainer is not None
+        assert hasattr(ui, "menu_container")
+        assert ui.menu_container is not None
 
     def test_should_create_pages_container_when_setup_ui_is_called(
         self, qt_application
@@ -86,8 +86,8 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "pagesContainer")
-        assert ui.pagesContainer is not None
+        assert hasattr(ui, "pages_container")
+        assert ui.pages_container is not None
 
     def test_should_create_settings_panel_when_setup_ui_is_called(
         self, qt_application
@@ -96,8 +96,8 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "settingsPanel")
-        assert ui.settingsPanel is not None
+        assert hasattr(ui, "settings_panel")
+        assert ui.settings_panel is not None
 
     def test_should_create_bottom_bar_when_setup_ui_is_called(
         self, qt_application
@@ -106,8 +106,8 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "bottomBar")
-        assert ui.bottomBar is not None
+        assert hasattr(ui, "bottom_bar")
+        assert ui.bottom_bar is not None
 
     def test_should_set_minimum_window_size_when_setup_ui_is_called(
         self, qt_application
@@ -127,5 +127,5 @@ class TestUiMainWindowSetupUi:
         ui = Ui_MainWindow()
         with patch(_SETTINGS_PATH, return_value=_mock_settings()):
             ui.setupUi(main_window)
-        assert hasattr(ui, "appMargins")
-        assert ui.appMargins is not None
+        assert hasattr(ui, "app_margins_layout")
+        assert ui.app_margins_layout is not None

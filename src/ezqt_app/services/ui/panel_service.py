@@ -29,13 +29,13 @@ class PanelService:
             return
 
         settings_service = get_settings_service()
-        width = window.ui.menuContainer.width()
-        max_extend = window.ui.menuContainer.get_extended_width()
-        standard = window.ui.menuContainer.get_shrink_width()
+        width = window.ui.menu_container.width()
+        max_extend = window.ui.menu_container.get_extended_width()
+        standard = window.ui.menu_container.get_shrink_width()
         width_extended = max_extend if width == standard else standard
 
         window.menu_animation = QPropertyAnimation(
-            window.ui.menuContainer,  # type: ignore[arg-type]
+            window.ui.menu_container,  # type: ignore[arg-type]
             b"minimumWidth",
         )
         window.menu_animation.setDuration(settings_service.gui.TIME_ANIMATION)
@@ -51,13 +51,13 @@ class PanelService:
             return
 
         settings_service = get_settings_service()
-        width = window.ui.settingsPanel.width()
+        width = window.ui.settings_panel.width()
         max_extend = settings_service.gui.SETTINGS_PANEL_WIDTH
         standard = 0
         width_extended = max_extend if width == 0 else standard
 
         window.settings_animation = QPropertyAnimation(
-            window.ui.settingsPanel,  # type: ignore[arg-type]
+            window.ui.settings_panel,  # type: ignore[arg-type]
             b"minimumWidth",
         )
         window.settings_animation.setDuration(settings_service.gui.TIME_ANIMATION)
@@ -67,7 +67,7 @@ class PanelService:
         window.settings_animation.start()
 
         current_theme = settings_service.gui.THEME
-        theme_toggle = window.ui.settingsPanel.get_theme_toggle_button()
+        theme_toggle = window.ui.settings_panel.get_theme_selector()
         if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
             try:
                 theme_id = 0 if current_theme.lower() == "light" else 1

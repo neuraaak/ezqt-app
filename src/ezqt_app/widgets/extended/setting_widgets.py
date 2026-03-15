@@ -12,7 +12,7 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Third-party imports
 from ezqt_widgets import ToggleSwitch
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -35,92 +35,97 @@ class BaseSettingWidget(QWidget):
 
     def __init__(self, label: str, description: str = ""):
         super().__init__()
-        self._label = label
-        self._description = description
+        self._label_text = label
+        self._description_text = description
         self._key = None
-        self.setObjectName("BaseSettingWidget")
+        self.setObjectName("base_setting_widget")
 
     def set_key(self, key: str):
         """Set the setting key."""
         self._key = key
 
+    def _tr(self, text: str) -> str:
+        """Shortcut for translation with global context."""
+        return QCoreApplication.translate("EzQt_App", text)
+
+    def retranslate_ui(self):
+        """To be implemented by subclasses."""
+
 
 class SettingToggle(BaseSettingWidget):
     """Widget for toggle settings (on/off)."""
 
+    valueChanged = Signal(str, bool)
+
     def __init__(self, label: str, description: str = "", default: bool = False):
         super().__init__(label, description)
         self._value = default
-        self.setObjectName("SettingToggle")
-        self.setProperty("type", "SettingToggle")
+        self.setObjectName("setting_toggle_container")
+        self.setProperty("type", "setting_toggle")
         self._setup_ui()
 
     def _setup_ui(self):
         """Configure the user interface."""
-        # ////// SETUP LAYOUT
-        layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP CONTROL LAYOUT
-        control_layout = QHBoxLayout()
-        control_layout.setSpacing(8)
-        control_layout.setContentsMargins(0, 0, 0, 0)
+        self._control_layout = QHBoxLayout()
+        self._control_layout.setSpacing(8)
+        self._control_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP LABEL
-        self.label = QLabel(self._label)
-        self.label.setObjectName("settingLabel")
-        self.label.setWordWrap(True)
-        control_layout.addWidget(self.label, 1)  # Stretch
+        self._label_widget = QLabel(self._tr(self._label_text))
+        self._label_widget.setObjectName("setting_label")
+        self._label_widget.setWordWrap(True)
+        self._control_layout.addWidget(self._label_widget, 1)
 
-        # ////// SETUP TOGGLE
         animation_enabled = get_settings_service().gui.TIME_ANIMATION > 0
+        self._control_widget = ToggleSwitch(animation=animation_enabled)
+        self._control_widget.setObjectName("setting_toggle")
+        self._control_widget.checked = self._value
+        self._control_widget.toggled.connect(self._on_toggled)
+        self._control_layout.addWidget(self._control_widget, 0)
 
-        self.toggle = ToggleSwitch(animation=animation_enabled)
-        self.toggle.setObjectName("settingToggle")
-        self.toggle.checked = self._value
-        self.toggle.toggled.connect(self._on_toggled)
-        control_layout.addWidget(self.toggle, 0)  # No stretch
+        self._layout.addLayout(self._control_layout)
 
-        layout.addLayout(control_layout)
+        self._description_label = None
+        if self._description_text:
+            self._description_label = QLabel(self._tr(self._description_text))
+            self._description_label.setObjectName("setting_description")
+            self._description_label.setWordWrap(True)
+            self._layout.addWidget(self._description_label)
 
-        # Description (if present)
-        if self._description:
-            self.description_label = QLabel(self.tr(self._description))
-            self.description_label.setObjectName("settingDescription")
-            self.description_label.setWordWrap(True)
-            layout.addWidget(self.description_label)
+    def retranslate_ui(self):
+        """Update strings after language change."""
+        self._label_widget.setText(self._tr(self._label_text))
+        if self._description_label:
+            self._description_label.setText(self._tr(self._description_text))
 
     def _on_toggled(self, checked: bool):
-        """Called when toggle changes."""
         self._value = checked
         self.valueChanged.emit(self._key, checked)
 
     @property
     def value(self) -> bool:
-        """Get current value."""
         return self._value
 
     @value.setter
     def value(self, val: bool):
-        """Set value."""
         self._value = val
-        self.toggle.checked = val
+        self._control_widget.checked = val
 
     def get_value(self) -> bool:
-        """Get current value."""
         return self._value
 
     def set_value(self, val: bool):
-        """Set value."""
         self._value = val
-        self.toggle.checked = val
-
-    valueChanged = Signal(str, bool)
+        self._control_widget.checked = val
 
 
 class SettingSelect(BaseSettingWidget):
     """Widget for selection settings."""
+
+    valueChanged = Signal(str, str)
 
     def __init__(
         self,
@@ -132,71 +137,67 @@ class SettingSelect(BaseSettingWidget):
         super().__init__(label, description)
         self._options = options or []
         self._value = default or (options[0] if options else "")
-        self.setObjectName("SettingSelect")
-        self.setProperty("type", "SettingSelect")
+        self.setObjectName("setting_select_container")
+        self.setProperty("type", "setting_select")
         self._setup_ui()
 
     def _setup_ui(self):
-        """Configure the user interface."""
-        # ////// SETUP LAYOUT
-        layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP LABEL
-        self.label = QLabel(self._label)
-        self.label.setObjectName("settingLabel")
-        self.label.setWordWrap(True)
-        layout.addWidget(self.label)
+        self._label_widget = QLabel(self._tr(self._label_text))
+        self._label_widget.setObjectName("setting_label")
+        self._label_widget.setWordWrap(True)
+        self._layout.addWidget(self._label_widget)
 
-        # ////// SETUP COMBO BOX
-        self.combo = QComboBox()
-        self.combo.setObjectName("settingComboBox")
-        self.combo.addItems(self._options)
+        self._control_widget = QComboBox()
+        self._control_widget.setObjectName("setting_combo_box")
+        self._control_widget.addItems(self._options)
         if self._value in self._options:
-            self.combo.setCurrentText(self._value)
-        self.combo.currentTextChanged.connect(self._on_text_changed)
-        layout.addWidget(self.combo)
+            self._control_widget.setCurrentText(self._value)
+        self._control_widget.currentTextChanged.connect(self._on_text_changed)
+        self._layout.addWidget(self._control_widget)
 
-        # Description (if present)
-        if self._description:
-            self.description_label = QLabel(self.tr(self._description))
-            self.description_label.setObjectName("settingDescription")
-            self.description_label.setWordWrap(True)
-            layout.addWidget(self.description_label)
+        self._description_label = None
+        if self._description_text:
+            self._description_label = QLabel(self._tr(self._description_text))
+            self._description_label.setObjectName("setting_description")
+            self._description_label.setWordWrap(True)
+            self._layout.addWidget(self._description_label)
+
+    def retranslate_ui(self):
+        self._label_widget.setText(self._tr(self._label_text))
+        if self._description_label:
+            self._description_label.setText(self._tr(self._description_text))
 
     def _on_text_changed(self, text: str):
-        """Called when selection changes."""
         self._value = text
         self.valueChanged.emit(self._key, text)
 
     @property
     def value(self) -> str:
-        """Get current value."""
         return self._value
 
     @value.setter
     def value(self, val: str):
-        """Set value."""
         self._value = val
         if val in self._options:
-            self.combo.setCurrentText(val)
+            self._control_widget.setCurrentText(val)
 
     def get_value(self) -> str:
-        """Get current value."""
         return self._value
 
     def set_value(self, val: str):
-        """Set value."""
         self._value = val
         if val in self._options:
-            self.combo.setCurrentText(val)
-
-    valueChanged = Signal(str, str)
+            self._control_widget.setCurrentText(val)
 
 
 class SettingSlider(BaseSettingWidget):
     """Widget for numeric settings with slider."""
+
+    valueChanged = Signal(str, int)
 
     def __init__(
         self,
@@ -212,219 +213,201 @@ class SettingSlider(BaseSettingWidget):
         self._max_val = max_val
         self._value = default
         self._unit = unit
-        self.setObjectName("SettingSlider")
-        self.setProperty("type", "SettingSlider")
+        self.setObjectName("setting_slider_container")
+        self.setProperty("type", "setting_slider")
         self._setup_ui()
 
     def _setup_ui(self):
-        """Configure the user interface."""
-        # ////// SETUP LAYOUT
-        layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP HEADER LAYOUT
-        header_layout = QHBoxLayout()
-        header_layout.setSpacing(8)
-        header_layout.setContentsMargins(0, 0, 0, 0)
+        self._header_layout = QHBoxLayout()
+        self._header_layout.setSpacing(8)
+        self._header_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP LABEL
-        self.label = QLabel(self._label)
-        self.label.setObjectName("settingLabel")
-        self.label.setWordWrap(True)
-        header_layout.addWidget(self.label, 1)  # Stretch
+        self._label_widget = QLabel(self._tr(self._label_text))
+        self._label_widget.setObjectName("setting_label")
+        self._label_widget.setWordWrap(True)
+        self._header_layout.addWidget(self._label_widget, 1)
 
-        # ////// SETUP VALUE LABEL
-        self.value_label = QLabel(f"{self._value}{self._unit}")
-        self.value_label.setObjectName("settingValueLabel")
-        header_layout.addWidget(self.value_label, 0)  # No stretch
+        self._value_label = QLabel(f"{self._value}{self._unit}")
+        self._value_label.setObjectName("setting_value_label")
+        self._header_layout.addWidget(self._value_label, 0)
 
-        layout.addLayout(header_layout)
+        self._layout.addLayout(self._header_layout)
 
-        # ////// SETUP SLIDER
-        self.slider = QSlider(Qt.Orientation.Horizontal)
-        self.slider.setObjectName("settingSlider")
-        self.slider.setMinimum(self._min_val)
-        self.slider.setMaximum(self._max_val)
-        self.slider.setValue(self._value)
-        self.slider.valueChanged.connect(self._on_value_changed)
-        layout.addWidget(self.slider)
+        self._control_widget = QSlider(Qt.Orientation.Horizontal)
+        self._control_widget.setObjectName("setting_slider")
+        self._control_widget.setMinimum(self._min_val)
+        self._control_widget.setMaximum(self._max_val)
+        self._control_widget.setValue(self._value)
+        self._control_widget.valueChanged.connect(self._on_value_changed)
+        self._layout.addWidget(self._control_widget)
 
-        # Description (if present)
-        if self._description:
-            self.description_label = QLabel(self.tr(self._description))
-            self.description_label.setObjectName("settingDescription")
-            self.description_label.setWordWrap(True)
-            layout.addWidget(self.description_label)
+        self._description_label = None
+        if self._description_text:
+            self._description_label = QLabel(self._tr(self._description_text))
+            self._description_label.setObjectName("setting_description")
+            self._description_label.setWordWrap(True)
+            self._layout.addWidget(self._description_label)
+
+    def retranslate_ui(self):
+        self._label_widget.setText(self._tr(self._label_text))
+        if self._description_label:
+            self._description_label.setText(self._tr(self._description_text))
 
     def _on_value_changed(self, value: int):
-        """Called when slider value changes."""
         self._value = value
-        self.value_label.setText(f"{value}{self._unit}")
+        self._value_label.setText(f"{value}{self._unit}")
         self.valueChanged.emit(self._key, value)
 
     @property
     def value(self) -> int:
-        """Get current value."""
         return self._value
 
     @value.setter
     def value(self, val: int):
-        """Set value."""
         self._value = val
-        self.slider.setValue(val)
-        self.value_label.setText(f"{val}{self._unit}")
+        self._control_widget.setValue(val)
+        self._value_label.setText(f"{val}{self._unit}")
 
     def get_value(self) -> int:
-        """Get current value."""
         return self._value
 
     def set_value(self, val: int):
-        """Set value."""
         self._value = val
-        self.slider.setValue(val)
-        self.value_label.setText(f"{val}{self._unit}")
-
-    valueChanged = Signal(str, int)
+        self._control_widget.setValue(val)
+        self._value_label.setText(f"{val}{self._unit}")
 
 
 class SettingText(BaseSettingWidget):
     """Widget for text settings."""
 
+    valueChanged = Signal(str, str)
+
     def __init__(self, label: str, description: str = "", default: str = ""):
         super().__init__(label, description)
         self._value = default
-        self.setObjectName("SettingText")
-        self.setProperty("type", "SettingText")
+        self.setObjectName("setting_text_container")
+        self.setProperty("type", "setting_text")
         self._setup_ui()
 
     def _setup_ui(self):
-        """Configure the user interface."""
-        # ////// SETUP LAYOUT
-        layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP LABEL
-        self.label = QLabel(self._label)
-        self.label.setObjectName("settingLabel")
-        self.label.setWordWrap(True)
-        layout.addWidget(self.label)
+        self._label_widget = QLabel(self._tr(self._label_text))
+        self._label_widget.setObjectName("setting_label")
+        self._label_widget.setWordWrap(True)
+        self._layout.addWidget(self._label_widget)
 
-        # ////// SETUP TEXT FIELD
-        self.text_edit = QLineEdit()
-        self.text_edit.setObjectName("settingTextEdit")
-        self.text_edit.setText(self._value)
-        self.text_edit.textChanged.connect(self._on_text_changed)
-        layout.addWidget(self.text_edit)
+        self._control_widget = QLineEdit()
+        self._control_widget.setObjectName("setting_text_edit")
+        self._control_widget.setText(self._value)
+        self._control_widget.textChanged.connect(self._on_text_changed)
+        self._layout.addWidget(self._control_widget)
 
-        # Description (if present)
-        if self._description:
-            self.description_label = QLabel(self.tr(self._description))
-            self.description_label.setObjectName("settingDescription")
-            self.description_label.setWordWrap(True)
-            layout.addWidget(self.description_label)
+        self._description_label = None
+        if self._description_text:
+            self._description_label = QLabel(self._tr(self._description_text))
+            self._description_label.setObjectName("setting_description")
+            self._description_label.setWordWrap(True)
+            self._layout.addWidget(self._description_label)
+
+    def retranslate_ui(self):
+        self._label_widget.setText(self._tr(self._label_text))
+        if self._description_label:
+            self._description_label.setText(self._tr(self._description_text))
 
     def _on_text_changed(self, text: str):
-        """Called when text changes."""
         self._value = text
         self.valueChanged.emit(self._key, text)
 
     @property
     def value(self) -> str:
-        """Get current value."""
         return self._value
 
     @value.setter
     def value(self, val: str):
-        """Set value."""
         self._value = val
-        self.text_edit.setText(val)
+        self._control_widget.setText(val)
 
     def get_value(self) -> str:
-        """Get current value."""
         return self._value
 
     def set_value(self, val: str):
-        """Set value."""
         self._value = val
-        self.text_edit.setText(val)
-
-    valueChanged = Signal(str, str)
+        self._control_widget.setText(val)
 
 
 class SettingCheckbox(BaseSettingWidget):
     """Widget for checkbox settings (on/off)."""
 
+    valueChanged = Signal(str, bool)
+
     def __init__(self, label: str, description: str = "", default: bool = False):
         super().__init__(label, description)
         self._value = default
-        self.setObjectName("SettingCheckbox")
-        self.setProperty("type", "SettingCheckbox")
+        self.setObjectName("setting_checkbox_container")
+        self.setProperty("type", "setting_checkbox")
         self._setup_ui()
 
     def _setup_ui(self):
-        """Configure the user interface."""
-        # ////// SETUP LAYOUT
-        layout = QVBoxLayout(self)
-        layout.setSpacing(4)
-        layout.setContentsMargins(0, 0, 0, 0)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP CONTROL LAYOUT
-        control_layout = QHBoxLayout()
-        control_layout.setSpacing(8)
-        control_layout.setContentsMargins(0, 0, 0, 0)
+        self._control_layout = QHBoxLayout()
+        self._control_layout.setSpacing(8)
+        self._control_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP LABEL
-        self.label = QLabel(self._label)
-        self.label.setObjectName("settingLabel")
-        self.label.setWordWrap(True)
-        control_layout.addWidget(self.label, 1)  # Stretch
+        self._label_widget = QLabel(self._tr(self._label_text))
+        self._label_widget.setObjectName("setting_label")
+        self._label_widget.setWordWrap(True)
+        self._control_layout.addWidget(self._label_widget, 1)
 
-        # ////// SETUP CHECKBOX
         animation_enabled = get_settings_service().gui.TIME_ANIMATION > 0
+        self._control_widget = ToggleSwitch(animation=animation_enabled)
+        self._control_widget.setObjectName("setting_toggle")
+        self._control_widget.checked = self._value
+        self._control_widget.toggled.connect(self._on_toggled)
+        self._control_layout.addWidget(self._control_widget, 0)
 
-        self.checkbox = ToggleSwitch(animation=animation_enabled)
-        self.checkbox.setObjectName("settingCheckbox")
-        self.checkbox.checked = self._value
-        self.checkbox.toggled.connect(self._on_toggled)
-        control_layout.addWidget(self.checkbox, 0)  # No stretch
+        self._layout.addLayout(self._control_layout)
 
-        layout.addLayout(control_layout)
+        self._description_label = None
+        if self._description_text:
+            self._description_label = QLabel(self._tr(self._description_text))
+            self._description_label.setObjectName("setting_description")
+            self._description_label.setWordWrap(True)
+            self._layout.addWidget(self._description_label)
 
-        # Description (if present)
-        if self._description:
-            self.description_label = QLabel(self.tr(self._description))
-            self.description_label.setObjectName("settingDescription")
-            self.description_label.setWordWrap(True)
-            layout.addWidget(self.description_label)
+    def retranslate_ui(self):
+        self._label_widget.setText(self._tr(self._label_text))
+        if self._description_label:
+            self._description_label.setText(self._tr(self._description_text))
 
     def _on_toggled(self, checked: bool):
-        """Called when checkbox changes."""
         self._value = checked
         self.valueChanged.emit(self._key, checked)
 
     @property
     def value(self) -> bool:
-        """Get current value."""
         return self._value
 
     @value.setter
     def value(self, val: bool):
-        """Set value."""
         self._value = val
-        self.checkbox.checked = val
+        self._control_widget.checked = val
 
     def get_value(self) -> bool:
-        """Get current value."""
         return self._value
 
     def set_value(self, val: bool):
-        """Set value."""
         self._value = val
-        self.checkbox.checked = val
-
-    valueChanged = Signal(str, bool)
+        self._control_widget.checked = val
 
 
 # ///////////////////////////////////////////////////////////////

@@ -10,31 +10,10 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
-# Standard library imports
-import os
-import sys
-
 # Third-party imports
 from PySide6.QtWidgets import QFrame, QSizePolicy, QStackedWidget, QWidget
 
 # Local imports
-# Add project path to sys.path.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-
-# Direct import of module without going through main package.
-sys.path.insert(
-    0,
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "..",
-        "ezqt_app",
-        "widgets",
-        "core",
-    ),
-)
 from ezqt_app.widgets.core.page_container import PageContainer
 
 # ///////////////////////////////////////////////////////////////
@@ -52,7 +31,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check basic properties
-        assert container.objectName() == "pagesContainer"
+        assert container.objectName() == "pages_container"
         assert container.frameShape() == QFrame.NoFrame
         assert container.frameShadow() == QFrame.Raised
 
@@ -69,12 +48,12 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check that main layout exists
-        assert hasattr(container, "VL_pagesContainer")
-        assert container.VL_pagesContainer is not None
+        assert hasattr(container, "_layout")
+        assert container._layout is not None
 
         # Check layout properties
-        assert container.VL_pagesContainer.spacing() == 0
-        margins = container.VL_pagesContainer.contentsMargins()
+        assert container._layout.spacing() == 0
+        margins = container._layout.contentsMargins()
         assert margins.left() == 10
         assert margins.top() == 10
         assert margins.right() == 10
@@ -85,13 +64,13 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check that stacked widget exists
-        assert hasattr(container, "stackedWidget")
-        assert container.stackedWidget is not None
-        assert isinstance(container.stackedWidget, QStackedWidget)
+        assert hasattr(container, "_stacked_widget")
+        assert container._stacked_widget is not None
+        assert isinstance(container._stacked_widget, QStackedWidget)
 
         # Check stacked widget properties
-        assert container.stackedWidget.objectName() == "stackedWidget"
-        assert container.stackedWidget.styleSheet() == "background: transparent;"
+        assert container._stacked_widget.objectName() == "pages_stacked_widget"
+        assert container._stacked_widget.styleSheet() == "background: transparent;"
 
     def test_should_initialize_with_empty_pages_dict_when_instantiated(
         self, qt_application
@@ -116,7 +95,7 @@ class TestPageContainer:
         assert isinstance(page, QWidget)
 
         # Check that page was added to stacked widget
-        assert page in container.stackedWidget.children()
+        assert page in container.get_stacked_widget().children()
 
         # Check that page was added to dictionary
         assert page_name in container.pages
@@ -143,7 +122,7 @@ class TestPageContainer:
 
         # Check that all pages are in stacked widget
         for page in pages:
-            assert page in container.stackedWidget.children()
+            assert page in container.get_stacked_widget().children()
 
         # Check that all pages are in dictionary
         for name in page_names:
@@ -167,7 +146,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check that container starts empty
-        assert container.stackedWidget.count() == 0
+        assert container.get_stacked_widget().count() == 0
 
     def test_should_be_independent_when_two_containers_are_created(
         self, qt_application
@@ -188,8 +167,8 @@ class TestPageContainer:
         assert "page2" not in container2.pages
 
         # Check that each container has its own pages in its stackedWidget.
-        assert container1.stackedWidget.count() == 2
-        assert container2.stackedWidget.count() == 0
+        assert container1.get_stacked_widget().count() == 2
+        assert container2.get_stacked_widget().count() == 0
 
     def test_should_accept_special_characters_when_page_name_has_hyphens(
         self, qt_application
@@ -236,7 +215,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check layout margins
-        margins = container.VL_pagesContainer.contentsMargins()
+        margins = container._layout.contentsMargins()
         assert margins.left() == 10
         assert margins.top() == 10
         assert margins.right() == 10
@@ -247,7 +226,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check layout spacing
-        assert container.VL_pagesContainer.spacing() == 0
+        assert container._layout.spacing() == 0
 
     def test_should_have_transparent_background_when_stacked_widget_is_created(
         self, qt_application
@@ -256,7 +235,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check stacked widget style
-        assert container.stackedWidget.styleSheet() == "background: transparent;"
+        assert container.get_stacked_widget().styleSheet() == "background: transparent;"
 
     def test_should_have_no_frame_when_instantiated(self, qt_application):
         """Test page container frame properties."""
@@ -273,7 +252,7 @@ class TestPageContainer:
         container = PageContainer()
 
         # Check object name
-        assert container.objectName() == "pagesContainer"
+        assert container.objectName() == "pages_container"
 
     def test_should_be_qframe_instance_when_instantiated(self, qt_application):
         """Test page container inheritance."""

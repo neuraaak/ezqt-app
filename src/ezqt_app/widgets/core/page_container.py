@@ -22,7 +22,7 @@ class PageContainer(QFrame):
     Page container with stacked widget management.
 
     This class provides a container to manage multiple pages
-    with a tab-based navigation system.
+    within a central receptacle using a QStackedWidget.
     """
 
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -38,25 +38,24 @@ class PageContainer(QFrame):
         self.pages: dict[str, QWidget] = {}
 
         # ////// SETUP WIDGET PROPERTIES
-        self.setObjectName("pagesContainer")
-        self.setStyleSheet("")
+        self.setObjectName("pages_container")
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setFrameShadow(QFrame.Shadow.Raised)
 
         # ////// SETUP MAIN LAYOUT
-        self.VL_pagesContainer = QVBoxLayout(self)
-        self.VL_pagesContainer.setSpacing(0)
-        self.VL_pagesContainer.setObjectName("VL_pagesContainer")
-        self.VL_pagesContainer.setContentsMargins(10, 10, 10, 10)
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setObjectName("pages_container_layout")
+        self._layout.setContentsMargins(10, 10, 10, 10)
 
         # ////// SETUP STACKED WIDGET
-        self.stackedWidget = QStackedWidget(self)
-        self.stackedWidget.setObjectName("stackedWidget")
-        self.stackedWidget.setStyleSheet("background: transparent;")
-        self.VL_pagesContainer.addWidget(self.stackedWidget)
+        self._stacked_widget = QStackedWidget(self)
+        self._stacked_widget.setObjectName("pages_stacked_widget")
+        self._stacked_widget.setStyleSheet("background: transparent;")
+        self._layout.addWidget(self._stacked_widget)
 
     # ///////////////////////////////////////////////////////////////
-    # UTILITY FUNCTIONS
+    # PUBLIC API
 
     def add_page(self, name: str) -> QWidget:
         """
@@ -75,10 +74,29 @@ class PageContainer(QFrame):
         page = QWidget()
         page.setObjectName(f"page_{name}")
 
-        self.stackedWidget.addWidget(page)
+        self._stacked_widget.addWidget(page)
         self.pages[name] = page
 
         return page
+
+    def set_current_widget(self, widget: QWidget) -> None:
+        """
+        Set the current visible page.
+
+        Parameters
+        ----------
+        widget : QWidget
+            The page widget to display.
+        """
+        self._stacked_widget.setCurrentWidget(widget)
+
+    def get_stacked_widget(self) -> QStackedWidget:
+        """
+        Access the internal stacked widget.
+
+        Note: Use set_current_widget for standard navigation.
+        """
+        return self._stacked_widget
 
 
 # ///////////////////////////////////////////////////////////////

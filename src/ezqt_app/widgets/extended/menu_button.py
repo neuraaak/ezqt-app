@@ -102,42 +102,38 @@ class MenuButton(QToolButton):
         )
 
         # ////// CALCULATE ICON POSITION
-        # Calculate the ideal icon position so it stays fixed when menu expands
-        # In shrink mode: icon should be centered in shrink_size
-        # In extended mode: icon should stay at the same absolute position
         self._icon_x_position = (self._shrink_size - self._icon_size.width()) // 2
 
         # ////// SETUP UI COMPONENTS
-        self.icon_label = QLabel()
-        self.text_label = QLabel()
+        self._icon_label = QLabel()
+        self._text_label = QLabel()
 
         # ////// CONFIGURE ICON LABEL
-        self.icon_label.setAlignment(
+        self._icon_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        self.icon_label.setStyleSheet("background-color: transparent;")
+        self._icon_label.setStyleSheet("background-color: transparent;")
 
         # ////// CONFIGURE TEXT LABEL
-        self.text_label.setAlignment(
+        self._text_label.setAlignment(
             Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         )
-        self.text_label.setWordWrap(True)
-        self.text_label.setStyleSheet("background-color: transparent;")
+        self._text_label.setWordWrap(True)
+        self._text_label.setStyleSheet("background-color: transparent;")
 
         # ////// SETUP LAYOUT
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(
-            0, 0, 0, 0
-        )  # No margins, we'll handle positioning manually
-        layout.setSpacing(0)  # No spacing, we'll handle it manually
-        layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)  # Always center vertically
-        layout.addWidget(self.icon_label)
-        layout.addWidget(self.text_label)
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self._layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        self._layout.addWidget(self._icon_label)
+        self._layout.addWidget(self._text_label)
 
         # ////// CONFIGURE SIZE POLICY
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         # ////// SET INITIAL VALUES
+        self._original_text = text
         if icon:
             self.icon = icon
         if text:
@@ -145,6 +141,20 @@ class MenuButton(QToolButton):
 
         # ////// INITIALIZE STATE
         self._update_state_display(animate=False)
+
+    # ///////////////////////////////////////////////////////////////
+    # TRANSLATION FUNCTIONS
+
+    def _tr(self, text: str) -> str:
+        """Shortcut for translation with global context."""
+        from PySide6.QtCore import QCoreApplication
+
+        return QCoreApplication.translate("EzQt_App", text)
+
+    def retranslate_ui(self) -> None:
+        """Update button text after a language change."""
+        if self._original_text:
+            self.text = self._tr(self._original_text)
 
     # ///////////////////////////////////////////////////////////////
     # PROPERTY FUNCTIONS
@@ -160,9 +170,8 @@ class MenuButton(QToolButton):
         icon = load_icon_from_source(value)
         if icon:
             self._current_icon = icon
-            self.icon_label.setPixmap(icon.pixmap(self._icon_size))
-            self.icon_label.setFixedSize(self._icon_size)
-            # Recalculate icon position when icon changes
+            self._icon_label.setPixmap(icon.pixmap(self._icon_size))
+            self._icon_label.setFixedSize(self._icon_size)
             self._icon_x_position = (self._shrink_size - self._icon_size.width()) // 2
             self.iconChanged.emit(icon)
         elif value is not None:
@@ -174,13 +183,13 @@ class MenuButton(QToolButton):
     @property
     def text(self) -> str:
         """Get or set the button text."""
-        return self.text_label.text()
+        return self._text_label.text()
 
     @text.setter
     def text(self, value: str) -> None:
         """Set the button text."""
-        if value != self.text_label.text():
-            self.text_label.setText(str(value))
+        if value != self._text_label.text():
+            self._text_label.setText(str(value))
             self.textChanged.emit(str(value))
 
     @property
@@ -195,9 +204,8 @@ class MenuButton(QToolButton):
             QSize(*value) if isinstance(value, (tuple, list)) else QSize(value)
         )
         if self._current_icon:
-            self.icon_label.setPixmap(self._current_icon.pixmap(self._icon_size))
-            self.icon_label.setFixedSize(self._icon_size)
-        # Recalculate icon position when icon size changes
+            self._icon_label.setPixmap(self._current_icon.pixmap(self._icon_size))
+            self._icon_label.setFixedSize(self._icon_size)
         self._icon_x_position = (self._shrink_size - self._icon_size.width()) // 2
 
     @property
@@ -209,7 +217,6 @@ class MenuButton(QToolButton):
     def shrink_size(self, value: int) -> None:
         """Set the shrink width."""
         self._shrink_size = int(value)
-        # Recalculate icon position
         self._icon_x_position = (self._shrink_size - self._icon_size.width()) // 2
         self._update_state_display(animate=False)
 
@@ -227,9 +234,8 @@ class MenuButton(QToolButton):
     def spacing(self, value: int) -> None:
         """Set the spacing between icon and text."""
         self._spacing = int(value)
-        layout = self.layout()
-        if layout:
-            layout.setSpacing(self._spacing)
+        if self._layout:
+            self._layout.setSpacing(self._spacing)
 
     @property
     def min_height(self) -> int | None:
@@ -258,7 +264,7 @@ class MenuButton(QToolButton):
     def clear_icon(self) -> None:
         """Remove the current icon."""
         self._current_icon = None
-        self.icon_label.clear()
+        self._icon_label.clear()
         self.iconChanged.emit(QIcon())
 
     def clear_text(self) -> None:
@@ -297,7 +303,7 @@ class MenuButton(QToolButton):
         if self._current_icon:
             pixmap = self._current_icon.pixmap(self._icon_size)
             colored_pixmap = colorize_pixmap(pixmap, color, opacity)
-            self.icon_label.setPixmap(colored_pixmap)
+            self._icon_label.setPixmap(colored_pixmap)
 
     def update_theme_icon(self, theme_icon: QIcon) -> None:
         """
@@ -309,7 +315,7 @@ class MenuButton(QToolButton):
             The new theme icon.
         """
         if theme_icon:
-            self.icon_label.setPixmap(theme_icon.pixmap(self._icon_size))
+            self._icon_label.setPixmap(theme_icon.pixmap(self._icon_size))
 
     def _update_state_display(self, animate: bool = True) -> None:
         """
@@ -320,79 +326,62 @@ class MenuButton(QToolButton):
         animate : bool, optional
             Enable animation (default: True).
         """
-        layout = self.layout()
-
         if self._is_extended:
             # ////// EXTENDED STATE
-            self.text_label.show()
-            # Remove maximum width constraint
-            self.setMaximumWidth(16777215)  # Qt's maximum value
-            # Set minimum width to accommodate icon + text + spacing
-            min_width = self._icon_size.width() + self._spacing + 20  # margins
+            self._text_label.show()
+            self.setMaximumWidth(16777215)
+            min_width = self._icon_size.width() + self._spacing + 20
             if self.text:
-                min_width += self.text_label.fontMetrics().horizontalAdvance(self.text)
+                min_width += self._text_label.fontMetrics().horizontalAdvance(self.text)
             self.setMinimumWidth(min_width)
-            # Set layout alignment to left (icon stays in position, text appears to the right)
-            if layout:
-                layout.setAlignment(
+            if self._layout:
+                self._layout.setAlignment(
                     Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
                 )
-                # Extended mode: position icon at calculated position, text to the right
                 left_margin = self._icon_x_position
-                layout.setContentsMargins(left_margin, 2, 8, 2)
-                layout.setSpacing(self._spacing)
+                self._layout.setContentsMargins(left_margin, 2, 8, 2)
+                self._layout.setSpacing(self._spacing)
         else:
             # ////// SHRINK STATE
-            self.text_label.hide()
+            self._text_label.hide()
             self.setMinimumWidth(self._shrink_size)
             self.setMaximumWidth(self._shrink_size)
-            # Set layout alignment to center for shrink state
-            if layout:
-                layout.setAlignment(
+            if self._layout:
+                self._layout.setAlignment(
                     Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
                 )
-                # Perfect centering: calculate exact margins
                 icon_center = self._shrink_size // 2
                 icon_left = icon_center - (self._icon_size.width() // 2)
-                layout.setContentsMargins(icon_left, 2, icon_left, 2)
-                layout.setSpacing(0)
+                self._layout.setContentsMargins(icon_left, 2, icon_left, 2)
+                self._layout.setSpacing(0)
 
-        # Apply animation if requested
         if animate:
             self._animate_state_change()
 
     def _animate_state_change(self) -> None:
-        """
-        Animate the state change.
-        """
-        # Stop any ongoing animation
+        """Animate the state change."""
         if (
             hasattr(self, "animation")
             and self.animation.state() == QPropertyAnimation.State.Running
         ):
             self.animation.stop()
 
-        # Get current and target geometries
         current_rect = self.geometry()
 
         if self._is_extended:
-            # Animate to extended state
-            # Calculate target width based on content
             icon_width = self._icon_size.width() if self._current_icon else 0
             text_width = 0
             if self.text:
-                text_width = self.text_label.fontMetrics().horizontalAdvance(self.text)
+                text_width = self._text_label.fontMetrics().horizontalAdvance(self.text)
             target_width = (
                 self._icon_x_position + icon_width + self._spacing + text_width + 8
             )
         else:
-            # Animate to shrink state
             target_width = self._shrink_size
 
         target_rect = current_rect
         target_rect.setWidth(target_width)
 
-        # Start animation
         self.animation = QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(self._duration)
         self.animation.setStartValue(current_rect)
@@ -409,25 +398,19 @@ class MenuButton(QToolButton):
 
     def minimumSizeHint(self) -> QSize:
         """Get the minimum recommended size for the button."""
-        # ////// CALCULATE BASE SIZE
         base_size = super().minimumSizeHint()
 
-        # ////// CALCULATE WIDTH BASED ON STATE
         if self._is_extended:
-            # Extended state: calculate full width
-            # Icon position + icon width + spacing + text width + right margin
             icon_width = self._icon_size.width() if self._current_icon else 0
             text_width = 0
             if self.text:
-                text_width = self.text_label.fontMetrics().horizontalAdvance(self.text)
+                text_width = self._text_label.fontMetrics().horizontalAdvance(self.text)
             total_width = (
                 self._icon_x_position + icon_width + self._spacing + text_width + 8
-            )  # right margin
+            )
         else:
-            # Shrink state: use shrink_size
             total_width = self._shrink_size
 
-        # ////// CALCULATE HEIGHT
         min_height = (
             self._min_height
             if self._min_height is not None
@@ -440,7 +423,7 @@ class MenuButton(QToolButton):
     # STYLE FUNCTIONS
 
     def refresh_style(self) -> None:
-        """Refresh the widget style (useful after dynamic stylesheet changes)."""
+        """Refresh the widget style."""
         self.style().unpolish(self)
         self.style().polish(self)
         self.update()

@@ -49,6 +49,13 @@ class BottomBar(QFrame):
         """
         super().__init__(parent)
 
+        # ////// INITIALIZE TRANSLATION STORAGE
+        # These are set by set_credits() and set_version() — initialised here
+        # so retranslate_ui() can safely reference them before the setters run.
+        self._default_credits: str = "Made with ❤️ by EzQt_App"
+        self._credits_data: str | dict[str, str] = self._default_credits
+        self._version_text: str = ""
+
         # ////// SETUP WIDGET PROPERTIES
         self.setObjectName("bottomBar")
         self.setMinimumSize(QSize(0, 22))
@@ -57,95 +64,89 @@ class BottomBar(QFrame):
         self.setFrameShadow(QFrame.Shadow.Raised)
 
         # ////// SETUP MAIN LAYOUT
-        self.HL_bottomBar = QHBoxLayout(self)
-        self.HL_bottomBar.setSpacing(0)
-        self.HL_bottomBar.setObjectName("HL_bottomBar")
-        self.HL_bottomBar.setContentsMargins(0, 0, 0, 0)
+        self._layout = QHBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setObjectName("bottom_bar_layout")
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
         # ////// SETUP CREDITS LABEL
-        self.creditsLabel = QLabel(self)
-        self.creditsLabel.setObjectName("creditsLabel")
-        self.creditsLabel.setMaximumSize(QSize(16777215, 16))
+        self._credits_label = QLabel(self)
+        self._credits_label.setObjectName("credits_label")
+        self._credits_label.setMaximumSize(QSize(16777215, 16))
         if Fonts.SEGOE_UI_10_REG is not None:
-            self.creditsLabel.setFont(Fonts.SEGOE_UI_10_REG)
-        self.creditsLabel.setAlignment(
+            self._credits_label.setFont(Fonts.SEGOE_UI_10_REG)
+        self._credits_label.setAlignment(
             Qt.AlignmentFlag.AlignLeading
             | Qt.AlignmentFlag.AlignLeft
             | Qt.AlignmentFlag.AlignVCenter
         )
-        self.HL_bottomBar.addWidget(self.creditsLabel)
+        self._layout.addWidget(self._credits_label)
 
         # ////// SETUP TRANSLATION SEPARATOR
         # Displayed only while the translation indicator is visible.
-        self.translationSeparator = QLabel(self)
-        self.translationSeparator.setObjectName("translationSeparator")
-        self.translationSeparator.setMaximumSize(QSize(16777215, 16))
+        self._trans_sep_label = QLabel(self)
+        self._trans_sep_label.setObjectName("trans_sep_label")
+        self._trans_sep_label.setMaximumSize(QSize(16777215, 16))
         if Fonts.SEGOE_UI_10_REG is not None:
-            self.translationSeparator.setFont(Fonts.SEGOE_UI_10_REG)
-        self.translationSeparator.setAlignment(
+            self._trans_sep_label.setFont(Fonts.SEGOE_UI_10_REG)
+        self._trans_sep_label.setAlignment(
             Qt.AlignmentFlag.AlignLeading
             | Qt.AlignmentFlag.AlignLeft
             | Qt.AlignmentFlag.AlignVCenter
         )
-        self.translationSeparator.setText("•")
-        self.translationSeparator.setVisible(False)
-        self.HL_bottomBar.addWidget(self.translationSeparator)
+        self._trans_sep_label.setText("•")
+        self._trans_sep_label.setVisible(False)
+        self._layout.addWidget(self._trans_sep_label)
 
         # ////// SETUP TRANSLATION INDICATOR LABEL
         # Shown only while async auto-translations are in flight.
-        # Connected externally (ui_main.py) via signal/slot to avoid a direct
-        # dependency on TranslationManager from this presentation widget.
-        self.translationIndicator = QLabel(self)
-        self.translationIndicator.setObjectName("translationIndicator")
-        self.translationIndicator.setMaximumSize(QSize(16777215, 16))
+        self._trans_ind_label = QLabel(self)
+        self._trans_ind_label.setObjectName("trans_ind_label")
+        self._trans_ind_label.setMaximumSize(QSize(16777215, 16))
         if Fonts.SEGOE_UI_10_REG is not None:
-            self.translationIndicator.setFont(Fonts.SEGOE_UI_10_REG)
-        self.translationIndicator.setAlignment(
+            self._trans_ind_label.setFont(Fonts.SEGOE_UI_10_REG)
+        self._trans_ind_label.setAlignment(
             Qt.AlignmentFlag.AlignLeading
             | Qt.AlignmentFlag.AlignLeft
             | Qt.AlignmentFlag.AlignVCenter
         )
-        self.translationIndicator.setText(
-            QCoreApplication.translate("EzQt_App", "Translating...")
-        )
         # Hidden by default — only visible while translations are pending.
-        self.translationIndicator.setVisible(False)
-        self.HL_bottomBar.addWidget(self.translationIndicator)
+        self._trans_ind_label.setVisible(False)
+        self._layout.addWidget(self._trans_ind_label)
 
         # Push the version block to the right, keeping credits + indicator grouped left.
-        self.HL_bottomBar.addStretch(1)
+        self._layout.addStretch(1)
 
         # ////// SETUP VERSION LABEL
-        self.version = QLabel(self)
-        self.version.setObjectName("version")
-        self.version.setAlignment(
+        self._version_label = QLabel(self)
+        self._version_label.setObjectName("version_label")
+        self._version_label.setAlignment(
             Qt.AlignmentFlag.AlignRight
             | Qt.AlignmentFlag.AlignTrailing
             | Qt.AlignmentFlag.AlignVCenter
         )
-        self.HL_bottomBar.addWidget(self.version)
+        self._layout.addWidget(self._version_label)
 
         # ////// SETUP SIZE GRIP
-        self.appSizeGrip = QFrame(self)
-        self.appSizeGrip.setObjectName("appSizeGrip")
-        self.appSizeGrip.setMinimumSize(QSize(20, 0))
-        self.appSizeGrip.setMaximumSize(QSize(20, 16777215))
-        self.appSizeGrip.setFrameShape(QFrame.Shape.NoFrame)
-        self.appSizeGrip.setFrameShadow(QFrame.Shadow.Raised)
-        self.HL_bottomBar.addWidget(self.appSizeGrip)
-
-        # ////// INITIALIZE TRANSLATION STORAGE
-        # These are set by set_credits() and set_version() — initialised here
-        # so retranslate_ui() can safely reference them before the setters run.
-        self._credits_data: str | dict[str, str] = "Made with ❤️ by EzQt_App"
-        self._version_text: str = ""
+        # Keeping variable name 'size_grip_spacer' for MainWindowProtocol compatibility.
+        self.size_grip_spacer = QFrame(self)
+        self.size_grip_spacer.setObjectName("size_grip_spacer")
+        self.size_grip_spacer.setMinimumSize(QSize(20, 0))
+        self.size_grip_spacer.setMaximumSize(QSize(20, 16777215))
+        self.size_grip_spacer.setFrameShape(QFrame.Shape.NoFrame)
+        self.size_grip_spacer.setFrameShadow(QFrame.Shadow.Raised)
+        self._layout.addWidget(self.size_grip_spacer)
 
         # ////// INITIALIZE DEFAULT VALUES
-        self.set_credits("Made with ❤️ by EzQt_App")
+        self.retranslate_ui()
         self.set_version_auto()
 
     # ///////////////////////////////////////////////////////////////
     # UTILITY FUNCTIONS
+
+    def _tr(self, text: str) -> str:
+        """Shortcut for translation with global context."""
+        return QCoreApplication.translate("EzQt_App", text)
 
     def show_translation_indicator(self) -> None:
         """Show the translation-in-progress indicator in the bottom bar.
@@ -153,8 +154,8 @@ class BottomBar(QFrame):
         Called via signal/slot when the first async auto-translation is enqueued.
         Safe to call from any thread that posts to the Qt event loop.
         """
-        self.translationSeparator.setVisible(True)
-        self.translationIndicator.setVisible(True)
+        self._trans_sep_label.setVisible(True)
+        self._trans_ind_label.setVisible(True)
 
     def hide_translation_indicator(self) -> None:
         """Hide the translation indicator once all pending translations are done.
@@ -162,8 +163,8 @@ class BottomBar(QFrame):
         Called via signal/slot when the pending auto-translation count reaches zero.
         Safe to call from any thread that posts to the Qt event loop.
         """
-        self.translationSeparator.setVisible(False)
-        self.translationIndicator.setVisible(False)
+        self._trans_sep_label.setVisible(False)
+        self._trans_ind_label.setVisible(False)
 
     def set_credits(self, credits: str | dict[str, str]) -> None:
         """
@@ -182,9 +183,7 @@ class BottomBar(QFrame):
                 # Credits with name and email
                 self._create_clickable_credits(credits)
             else:
-                self.creditsLabel.setText(
-                    QCoreApplication.translate("EzQt_App", credits)
-                )
+                self._credits_label.setText(self._tr(credits))
 
         except Exception as e:
             warn_tech(
@@ -192,7 +191,7 @@ class BottomBar(QFrame):
                 message="Could not apply credits data",
                 error=e,
             )
-            self.creditsLabel.setText("Made with ❤️ by EzQt_App")
+            self._credits_label.setText(self._default_credits)
 
     def _create_clickable_credits(self, credits_data: dict[str, str]) -> None:
         """
@@ -208,23 +207,23 @@ class BottomBar(QFrame):
             email = credits_data.get("email", "")
 
             # Build translatable base text then append the name (untranslated).
-            base = QCoreApplication.translate("EzQt_App", "Made with ❤️ by")
+            base = self._tr("Made with ❤️ by")
             credits_text = f"{base} {name}"
 
-            self.creditsLabel.setText(credits_text)
+            self._credits_label.setText(credits_text)
 
             # Make label clickable if email is provided
             if email:
-                self.creditsLabel.setCursor(Qt.CursorShape.PointingHandCursor)
-                self.creditsLabel.mousePressEvent = lambda _event: self._open_email(  # type: ignore[method-assign]
+                self._credits_label.setCursor(Qt.CursorShape.PointingHandCursor)
+                self._credits_label.mousePressEvent = lambda _event: self._open_email(  # type: ignore[method-assign]
                     email
                 )
-                self.creditsLabel.setStyleSheet(
+                self._credits_label.setStyleSheet(
                     "color: #0078d4; text-decoration: underline;"
                 )
             else:
-                self.creditsLabel.setCursor(Qt.CursorShape.ArrowCursor)
-                self.creditsLabel.setStyleSheet("")
+                self._credits_label.setCursor(Qt.CursorShape.ArrowCursor)
+                self._credits_label.setStyleSheet("")
 
         except Exception as e:
             warn_tech(
@@ -232,7 +231,7 @@ class BottomBar(QFrame):
                 message="Could not create clickable credits",
                 error=e,
             )
-            self.creditsLabel.setText("Made with ❤️ by EzQt_App")
+            self._credits_label.setText(self._default_credits)
 
     def _open_email(self, email: str) -> None:
         """
@@ -410,7 +409,7 @@ class BottomBar(QFrame):
         # Store so retranslate_ui() can re-apply the version string after a language
         # change (version strings are not translated, but the label must be refreshed).
         self._version_text = text
-        self.version.setText(text)
+        self._version_label.setText(text)
 
     def retranslate_ui(self) -> None:
         """Apply current translations to all owned text labels."""
@@ -418,11 +417,9 @@ class BottomBar(QFrame):
         self.set_credits(self._credits_data)
         # Version strings are not translatable but must be refreshed on language change.
         if self._version_text:
-            self.version.setText(self._version_text)
+            self._version_label.setText(self._version_text)
         # Refresh the indicator label text (visibility is unchanged here).
-        self.translationIndicator.setText(
-            QCoreApplication.translate("EzQt_App", "Translating...")
-        )
+        self._trans_ind_label.setText(self._tr("Translating..."))
 
     def changeEvent(self, event: QEvent) -> None:
         """Handle Qt change events, triggering UI retranslation on language change.

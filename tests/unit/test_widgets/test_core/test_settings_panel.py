@@ -34,7 +34,7 @@ class TestSettingsPanel:
         self, qt_application
     ):
         panel = SettingsPanel()
-        assert panel.objectName() == "settingsPanel"
+        assert panel.objectName() == "settings_panel"
         assert panel.frameShape() == QFrame.NoFrame
         assert panel.frameShadow() == QFrame.Raised
 
@@ -51,40 +51,40 @@ class TestSettingsPanel:
         self, qt_application
     ):
         panel = SettingsPanel()
-        assert isinstance(panel.settingsScrollArea, QScrollArea)
-        assert panel.settingsScrollArea.objectName() == "settingsScrollArea"
-        assert panel.settingsScrollArea.widgetResizable() is True
+        assert isinstance(panel._scroll_area, QScrollArea)
+        assert panel._scroll_area.objectName() == "settings_scroll_area"
+        assert panel._scroll_area.widgetResizable() is True
         assert (
-            panel.settingsScrollArea.horizontalScrollBarPolicy()
+            panel._scroll_area.horizontalScrollBarPolicy()
             == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         assert (
-            panel.settingsScrollArea.verticalScrollBarPolicy()
+            panel._scroll_area.verticalScrollBarPolicy()
             == Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
 
     def test_should_have_content_container_when_instantiated(self, qt_application):
         panel = SettingsPanel()
-        assert hasattr(panel, "contentSettings")
-        assert panel.contentSettings.objectName() == "contentSettings"
-        assert panel.contentSettings.frameShape() == QFrame.NoFrame
-        assert panel.VL_contentSettings.spacing() == 0
+        assert hasattr(panel, "_content_widget")
+        assert panel._content_widget.objectName() == "content_widget"
+        assert panel._content_widget.frameShape() == QFrame.NoFrame
+        assert panel._content_layout.spacing() == 0
 
     def test_should_have_theme_container_and_label_when_instantiated(
         self, qt_application
     ):
         panel = SettingsPanel()
-        assert panel.themeSettingsContainer.objectName() == "themeSettingsContainer"
-        assert panel.themeLabel.objectName() == "themeLabel"
-        assert isinstance(panel.themeLabel, QLabel)
+        assert panel._theme_section_frame.objectName() == "theme_section_frame"
+        assert panel._theme_label.objectName() == "theme_label"
+        assert isinstance(panel._theme_label, QLabel)
         assert panel._theme_label_text == "Active Theme"
 
     def test_should_have_correct_theme_layout_properties_when_instantiated(
         self, qt_application
     ):
         panel = SettingsPanel()
-        assert panel.VL_themeSettingsContainer.spacing() == 8
-        margins = panel.VL_themeSettingsContainer.contentsMargins()
+        assert panel._theme_section_layout.spacing() == 8
+        margins = panel._theme_section_layout.contentsMargins()
         assert margins.left() == 10
         assert margins.top() == 10
         assert margins.right() == 10

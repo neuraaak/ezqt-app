@@ -98,11 +98,11 @@ class TestEzQtAppClassStructure:
 
     def test_should_have_expected_public_methods_when_class_is_loaded(self) -> None:
         for method in (
-            "setAppTheme",
-            "updateUI",
-            "setAppIcon",
-            "addMenu",
-            "switchMenu",
+            "set_app_theme",
+            "update_ui",
+            "set_app_icon",
+            "add_menu",
+            "switch_menu",
             "resizeEvent",
         ):
             assert hasattr(EzQt_App, method), f"Missing method: {method}"
@@ -121,7 +121,7 @@ class TestEzQtAppInstantiation:
         self, qt_application
     ) -> None:
         instance = _make_instance(qt_application)
-        assert instance._themeFileName is None
+        assert instance._theme_file_name is None
 
     def test_should_store_custom_theme_file_when_theme_filename_is_given(
         self, qt_application
@@ -141,9 +141,9 @@ class TestEzQtAppInstantiation:
             patch(_PATCHES["ui_def"]),
             patch(_PATCHES["setupUi"], new=fake_setupUi),
         ):
-            instance = EzQt_App(themeFileName="custom.qss")
+            instance = EzQt_App(theme_file_name="custom.qss")
 
-        assert instance._themeFileName == "custom.qss"
+        assert instance._theme_file_name == "custom.qss"
 
 
 class TestEzQtAppMethods:
@@ -153,11 +153,11 @@ class TestEzQtAppMethods:
         self, qt_application
     ) -> None:
         instance = _make_instance(qt_application)
-        instance.ui.headerContainer.set_app_logo = MagicMock()
+        instance.ui.header_container.set_app_logo = MagicMock()
 
-        instance.setAppIcon("icon.png", yShrink=5)
+        instance.set_app_icon("icon.png", y_shrink=5)
 
-        instance.ui.headerContainer.set_app_logo.assert_called_once_with(
+        instance.ui.header_container.set_app_logo.assert_called_once_with(
             logo="icon.png", y_shrink=5, y_offset=0
         )
 
@@ -175,14 +175,14 @@ class TestEzQtAppMethods:
 
     def test_should_apply_theme_when_update_ui_is_called(self, qt_application) -> None:
         instance = _make_instance(qt_application)
-        instance.ui.settingsPanel.get_theme_toggle_button.return_value = None
+        instance.ui.settings_panel.get_theme_selector.return_value = None
 
         # Do NOT patch QApplication — isinstance(app_instance, QApplication) would break.
         # The qt_application fixture provides a real EzApplication so the call is safe.
         with patch("ezqt_app.app.ThemeService.apply_theme") as mock_theme:
-            instance.updateUI()
+            instance.update_ui()
 
-        mock_theme.assert_called_once_with(instance, instance._themeFileName)
+        mock_theme.assert_called_once_with(instance, instance._theme_file_name)
 
     def test_should_use_settings_service_theme_when_toggle_has_no_value(
         self, qt_application
@@ -191,13 +191,13 @@ class TestEzQtAppMethods:
         mock_settings = MagicMock()
         mock_settings.gui.THEME = "light"
         toggle = MagicMock(spec=[])  # no value_id, no value attributes
-        instance.ui.settingsPanel.get_theme_toggle_button.return_value = toggle
+        instance.ui.settings_panel.get_theme_selector.return_value = toggle
 
         with (
             patch("ezqt_app.app.get_settings_service", return_value=mock_settings),
             patch("ezqt_app.app.AppService.write_yaml_config"),
-            patch.object(instance, "updateUI"),
+            patch.object(instance, "update_ui"),
         ):
-            instance.setAppTheme()
+            instance.set_app_theme()
 
         mock_settings.set_theme.assert_called_once_with("light")

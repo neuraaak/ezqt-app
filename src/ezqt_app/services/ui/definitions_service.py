@@ -38,12 +38,12 @@ class UiDefinitionsService:
             if event.type() == QEvent.Type.MouseButtonDblClick:
                 QTimer.singleShot(250, lambda: WindowService.maximize_restore(window))
 
-        window.ui.headerContainer.mouseDoubleClickEvent = double_click_maximize_restore
+        window.ui.header_container.mouseDoubleClickEvent = double_click_maximize_restore
 
         if app_settings.NAME:
-            window.ui.headerContainer.set_app_name(app_settings.NAME)
+            window.ui.header_container.set_app_name(app_settings.NAME)
         if app_settings.DESCRIPTION:
-            window.ui.headerContainer.set_app_description(app_settings.DESCRIPTION)
+            window.ui.header_container.set_app_description(app_settings.DESCRIPTION)
         if app_settings.APP_WIDTH and app_settings.APP_HEIGHT:
             window.resize(app_settings.APP_WIDTH, app_settings.APP_HEIGHT)
         if app_settings.APP_MIN_SIZE:
@@ -62,38 +62,38 @@ class UiDefinitionsService:
                     window.dragPos = global_pos
                     event.accept()
 
-            window.ui.headerContainer.mouseMoveEvent = move_window
+            window.ui.header_container.mouseMoveEvent = move_window
 
             window.left_grip = CustomGrip(window, Qt.Edge.LeftEdge, True)
             window.right_grip = CustomGrip(window, Qt.Edge.RightEdge, True)
             window.top_grip = CustomGrip(window, Qt.Edge.TopEdge, True)
             window.bottom_grip = CustomGrip(window, Qt.Edge.BottomEdge, True)
         else:
-            window.ui.appMargins.setContentsMargins(0, 0, 0, 0)
-            window.ui.headerContainer.minimizeAppBtn.hide()
-            window.ui.headerContainer.maximizeRestoreAppBtn.hide()
-            window.ui.headerContainer.closeAppBtn.hide()
-            window.ui.bottomBar.appSizeGrip.hide()
+            window.ui.app_margins_layout.setContentsMargins(0, 0, 0, 0)
+            window.ui.header_container.minimize_btn.hide()
+            window.ui.header_container.maximize_restore_btn.hide()
+            window.ui.header_container.close_btn.hide()
+            window.ui.bottom_bar.size_grip_spacer.hide()
 
         window.shadow = QGraphicsDropShadowEffect(window)
         window.shadow.setBlurRadius(17)
         window.shadow.setXOffset(0)
         window.shadow.setYOffset(0)
         window.shadow.setColor(QColor(0, 0, 0, 150))
-        window.ui.bgApp.setGraphicsEffect(window.shadow)
+        window.ui.bg_app_frame.setGraphicsEffect(window.shadow)
 
-        window.sizegrip = QSizeGrip(window.ui.bottomBar.appSizeGrip)
+        window.sizegrip = QSizeGrip(window.ui.bottom_bar.size_grip_spacer)
         window.sizegrip.setStyleSheet(
             "width: 20px; height: 20px; margin 0px; padding: 0px;"
         )
 
-        window.ui.headerContainer.minimizeAppBtn.clicked.connect(
+        window.ui.header_container.minimize_btn.clicked.connect(
             lambda: window.showMinimized()
         )
-        window.ui.headerContainer.maximizeRestoreAppBtn.clicked.connect(
+        window.ui.header_container.maximize_restore_btn.clicked.connect(
             lambda: WindowService.maximize_restore(window)
         )
-        window.ui.headerContainer.closeAppBtn.clicked.connect(lambda: window.close())
+        window.ui.header_container.close_btn.clicked.connect(lambda: window.close())
 
     @staticmethod
     def resize_grips(window: MainWindowProtocol) -> None:

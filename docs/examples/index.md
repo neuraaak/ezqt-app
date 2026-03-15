@@ -83,9 +83,9 @@ init()
 app = EzApplication(sys.argv)
 window = EzQt_App()
 
-home_page = window.addMenu("Home", "home")
-settings_page = window.addMenu("Settings", "settings")
-analytics_page = window.addMenu("Analytics", "analytics")
+home_page = window.add_menu("Home", "home")
+settings_page = window.add_menu("Settings", "settings")
+analytics_page = window.add_menu("Analytics", "analytics")
 
 window.show()
 sys.exit(app.exec())
@@ -128,7 +128,7 @@ from ezqt_app import EzApplication, EzQt_App, init
 
 init()
 app = EzApplication(sys.argv)
-window = EzQt_App(themeFileName="my_custom_theme.qss")
+window = EzQt_App(theme_file_name="my_custom_theme.qss")
 window.show()
 sys.exit(app.exec())
 ```
@@ -160,12 +160,12 @@ class MyApp:
     def __init__(self):
         init(mk_theme=True, verbose=False)
         self.app = EzApplication(sys.argv)
-        self.window = EzQt_App(themeFileName="main_theme.qss")
+        self.window = EzQt_App(theme_file_name="main_theme.qss")
 
         # Register pages
-        self.window.addMenu("Dashboard", "dashboard")
-        self.window.addMenu("Reports", "reports")
-        self.window.addMenu("Settings", "settings")
+        self.window.add_menu("Dashboard", "dashboard")
+        self.window.add_menu("Reports", "reports")
+        self.window.add_menu("Settings", "settings")
 
         # Start in French
         change_language_by_code("fr")
@@ -185,7 +185,7 @@ if __name__ == "__main__":
 ## Suggested Real-World Scenarios
 
 - Bootstrap a new desktop project with `ezqt init`
-- Add pages with `EzQt_App.addMenu(...)`
+- Add pages with `EzQt_App.add_menu(...)`
 - Customize themes using `bin/themes/main_theme.qss`
 - Switch UI language using translation service helpers
 - Run tests by scope with `python tests/run_tests.py --type unit`

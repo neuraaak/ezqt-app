@@ -37,10 +37,10 @@ class TestBaseSettingWidget:
         widget = BaseSettingWidget("Test Label", "Test Description")
 
         # Check basic properties
-        assert widget._label == "Test Label"
-        assert widget._description == "Test Description"
+        assert widget._label_text == "Test Label"
+        assert widget._description_text == "Test Description"
         assert widget._key is None
-        assert widget.objectName() == "BaseSettingWidget"
+        assert widget.objectName() == "base_setting_widget"
 
     def test_should_store_key_when_set_key_is_called(self, qt_application):
         """Test key definition."""
@@ -61,11 +61,11 @@ class TestSettingToggle:
         widget = SettingToggle("Test Toggle")
 
         # Check basic properties
-        assert widget._label == "Test Toggle"
-        assert widget._description == ""
+        assert widget._label_text == "Test Toggle"
+        assert widget._description_text == ""
         assert not widget._value
-        assert widget.objectName() == "SettingToggle"
-        assert widget.property("type") == "SettingToggle"
+        assert widget.objectName() == "setting_toggle_container"
+        assert widget.property("type") == "setting_toggle"
 
     def test_should_accept_description_when_instantiated_with_description(
         self, qt_application
@@ -74,8 +74,8 @@ class TestSettingToggle:
         widget = SettingToggle("Test Toggle", "Test Description", True)
 
         # Check properties
-        assert widget._label == "Test Toggle"
-        assert widget._description == "Test Description"
+        assert widget._label_text == "Test Toggle"
+        assert widget._description_text == "Test Description"
         assert widget._value
 
     def test_should_have_label_and_toggle_switch_when_instantiated(
@@ -85,12 +85,12 @@ class TestSettingToggle:
         widget = SettingToggle("Test Toggle")
 
         # Check that components exist
-        assert hasattr(widget, "label")
-        assert hasattr(widget, "toggle")
-        assert isinstance(widget.label, QLabel)
+        assert hasattr(widget, "_label_widget")
+        assert hasattr(widget, "_control_widget")
+        assert isinstance(widget._label_widget, QLabel)
 
         # Check label text
-        assert widget.label.text() == "Test Toggle"
+        assert widget._label_widget.text() == "Test Toggle"
 
     def test_should_return_checked_when_default_is_true(self, qt_application):
         """Test toggle value."""
@@ -130,11 +130,11 @@ class TestSettingSelect:
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check basic properties
-        assert widget._label == "Test Select"
-        assert widget._description == ""
+        assert widget._label_text == "Test Select"
+        assert widget._description_text == ""
         assert widget._value == "Option 1"  # First option by default
-        assert widget.objectName() == "SettingSelect"
-        assert widget.property("type") == "SettingSelect"
+        assert widget.objectName() == "setting_select_container"
+        assert widget.property("type") == "setting_select"
 
     def test_should_use_given_default_when_default_option_is_given(
         self, qt_application
@@ -152,18 +152,18 @@ class TestSettingSelect:
         widget = SettingSelect("Test Select", options=["Option 1", "Option 2"])
 
         # Check that components exist
-        assert hasattr(widget, "label")
-        assert hasattr(widget, "combo")
-        assert isinstance(widget.label, QLabel)
-        assert isinstance(widget.combo, QComboBox)
+        assert hasattr(widget, "_label_widget")
+        assert hasattr(widget, "_control_widget")
+        assert isinstance(widget._label_widget, QLabel)
+        assert isinstance(widget._control_widget, QComboBox)
 
         # Check label text
-        assert widget.label.text() == "Test Select"
+        assert widget._label_widget.text() == "Test Select"
 
         # Check combo options
-        assert widget.combo.count() == 2
-        assert widget.combo.itemText(0) == "Option 1"
-        assert widget.combo.itemText(1) == "Option 2"
+        assert widget._control_widget.count() == 2
+        assert widget._control_widget.itemText(0) == "Option 1"
+        assert widget._control_widget.itemText(1) == "Option 2"
 
     def test_should_update_value_when_select_value_is_set(self, qt_application):
         """Test value property."""
@@ -210,11 +210,11 @@ class TestSettingSlider:
         widget = SettingSlider("Test Slider")
 
         # Check basic properties
-        assert widget._label == "Test Slider"
-        assert widget._description == ""
+        assert widget._label_text == "Test Slider"
+        assert widget._description_text == ""
         assert widget._value == 50
-        assert widget.objectName() == "SettingSlider"
-        assert widget.property("type") == "SettingSlider"
+        assert widget.objectName() == "setting_slider_container"
+        assert widget.property("type") == "setting_slider"
 
     def test_should_accept_custom_range_when_min_and_max_are_given(
         self, qt_application
@@ -232,18 +232,18 @@ class TestSettingSlider:
         widget = SettingSlider("Test Slider")
 
         # Check that components exist
-        assert hasattr(widget, "label")
-        assert hasattr(widget, "slider")
-        assert hasattr(widget, "value_label")
-        assert isinstance(widget.label, QLabel)
-        assert isinstance(widget.slider, QSlider)
-        assert isinstance(widget.value_label, QLabel)
+        assert hasattr(widget, "_label_widget")
+        assert hasattr(widget, "_control_widget")
+        assert hasattr(widget, "_value_label")
+        assert isinstance(widget._label_widget, QLabel)
+        assert isinstance(widget._control_widget, QSlider)
+        assert isinstance(widget._value_label, QLabel)
 
         # Check label text
-        assert widget.label.text() == "Test Slider"
+        assert widget._label_widget.text() == "Test Slider"
 
         # Check displayed value
-        assert widget.value_label.text() == "50"
+        assert widget._value_label.text() == "50"
 
     def test_should_have_correct_range_when_instantiated_with_custom_values(
         self, qt_application
@@ -252,9 +252,9 @@ class TestSettingSlider:
         widget = SettingSlider("Test Slider", min_val=10, max_val=100)
 
         # Check slider properties
-        assert widget.slider.minimum() == 10
-        assert widget.slider.maximum() == 100
-        assert widget.slider.value() == 50
+        assert widget._control_widget.minimum() == 10
+        assert widget._control_widget.maximum() == 100
+        assert widget._control_widget.value() == 50
 
     def test_should_update_value_when_slider_value_is_set(self, qt_application):
         """Test value property."""
@@ -301,11 +301,11 @@ class TestSettingText:
         widget = SettingText("Test Text")
 
         # Check basic properties
-        assert widget._label == "Test Text"
-        assert widget._description == ""
+        assert widget._label_text == "Test Text"
+        assert widget._description_text == ""
         assert widget._value == ""
-        assert widget.objectName() == "SettingText"
-        assert widget.property("type") == "SettingText"
+        assert widget.objectName() == "setting_text_container"
+        assert widget.property("type") == "setting_text"
 
     def test_should_use_given_default_when_default_text_is_given(self, qt_application):
         """Test initialization with a default value."""
@@ -319,13 +319,13 @@ class TestSettingText:
         widget = SettingText("Test Text")
 
         # Check that components exist
-        assert hasattr(widget, "label")
-        assert hasattr(widget, "text_edit")
-        assert isinstance(widget.label, QLabel)
-        assert isinstance(widget.text_edit, QLineEdit)
+        assert hasattr(widget, "_label_widget")
+        assert hasattr(widget, "_control_widget")
+        assert isinstance(widget._label_widget, QLabel)
+        assert isinstance(widget._control_widget, QLineEdit)
 
         # Check label text
-        assert widget.label.text() == "Test Text"
+        assert widget._label_widget.text() == "Test Text"
 
     def test_should_update_value_when_text_value_is_set(self, qt_application):
         """Test value property."""
@@ -372,11 +372,11 @@ class TestSettingCheckbox:
         widget = SettingCheckbox("Test Checkbox")
 
         # Check basic properties
-        assert widget._label == "Test Checkbox"
-        assert widget._description == ""
+        assert widget._label_text == "Test Checkbox"
+        assert widget._description_text == ""
         assert not widget._value
-        assert widget.objectName() == "SettingCheckbox"
-        assert widget.property("type") == "SettingCheckbox"
+        assert widget.objectName() == "setting_checkbox_container"
+        assert widget.property("type") == "setting_checkbox"
 
     def test_should_use_given_default_when_default_checkbox_value_is_given(
         self, qt_application
@@ -392,12 +392,12 @@ class TestSettingCheckbox:
         widget = SettingCheckbox("Test Checkbox")
 
         # Check that components exist
-        assert hasattr(widget, "label")
-        assert hasattr(widget, "checkbox")
-        assert isinstance(widget.label, QLabel)
+        assert hasattr(widget, "_label_widget")
+        assert hasattr(widget, "_control_widget")
+        assert isinstance(widget._label_widget, QLabel)
 
         # Check label text
-        assert widget.label.text() == "Test Checkbox"
+        assert widget._label_widget.text() == "Test Checkbox"
 
     def test_should_update_value_when_checkbox_value_is_set(self, qt_application):
         """Test value property."""
