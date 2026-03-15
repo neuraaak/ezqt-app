@@ -1,3 +1,8 @@
+# ///////////////////////////////////////////////////////////////
+# MAIN - Application entry point template
+# Project: ezqt_app
+# ///////////////////////////////////////////////////////////////
+
 """Example entrypoint generated for an EzQt_App project."""
 
 from __future__ import annotations
@@ -5,8 +10,8 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+
 # Standard library imports
-import os
 import sys
 
 # Third-party imports
@@ -17,21 +22,22 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout
 from ezqt_app import EzApplication, EzQt_App, init
 
 # ///////////////////////////////////////////////////////////////
-# GLOBALS
-# ///////////////////////////////////////////////////////////////
-os.environ["QT_FONT_DPI"] = "96"
-
-
-# ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
+
+
 def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
-    """Add user-defined widgets and pages to the application."""
-    # addMenu() returns the page container QWidget.
-    home = window.addMenu("Home", icons.cil_home)
+    """Add user-defined widgets and pages to the application.
+
+    Args:
+        window: The main application window instance.
+        icons: The resource collection for icons.
+    """
+    # add_menu() returns the page container QWidget.
+    homepage = window.add_menu("Homepage", icons.cil_home)
 
     # Populate the page like any regular Qt widget.
-    home_layout = QVBoxLayout(home)
+    home_layout = QVBoxLayout(homepage)
     home_label = QLabel("Home")
     home_layout.addWidget(home_label)
 
@@ -43,15 +49,23 @@ def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
 if __name__ == "__main__":
     # Generates/refreshes runtime assets (bin/, resources_rc, etc.) when needed.
     init()
+
+    # Local imports for resources (ensure init() ran first)
     from ezqt_app.shared.resources import Icons, Images
 
+    # EzApplication automatically handles UTF-8 and High DPI configuration.
     app = EzApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
 
-    window = EzQt_App(themeFileName="main_theme.qss")
-    window.setAppIcon(Images.logo_placeholder, yShrink=0)
+    # Initialize window with the new snake_case parameters.
+    # CRITICAL: build() must be called before using UI manipulation methods like set_app_icon.
+    window = EzQt_App(theme_file_name="main_theme.qss").build()
+    
+    # Now that the UI is built, we can configure its components.
+    window.set_app_icon(Images.logo_placeholder, y_shrink=0)
     window.show()
 
+    # Add custom content to the window.
     add_things_to_my_app(window, Icons)
 
     sys.exit(app.exec())

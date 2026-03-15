@@ -27,9 +27,10 @@ from .settings_loader import SettingsLoader
 # ///////////////////////////////////////////////////////////////
 # MODULE-LEVEL STATE
 # ///////////////////////////////////////////////////////////////
+
 # Config names that have been mutated in-memory and need to be flushed to disk.
-# The actual data lives in the ConfigService cache (shared reference — no copies).
 _dirty: set[str] = set()
+
 # Guard against double-registration of the aboutToQuit signal.
 _quit_signal_connected: bool = False
 
@@ -37,16 +38,23 @@ _quit_signal_connected: bool = False
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
+
+
 class AppService:
-    """Central orchestration service for application lifecycle.
+    """
+    Central orchestration service for application lifecycle.
 
     Aggregates config, asset, resource and settings operations into a
     single cohesive snake_case API used by widgets, CLI and bootstrap.
     """
 
-    # ------------------------------------------------------------------
-    # Assets
-    # ------------------------------------------------------------------
+    # ///////////////////////////////////////////////////////////////
+    # PUBLIC METHODS
+    # ///////////////////////////////////////////////////////////////
+
+    # ------------------------------------------------
+    # ASSETS
+    # ------------------------------------------------
 
     @staticmethod
     def check_assets_requirements(
@@ -54,7 +62,14 @@ class AppService:
         bin_path: Path | None = None,
         overwrite_policy: str = "ask",
     ) -> None:
-        """Generate asset binaries, QRC and RC files at APP_PATH."""
+        """
+        Generate asset binaries, QRC and RC files at APP_PATH.
+
+        Args:
+            base_path: Optional base path for assets.
+            bin_path: Optional binary path.
+            overwrite_policy: Policy for overwriting existing files (default: "ask").
+        """
         AssetsService.check_assets_requirements(
             base_path=base_path,
             bin_path=bin_path,
@@ -70,12 +85,16 @@ class AppService:
         bin_path: Path | None = None,
         overwrite_policy: str = "ask",
     ) -> None:
-        """Copy YAML, QSS theme and translation files into ``cwd/bin/``.
+        """
+        Copy YAML, QSS theme and translation files into project directories.
 
-        Parameters
-        ----------
-        mk_theme:
-            When ``True`` (default) also copies the QSS theme file.
+        Args:
+            mk_theme: When True also copies the QSS theme file.
+            mk_config: When True copies configuration files.
+            mk_translations: When True copies translation files.
+            base_path: Optional base path.
+            bin_path: Optional binary path.
+            overwrite_policy: Policy for overwriting (default: "ask").
         """
         AssetsService.make_required_files(
             mk_theme=mk_theme,
@@ -86,70 +105,67 @@ class AppService:
             overwrite_policy=overwrite_policy,
         )
 
-    # ------------------------------------------------------------------
-    # Configuration
-    # ------------------------------------------------------------------
+    # ------------------------------------------------
+    # CONFIGURATION
+    # ------------------------------------------------
 
     @staticmethod
     def set_project_root(project_root: Path) -> None:
-        """Set the project root directory used by the config service."""
+        """
+        Set the project root directory used by the config service.
+
+        Args:
+            project_root: The Path to the project root.
+        """
         get_config_service().set_project_root(project_root)
 
     @staticmethod
     def load_config(config_name: str) -> dict[str, Any]:
-        """Load a named configuration from its YAML file.
+        """
+        Load a named configuration from its YAML file.
 
-        Parameters
-        ----------
-        config_name:
-            Logical name of the configuration (e.g. ``"app"``).
+        Args:
+            config_name: Logical name of the configuration (e.g. "app").
+
+        Returns:
+            dict: The loaded configuration data.
         """
         return get_config_service().load_config(config_name)
 
     @staticmethod
     def get_config_value(config_name: str, key_path: str, default: Any = None) -> Any:
-        """Get a value from a named configuration using dot-separated path.
+        """
+        Get a value from a named configuration using dot-separated path.
 
-        Parameters
-        ----------
-        config_name:
-            Logical name of the configuration.
-        key_path:
-            Dot-separated key path, e.g. ``"app.name"``.
-        default:
-            Value returned when the path is absent.
+        Args:
+            config_name: Logical name of the configuration.
+            key_path: Dot-separated key path, e.g. "app.name".
+            default: Value returned when the path is absent.
+
+        Returns:
+            Any: The configuration value or default.
         """
         return get_config_service().get_config_value(config_name, key_path, default)
 
     @staticmethod
     def save_config(config_name: str, data: dict[str, Any]) -> None:
-        """Persist a named configuration to its YAML file.
+        """
+        Persist a named configuration to its YAML file.
 
-        Parameters
-        ----------
-        config_name:
-            Logical name of the configuration.
-        data:
-            Full configuration dict to write.
+        Args:
+            config_name: Logical name of the configuration.
+            data: Full configuration dict to write.
         """
         get_config_service().save_config(config_name, data)
 
     @staticmethod
     def write_yaml_config(keys: list[str], val: Any) -> None:
-        """Write a single value into a YAML config using a key list immediately.
+        """
+        Write a single value into a YAML config using a key list immediately.
 
-        The first element of *keys* is the config name; remaining elements
-        form the nested path to the value.  This method writes to disk
-        synchronously on every call.  For deferred writes (batched and
-        flushed on quit), use :meth:`stage_config_value` instead.
-
-        Parameters
-        ----------
-        keys:
-            List of keys where ``keys[0]`` is the config name and
-            ``keys[1:]`` is the path inside that config.
-        val:
-            Value to assign at the leaf key.
+        Args:
+            keys: List where keys[0] is config name and keys[1:] is the path.
+            val: Value to assign at the leaf key.
         """
         if not keys:
             return
@@ -169,22 +185,12 @@ class AppService:
 
     @staticmethod
     def stage_config_value(keys: list[str], val: Any) -> None:
-        """Mutate a config value in the shared cache and mark it dirty for flush.
+        """
+        Mutate a config value in the shared cache and mark it dirty for flush.
 
-        The mutation is applied directly to the :class:`ConfigService` cache dict
-        (no copy is made) so that all services sharing the same config object see
-        the new value immediately.  The config name is added to the module-level
-        ``_dirty`` set; all dirty configs are written to disk when the application
-        exits via :meth:`flush_all`, which is connected to
-        ``QCoreApplication.aboutToQuit`` the first time this method is called.
-
-        Parameters
-        ----------
-        keys:
-            List of keys where ``keys[0]`` is the config name and
-            ``keys[1:]`` is the nested path inside that config.
-        val:
-            Value to assign at the leaf key.
+        Args:
+            keys: List where keys[0] is config name and keys[1:] is the path.
+            val: Value to assign at the leaf key.
         """
         if not keys:
             return
@@ -194,7 +200,6 @@ class AppService:
         config_name = keys[0]
         config_service = get_config_service()
 
-        # Mutate the shared cache dict directly — no copy.
         config: dict[str, Any] = config_service.load_config(config_name)
         current: dict[str, Any] = config
         for key in keys[1:-1]:
@@ -205,7 +210,6 @@ class AppService:
         current[keys[-1]] = val
         _dirty.add(config_name)
 
-        # Register flush_all with aboutToQuit exactly once per process.
         if not _quit_signal_connected:
             from PySide6.QtCore import QCoreApplication
 
@@ -216,15 +220,7 @@ class AppService:
 
     @staticmethod
     def flush_all() -> None:
-        """Write all dirty configs to disk and clear the dirty set.
-
-        Reads the current cache state from :class:`ConfigService` (the same
-        dict that was mutated in place by :meth:`stage_config_value`) and
-        serialises it.  This method is idempotent; calling it when nothing is
-        dirty is a no-op.  It is automatically connected to
-        ``QCoreApplication.aboutToQuit``; it can also be called manually
-        (e.g. in tests or CLI contexts without a QApplication).
-        """
+        """Write all dirty configs to disk and clear the dirty set."""
         if not _dirty:
             return
 
@@ -240,58 +236,69 @@ class AppService:
         """Copy package default configs into the child project directory."""
         get_config_service().copy_package_configs_to_project()
 
-    # ------------------------------------------------------------------
-    # Package resources
-    # ------------------------------------------------------------------
+    # ------------------------------------------------
+    # PACKAGE RESOURCES
+    # ------------------------------------------------
 
     @staticmethod
     def get_package_resource(resource_path: str) -> Path:
-        """Return a :class:`~pathlib.Path` to an installed package resource.
+        """
+        Return a Path to an installed package resource.
 
-        Parameters
-        ----------
-        resource_path:
-            Relative path inside the package (e.g. ``"resources/themes/main_theme.qss"``).
+        Args:
+            resource_path: Relative path inside the package.
+
+        Returns:
+            Path: Absolute path to the resource.
         """
         return get_package_resource(resource_path)
 
     @staticmethod
     def get_package_resource_content(resource_path: str) -> str:
-        """Return the text content of an installed package resource.
+        """
+        Return the text content of an installed package resource.
 
-        Parameters
-        ----------
-        resource_path:
-            Relative path inside the package.
+        Args:
+            resource_path: Relative path inside the package.
+
+        Returns:
+            str: Content of the resource.
         """
         return get_package_resource_content(resource_path)
 
-    # ------------------------------------------------------------------
-    # Resources (fonts)
-    # ------------------------------------------------------------------
+    # ------------------------------------------------
+    # RESOURCES (FONTS)
+    # ------------------------------------------------
 
     @staticmethod
     def load_fonts_resources(app: bool = False) -> None:
-        """Load ``.ttf`` font files into Qt's font database.
+        """
+        Load .ttf font files into Qt's font database.
 
-        Parameters
-        ----------
-        app:
-            When ``False`` loads from the installed package fonts then
-            recurses with ``True`` to also load from ``bin/fonts/``.
+        Args:
+            app: Whether to also load fonts from the bin/fonts/ directory.
         """
         ResourceService.load_fonts_resources(app)
 
-    # ------------------------------------------------------------------
-    # Settings
-    # ------------------------------------------------------------------
+    # ------------------------------------------------
+    # SETTINGS
+    # ------------------------------------------------
 
     @staticmethod
     def load_app_settings(
         logs_dir_override: str | Path | None = None,
         log_file_name_override: str | None = None,
     ) -> dict[str, Any]:
-        """Load app settings and configure logger path/name from config or overrides."""
+        """
+        Load app settings and configure logger.
+
+        Args:
+            logs_dir_override: Optional custom logs directory.
+            log_file_name_override: Optional custom log file name.
+
+        Returns:
+            dict: Loaded settings.
+        """
         return SettingsLoader.load_app_settings(
             logs_dir_override=logs_dir_override,
             log_file_name_override=log_file_name_override,
