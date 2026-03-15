@@ -209,14 +209,14 @@ class ConfigService(ConfigServiceProtocol):
             ``True`` if the operation succeeded.
         """
         if not self._project_root:
-            get_printer().error("No project root defined")
+            get_printer().error("[ConfigService] No project root defined")
             return False
 
         package_config_dir = self._find_package_config_dir()
 
         if not package_config_dir:
             get_printer().error(
-                f"EzQt_App package not found. Tested paths: "
+                f"[ConfigService] EzQt_App package not found. Tested paths: "
                 f"{[str(p) for p in [Path.cwd(), APP_PATH]]}"
             )
             return False
@@ -236,11 +236,14 @@ class ConfigService(ConfigServiceProtocol):
 
                 shutil.copy2(config_file, target_file)
                 copied_files.append(config_file.name)
-                get_printer().info(f"Configuration copied: {config_file.name}")
+                get_printer().action(
+                    f"[ConfigService] Configuration copied: {config_file.name}"
+                )
 
             if copied_files:
-                get_printer().info(
-                    f"✅ {len(copied_files)} configurations copied to project"
+                get_printer().action(
+                    "[ConfigService] "
+                    f"{len(copied_files)} configurations copied to project"
                 )
 
             return True

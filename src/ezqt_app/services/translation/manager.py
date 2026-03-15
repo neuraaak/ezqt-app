@@ -409,7 +409,9 @@ class TranslationManager(QObject):
                     code="translation.manager.load_qm_failed",
                     message=f"QTranslator.load() failed for {qm_path.name}",
                 )
-            get_printer().info(f"Language switched to {language_info['name']}")
+            get_printer().debug_msg(
+                f"[TranslationService] Language switched to {language_info['name']}"
+            )
         elif language_code != DEFAULT_LANGUAGE:
             # No .ts file yet for this language. Warn but continue: installing an
             # empty translator still fires Qt's LanguageChange event, which causes
@@ -641,8 +643,9 @@ class TranslationManager(QObject):
         self.auto_translation_enabled = enabled
         if self.auto_translator:
             self.auto_translator.enabled = enabled
-        get_printer().info(
-            f"Automatic translation {'enabled' if enabled else 'disabled'}"
+        get_printer().action(
+            "[TranslationService] Automatic translation "
+            f"{'enabled' if enabled else 'disabled'}"
         )
 
     def get_auto_translation_stats(self) -> dict[str, Any]:

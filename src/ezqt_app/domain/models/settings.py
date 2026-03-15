@@ -27,6 +27,7 @@ class AppSettingsModel:
     APP_MIN_SIZE: tuple[int, int] = (940, 560)
     APP_WIDTH: int = 1280
     APP_HEIGHT: int = 720
+    DEBUG: bool = False
 
 
 @dataclass(slots=True)

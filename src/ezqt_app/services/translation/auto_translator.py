@@ -348,9 +348,9 @@ class AutoTranslator(QObject):
                         self.cache.set(
                             text, source_lang, target_lang, translation, provider.name
                         )
-                        get_printer().info(
-                            f"Automatic translation ({provider.name}): "
-                            f"'{text}' → '{translation}'"
+                        get_printer().debug_msg(
+                            "[TranslationService] Automatic translation "
+                            f"({provider.name}): '{text}' -> '{translation}'"
                         )
                         # Signal is delivered to the main thread via queued connection.
                         self.translation_ready.emit(text, translation)
@@ -469,7 +469,9 @@ class AutoTranslator(QObject):
 
             ts_file_path.parent.mkdir(parents=True, exist_ok=True)
             tree.write(ts_file_path, encoding="unicode", xml_declaration=True)
-            get_printer().info(f"Translation saved to {ts_file_path}")
+            get_printer().debug_msg(
+                f"[TranslationService] Translation saved to {ts_file_path}"
+            )
         except Exception as e:
             warn_tech(
                 code="translation.ts.save_failed",
@@ -480,7 +482,7 @@ class AutoTranslator(QObject):
     def clear_cache(self) -> None:
         self.cache.cache_data.clear()
         self.cache.save_cache()
-        get_printer().info("Translation cache cleared")
+        get_printer().debug_msg("[TranslationService] Translation cache cleared")
 
     def get_cache_stats(self) -> dict[str, Any]:
         stats: dict[str, Any] = {

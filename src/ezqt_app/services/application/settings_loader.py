@@ -16,7 +16,7 @@ from pathlib import Path
 # Third-party imports
 import yaml
 
-from ...utils.printer import Printer
+from ...utils.printer import get_printer, set_global_debug
 
 # Local imports
 from ..config.config_service import get_config_service
@@ -60,11 +60,14 @@ class SettingsLoader:
                 app_data = data.get("app", {})
 
         settings_service = get_settings_service()
+        debug_enabled = bool(app_data.get("debug", False))
 
         # App identity
         settings_service.set_app_name(app_data["name"])
         settings_service.set_app_description(app_data["description"])
         settings_service.set_custom_title_bar_enabled(True)
+        settings_service.set_debug_enabled(debug_enabled)
+        set_global_debug(debug_enabled)
 
         # Window dimensions
         settings_service.set_app_min_size(
@@ -92,7 +95,7 @@ class SettingsLoader:
         settings_service.set_settings_panel_width(app_data["settings_panel_width"])
         settings_service.set_time_animation(app_data["time_animation"])
 
-        # Display summary (force verbose to show ASCII frame)
-        Printer(verbose=True).config_display(app_data)
+        # Display summary through the globally configured printer instance.
+        get_printer().config_display(app_data)
 
         return app_data
