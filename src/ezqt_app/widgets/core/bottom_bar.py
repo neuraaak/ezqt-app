@@ -62,6 +62,35 @@ class BottomBar(QFrame):
         self.HL_bottomBar.setObjectName("HL_bottomBar")
         self.HL_bottomBar.setContentsMargins(0, 0, 0, 0)
 
+        # ////// SETUP CREDITS LABEL
+        self.creditsLabel = QLabel(self)
+        self.creditsLabel.setObjectName("creditsLabel")
+        self.creditsLabel.setMaximumSize(QSize(16777215, 16))
+        if Fonts.SEGOE_UI_10_REG is not None:
+            self.creditsLabel.setFont(Fonts.SEGOE_UI_10_REG)
+        self.creditsLabel.setAlignment(
+            Qt.AlignmentFlag.AlignLeading
+            | Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.HL_bottomBar.addWidget(self.creditsLabel)
+
+        # ////// SETUP TRANSLATION SEPARATOR
+        # Displayed only while the translation indicator is visible.
+        self.translationSeparator = QLabel(self)
+        self.translationSeparator.setObjectName("translationSeparator")
+        self.translationSeparator.setMaximumSize(QSize(16777215, 16))
+        if Fonts.SEGOE_UI_10_REG is not None:
+            self.translationSeparator.setFont(Fonts.SEGOE_UI_10_REG)
+        self.translationSeparator.setAlignment(
+            Qt.AlignmentFlag.AlignLeading
+            | Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.translationSeparator.setText("•")
+        self.translationSeparator.setVisible(False)
+        self.HL_bottomBar.addWidget(self.translationSeparator)
+
         # ////// SETUP TRANSLATION INDICATOR LABEL
         # Shown only while async auto-translations are in flight.
         # Connected externally (ui_main.py) via signal/slot to avoid a direct
@@ -83,18 +112,8 @@ class BottomBar(QFrame):
         self.translationIndicator.setVisible(False)
         self.HL_bottomBar.addWidget(self.translationIndicator)
 
-        # ////// SETUP CREDITS LABEL
-        self.creditsLabel = QLabel(self)
-        self.creditsLabel.setObjectName("creditsLabel")
-        self.creditsLabel.setMaximumSize(QSize(16777215, 16))
-        if Fonts.SEGOE_UI_10_REG is not None:
-            self.creditsLabel.setFont(Fonts.SEGOE_UI_10_REG)
-        self.creditsLabel.setAlignment(
-            Qt.AlignmentFlag.AlignLeading
-            | Qt.AlignmentFlag.AlignLeft
-            | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.HL_bottomBar.addWidget(self.creditsLabel)
+        # Push the version block to the right, keeping credits + indicator grouped left.
+        self.HL_bottomBar.addStretch(1)
 
         # ////// SETUP VERSION LABEL
         self.version = QLabel(self)
@@ -134,6 +153,7 @@ class BottomBar(QFrame):
         Called via signal/slot when the first async auto-translation is enqueued.
         Safe to call from any thread that posts to the Qt event loop.
         """
+        self.translationSeparator.setVisible(True)
         self.translationIndicator.setVisible(True)
 
     def hide_translation_indicator(self) -> None:
@@ -142,6 +162,7 @@ class BottomBar(QFrame):
         Called via signal/slot when the pending auto-translation count reaches zero.
         Safe to call from any thread that posts to the Qt event loop.
         """
+        self.translationSeparator.setVisible(False)
         self.translationIndicator.setVisible(False)
 
     def set_credits(self, credits: str | dict[str, str]) -> None:

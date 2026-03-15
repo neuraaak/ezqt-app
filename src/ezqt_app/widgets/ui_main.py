@@ -80,46 +80,39 @@ class Ui_MainWindow:
         self.headerContainer = Header(parent=self.bgApp)
         self.appLayout.addWidget(self.headerContainer)
 
-        # ////// SETUP CONTENT BOX
-        self.contentBox = QFrame(self.bgApp)
-        self.contentBox.setObjectName("contentBox")
-        self.contentBox.setFrameShape(QFrame.Shape.NoFrame)
-        self.contentBox.setFrameShadow(QFrame.Shadow.Raised)
-        self.appLayout.addWidget(self.contentBox)
-
-        # ////// SETUP CONTENT BOX LAYOUT
-        self.HL_contentBox = QHBoxLayout(self.contentBox)
-        self.HL_contentBox.setSpacing(0)
-        self.HL_contentBox.setObjectName("HL_contentBox")
-        self.HL_contentBox.setContentsMargins(0, 0, 0, 0)
-
-        # ////// SETUP MENU
-        self.menuContainer = Menu(
-            parent=self.contentBox,
-            shrink_width=settings_service.gui.MENU_PANEL_SHRINKED_WIDTH,
-            extended_width=settings_service.gui.MENU_PANEL_EXTENDED_WIDTH,
-        )
-        self.HL_contentBox.addWidget(self.menuContainer)
-
-        # ////// SETUP CONTENT BOTTOM
-        self.contentBottom = QFrame(self.contentBox)
+        # ////// SETUP CONTENT BOTTOM (MIDDLE LAYER: MENU | CONTENT | SETTINGS)
+        self.contentBottom = QFrame(self.bgApp)
         self.contentBottom.setObjectName("contentBottom")
         self.contentBottom.setFrameShape(QFrame.Shape.NoFrame)
         self.contentBottom.setFrameShadow(QFrame.Shadow.Raised)
-        self.HL_contentBox.addWidget(self.contentBottom)
+        self.appLayout.addWidget(self.contentBottom)
 
-        # ////// SETUP CONTENT BOTTOM LAYOUT
-        self.VL_contentBottom = QVBoxLayout(self.contentBottom)
-        self.VL_contentBottom.setSpacing(0)
-        self.VL_contentBottom.setObjectName("VL_contentBottom")
-        self.VL_contentBottom.setContentsMargins(0, 0, 0, 0)
+        # Backward-compatibility aliases kept for existing consumers/custom code.
+        self.contentBox = self.contentBottom
 
-        # ////// SETUP CONTENT
+        # ////// SETUP CONTENT BOTTOM LAYOUT (HORIZONTAL)
+        self.HL_contentBottom = QHBoxLayout(self.contentBottom)
+        self.HL_contentBottom.setSpacing(0)
+        self.HL_contentBottom.setObjectName("HL_contentBottom")
+        self.HL_contentBottom.setContentsMargins(0, 0, 0, 0)
+
+        # Backward-compatibility alias kept for existing consumers/custom code.
+        self.HL_contentBox = self.HL_contentBottom
+
+        # ////// SETUP MENU
+        self.menuContainer = Menu(
+            parent=self.contentBottom,
+            shrink_width=settings_service.gui.MENU_PANEL_SHRINKED_WIDTH,
+            extended_width=settings_service.gui.MENU_PANEL_EXTENDED_WIDTH,
+        )
+        self.HL_contentBottom.addWidget(self.menuContainer)
+
+        # ////// SETUP CONTENT (CENTER)
         self.content = QFrame(self.contentBottom)
         self.content.setObjectName("content")
         self.content.setFrameShape(QFrame.Shape.NoFrame)
         self.content.setFrameShadow(QFrame.Shadow.Raised)
-        self.VL_contentBottom.addWidget(self.content)
+        self.HL_contentBottom.addWidget(self.content, 1)
 
         # ////// SETUP CONTENT LAYOUT
         self.HL_content = QHBoxLayout(self.content)
@@ -128,19 +121,19 @@ class Ui_MainWindow:
         self.HL_content.setContentsMargins(0, 0, 0, 0)
 
         # ////// SETUP PAGE CONTAINER
-        self.pagesContainer = PageContainer(self.contentBottom)
+        self.pagesContainer = PageContainer(self.content)
         self.HL_content.addWidget(self.pagesContainer)
 
-        # ////// SETUP SETTINGS PANEL
+        # ////// SETUP SETTINGS PANEL (RIGHT)
         self.settingsPanel = SettingsPanel(
-            parent=self.content,
+            parent=self.contentBottom,
             width=settings_service.gui.SETTINGS_PANEL_WIDTH,
         )
-        self.HL_content.addWidget(self.settingsPanel)
+        self.HL_contentBottom.addWidget(self.settingsPanel)
 
-        # ////// SETUP BOTTOM BAR
-        self.bottomBar = BottomBar(parent=self.contentBottom)
-        self.VL_contentBottom.addWidget(self.bottomBar)
+        # ////// SETUP BOTTOM BAR (FULL WIDTH)
+        self.bottomBar = BottomBar(parent=self.bgApp)
+        self.appLayout.addWidget(self.bottomBar)
 
         # ////// CONNECT TRANSLATION INDICATOR
         # Wire the TranslationManager signals to the BottomBar indicator so the
