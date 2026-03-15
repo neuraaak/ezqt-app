@@ -24,6 +24,15 @@ from .assets_service import AssetsService
 from .resource_service import ResourceService
 from .settings_loader import SettingsLoader
 
+# ///////////////////////////////////////////////////////////////
+# MODULE-LEVEL STATE
+# ///////////////////////////////////////////////////////////////
+# Config names that have been mutated in-memory and need to be flushed to disk.
+# The actual data lives in the ConfigService cache (shared reference — no copies).
+_dirty: set[str] = set()
+# Guard against double-registration of the aboutToQuit signal.
+_quit_signal_connected: bool = False
+
 
 # ///////////////////////////////////////////////////////////////
 # CLASSES
@@ -127,10 +136,12 @@ class AppService:
 
     @staticmethod
     def write_yaml_config(keys: list[str], val: Any) -> None:
-        """Write a single value into a YAML config using a key list.
+        """Write a single value into a YAML config using a key list immediately.
 
         The first element of *keys* is the config name; remaining elements
-        form the nested path to the value.
+        form the nested path to the value.  This method writes to disk
+        synchronously on every call.  For deferred writes (batched and
+        flushed on quit), use :meth:`stage_config_value` instead.
 
         Parameters
         ----------
@@ -155,6 +166,74 @@ class AppService:
 
         current[keys[-1]] = val
         config_service.save_config(config_name, config)
+
+    @staticmethod
+    def stage_config_value(keys: list[str], val: Any) -> None:
+        """Mutate a config value in the shared cache and mark it dirty for flush.
+
+        The mutation is applied directly to the :class:`ConfigService` cache dict
+        (no copy is made) so that all services sharing the same config object see
+        the new value immediately.  The config name is added to the module-level
+        ``_dirty`` set; all dirty configs are written to disk when the application
+        exits via :meth:`flush_all`, which is connected to
+        ``QCoreApplication.aboutToQuit`` the first time this method is called.
+
+        Parameters
+        ----------
+        keys:
+            List of keys where ``keys[0]`` is the config name and
+            ``keys[1:]`` is the nested path inside that config.
+        val:
+            Value to assign at the leaf key.
+        """
+        if not keys:
+            return
+
+        global _quit_signal_connected  # noqa: PLW0603
+
+        config_name = keys[0]
+        config_service = get_config_service()
+
+        # Mutate the shared cache dict directly — no copy.
+        config: dict[str, Any] = config_service.load_config(config_name)
+        current: dict[str, Any] = config
+        for key in keys[1:-1]:
+            if key not in current or not isinstance(current[key], dict):
+                current[key] = {}
+            current = current[key]
+
+        current[keys[-1]] = val
+        _dirty.add(config_name)
+
+        # Register flush_all with aboutToQuit exactly once per process.
+        if not _quit_signal_connected:
+            from PySide6.QtCore import QCoreApplication
+
+            app = QCoreApplication.instance()
+            if app is not None:
+                app.aboutToQuit.connect(AppService.flush_all)
+                _quit_signal_connected = True
+
+    @staticmethod
+    def flush_all() -> None:
+        """Write all dirty configs to disk and clear the dirty set.
+
+        Reads the current cache state from :class:`ConfigService` (the same
+        dict that was mutated in place by :meth:`stage_config_value`) and
+        serialises it.  This method is idempotent; calling it when nothing is
+        dirty is a no-op.  It is automatically connected to
+        ``QCoreApplication.aboutToQuit``; it can also be called manually
+        (e.g. in tests or CLI contexts without a QApplication).
+        """
+        if not _dirty:
+            return
+
+        config_service = get_config_service()
+        for config_name in list(_dirty):
+            config_data = config_service.load_config(config_name)
+            config_service.save_config(config_name, config_data)
+
+        _dirty.clear()
 
     @staticmethod
     def copy_package_configs_to_project() -> None:

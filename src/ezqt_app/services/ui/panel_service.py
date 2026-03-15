@@ -7,13 +7,11 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
-# Standard library imports
-from typing import Any
-
 # Third-party imports
 from PySide6.QtCore import QEasingCurve, QPropertyAnimation
 
 # Local imports
+from ...domain.ports.main_window import MainWindowProtocol
 from ...utils.diagnostics import warn_tech
 from ..settings import get_settings_service
 
@@ -25,7 +23,7 @@ class PanelService:
     """Service responsible for menu and settings panel animations."""
 
     @staticmethod
-    def toggle_menu_panel(window: Any, enable: bool) -> None:
+    def toggle_menu_panel(window: MainWindowProtocol, enable: bool) -> None:
         """Animate the left menu panel between shrink and extended widths."""
         if not enable:
             return
@@ -37,7 +35,8 @@ class PanelService:
         width_extended = max_extend if width == standard else standard
 
         window.menu_animation = QPropertyAnimation(
-            window.ui.menuContainer, b"minimumWidth"
+            window.ui.menuContainer,  # type: ignore[arg-type]
+            b"minimumWidth",
         )
         window.menu_animation.setDuration(settings_service.gui.TIME_ANIMATION)
         window.menu_animation.setStartValue(width)
@@ -46,7 +45,7 @@ class PanelService:
         window.menu_animation.start()
 
     @staticmethod
-    def toggle_settings_panel(window: Any, enable: bool) -> None:
+    def toggle_settings_panel(window: MainWindowProtocol, enable: bool) -> None:
         """Animate the right settings panel and synchronize theme toggle."""
         if not enable:
             return
@@ -58,7 +57,7 @@ class PanelService:
         width_extended = max_extend if width == 0 else standard
 
         window.settings_animation = QPropertyAnimation(
-            window.ui.settingsPanel,
+            window.ui.settingsPanel,  # type: ignore[arg-type]
             b"minimumWidth",
         )
         window.settings_animation.setDuration(settings_service.gui.TIME_ANIMATION)

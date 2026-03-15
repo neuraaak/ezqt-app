@@ -17,12 +17,11 @@ import sys
 from pathlib import Path
 
 # Third-party imports
-from PySide6.QtCore import QSize, Qt, QUrl
+from PySide6.QtCore import QCoreApplication, QEvent, QSize, Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QWidget
 
 # Local imports
-from ...services.translation import set_tr
 from ...services.ui import Fonts
 from ...utils.diagnostics import warn_tech
 
@@ -63,6 +62,27 @@ class BottomBar(QFrame):
         self.HL_bottomBar.setObjectName("HL_bottomBar")
         self.HL_bottomBar.setContentsMargins(0, 0, 0, 0)
 
+        # ////// SETUP TRANSLATION INDICATOR LABEL
+        # Shown only while async auto-translations are in flight.
+        # Connected externally (ui_main.py) via signal/slot to avoid a direct
+        # dependency on TranslationManager from this presentation widget.
+        self.translationIndicator = QLabel(self)
+        self.translationIndicator.setObjectName("translationIndicator")
+        self.translationIndicator.setMaximumSize(QSize(16777215, 16))
+        if Fonts.SEGOE_UI_10_REG is not None:
+            self.translationIndicator.setFont(Fonts.SEGOE_UI_10_REG)
+        self.translationIndicator.setAlignment(
+            Qt.AlignmentFlag.AlignLeading
+            | Qt.AlignmentFlag.AlignLeft
+            | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.translationIndicator.setText(
+            QCoreApplication.translate("EzQt_App", "Translating...")
+        )
+        # Hidden by default — only visible while translations are pending.
+        self.translationIndicator.setVisible(False)
+        self.HL_bottomBar.addWidget(self.translationIndicator)
+
         # ////// SETUP CREDITS LABEL
         self.creditsLabel = QLabel(self)
         self.creditsLabel.setObjectName("creditsLabel")
@@ -95,12 +115,34 @@ class BottomBar(QFrame):
         self.appSizeGrip.setFrameShadow(QFrame.Shadow.Raised)
         self.HL_bottomBar.addWidget(self.appSizeGrip)
 
+        # ////// INITIALIZE TRANSLATION STORAGE
+        # These are set by set_credits() and set_version() — initialised here
+        # so retranslate_ui() can safely reference them before the setters run.
+        self._credits_data: str | dict[str, str] = "Made with ❤️ by EzQt_App"
+        self._version_text: str = ""
+
         # ////// INITIALIZE DEFAULT VALUES
         self.set_credits("Made with ❤️ by EzQt_App")
         self.set_version_auto()
 
     # ///////////////////////////////////////////////////////////////
     # UTILITY FUNCTIONS
+
+    def show_translation_indicator(self) -> None:
+        """Show the translation-in-progress indicator in the bottom bar.
+
+        Called via signal/slot when the first async auto-translation is enqueued.
+        Safe to call from any thread that posts to the Qt event loop.
+        """
+        self.translationIndicator.setVisible(True)
+
+    def hide_translation_indicator(self) -> None:
+        """Hide the translation indicator once all pending translations are done.
+
+        Called via signal/slot when the pending auto-translation count reaches zero.
+        Safe to call from any thread that posts to the Qt event loop.
+        """
+        self.translationIndicator.setVisible(False)
 
     def set_credits(self, credits: str | dict[str, str]) -> None:
         """
@@ -112,12 +154,16 @@ class BottomBar(QFrame):
             Credits as simple text or dictionary with 'name' and 'email'.
         """
         try:
+            # Store original data so retranslate_ui() can re-apply on language change.
+            self._credits_data = credits
+
             if isinstance(credits, dict):
                 # Credits with name and email
                 self._create_clickable_credits(credits)
             else:
-                # Simple text with translation
-                set_tr(self.creditsLabel, credits)
+                self.creditsLabel.setText(
+                    QCoreApplication.translate("EzQt_App", credits)
+                )
 
         except Exception as e:
             warn_tech(
@@ -125,8 +171,7 @@ class BottomBar(QFrame):
                 message="Could not apply credits data",
                 error=e,
             )
-            # In case of error, use default text
-            set_tr(self.creditsLabel, "Made with ❤️ by EzQt_App")
+            self.creditsLabel.setText("Made with ❤️ by EzQt_App")
 
     def _create_clickable_credits(self, credits_data: dict[str, str]) -> None:
         """
@@ -141,11 +186,11 @@ class BottomBar(QFrame):
             name = credits_data.get("name", "Unknown")
             email = credits_data.get("email", "")
 
-            # Create text with bold name and clickable
-            credits_text = f"Made with ❤️ by {name}"
+            # Build translatable base text then append the name (untranslated).
+            base = QCoreApplication.translate("EzQt_App", "Made with ❤️ by")
+            credits_text = f"{base} {name}"
 
-            # Set text with translation
-            set_tr(self.creditsLabel, credits_text)
+            self.creditsLabel.setText(credits_text)
 
             # Make label clickable if email is provided
             if email:
@@ -166,8 +211,7 @@ class BottomBar(QFrame):
                 message="Could not create clickable credits",
                 error=e,
             )
-            # In case of error, use default text
-            set_tr(self.creditsLabel, "Made with ❤️ by EzQt_App")
+            self.creditsLabel.setText("Made with ❤️ by EzQt_App")
 
     def _open_email(self, email: str) -> None:
         """
@@ -252,10 +296,11 @@ class BottomBar(QFrame):
 
             # Method 4: Try to import main module
             try:
-                import main  # type: ignore[import-not-found]
+                import importlib
 
-                if hasattr(main, "__version__"):
-                    return f"v{main.__version__}"  # type: ignore[attr-defined]
+                main_mod = importlib.import_module("main")
+                if hasattr(main_mod, "__version__"):
+                    return f"v{main_mod.__version__}"
             except ImportError:
                 pass
 
@@ -341,7 +386,34 @@ class BottomBar(QFrame):
         if not text.startswith("v"):
             text = f"v{text}"
 
-        set_tr(self.version, text)
+        # Store so retranslate_ui() can re-apply the version string after a language
+        # change (version strings are not translated, but the label must be refreshed).
+        self._version_text = text
+        self.version.setText(text)
+
+    def retranslate_ui(self) -> None:
+        """Apply current translations to all owned text labels."""
+        # Re-apply credits through the standard setter so display logic is consistent.
+        self.set_credits(self._credits_data)
+        # Version strings are not translatable but must be refreshed on language change.
+        if self._version_text:
+            self.version.setText(self._version_text)
+        # Refresh the indicator label text (visibility is unchanged here).
+        self.translationIndicator.setText(
+            QCoreApplication.translate("EzQt_App", "Translating...")
+        )
+
+    def changeEvent(self, event: QEvent) -> None:
+        """Handle Qt change events, triggering UI retranslation on language change.
+
+        Parameters
+        ----------
+        event : QEvent
+            The Qt change event.
+        """
+        if event.type() == QEvent.Type.LanguageChange:
+            self.retranslate_ui()
+        super().changeEvent(event)
 
 
 # ///////////////////////////////////////////////////////////////

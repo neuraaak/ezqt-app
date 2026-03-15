@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 # Third-party imports
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QSize, Qt
 from PySide6.QtGui import QCursor, QIcon
 from PySide6.QtWidgets import QFrame, QVBoxLayout, QWidget
 
@@ -111,10 +111,13 @@ class Menu(QFrame):
 
         settings_service = get_settings_service()
 
+        # Store the toggle button label so retranslate_ui() can re-apply it.
+        self._toggle_text: str = "Hide"
+
         self.toggleButton = MenuButton(
             parent=self.toggleBox,
             icon=Icons.icon_menu,
-            text="Hide",
+            text=self._toggle_text,
             shrink_size=self._shrink_width,
             spacing=15,  # Reduced from 35 to 15 for better alignment
             duration=settings_service.gui.TIME_ANIMATION,
@@ -158,6 +161,27 @@ class Menu(QFrame):
 
     # ///////////////////////////////////////////////////////////////
     # UTILITY FUNCTIONS
+
+    def retranslate_ui(self) -> None:
+        """Apply current translations to all owned text labels."""
+        self.toggleButton.text = QCoreApplication.translate(
+            "EzQt_App", self._toggle_text
+        )
+        # Retranslate each dynamically-added menu button using its stored name key.
+        for name, menu_btn in self.menus.items():
+            menu_btn.text = QCoreApplication.translate("EzQt_App", name)
+
+    def changeEvent(self, event: QEvent) -> None:
+        """Handle Qt change events, triggering UI retranslation on language change.
+
+        Parameters
+        ----------
+        event : QEvent
+            The Qt change event.
+        """
+        if event.type() == QEvent.Type.LanguageChange:
+            self.retranslate_ui()
+        super().changeEvent(event)
 
     def _sync_initial_state(self) -> None:
         """

@@ -281,15 +281,14 @@ def temp_project_root() -> Path:
 @pytest.fixture(autouse=True)
 def isolate_config_service_root(temp_project_root: Path):
     """Route singleton config reads/writes to a per-test .tmp project root."""
-    from ezqt_app.services.config import get_config_service
+    from ezqt_app.services._registry import ServiceRegistry
+    from ezqt_app.services.config.config_service import ConfigService
 
-    config_service = get_config_service()
-    previous_root = getattr(config_service, "_project_root", None)
-    config_service.set_project_root(temp_project_root)
-    config_service.clear_cache()
+    config = ConfigService()
+    config.set_project_root(temp_project_root)
+    ServiceRegistry.register(ConfigService, config)
 
     try:
         yield
     finally:
-        config_service._project_root = previous_root
-        config_service.clear_cache()
+        ServiceRegistry.reset(ConfigService)

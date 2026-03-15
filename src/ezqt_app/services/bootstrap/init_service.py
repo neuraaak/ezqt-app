@@ -92,6 +92,10 @@ class InitService:
 
         return summary
 
+    def is_initialized(self) -> bool:
+        """Return ``True`` if initialization has completed successfully."""
+        return self._initialized
+
     def reset(self) -> None:
         """Reset initialization state."""
         self._initialized = False

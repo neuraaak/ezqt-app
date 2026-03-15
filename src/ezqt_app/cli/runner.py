@@ -272,7 +272,7 @@ import sys
 
 import ezqt_app.main as ezqt
 from ezqt_app.app import EzApplication, EzQt_App
-from ezqt_app.services.translation import set_tr, tr
+from ezqt_app.services.translation import tr
 from ezqt_app.utils.app_utils import ensure_data_dir, get_app_data_dir, get_config_file
 
 from src.widgets.custom_widget import CustomWidget
@@ -307,7 +307,6 @@ class AdvancedApplication:
     def setup_home_page(self):
         """Setup the home page with custom widgets."""
         custom_widget = CustomWidget()
-        set_tr(custom_widget, tr("Welcome to {project_name}"))
         self.home_page.layout().addWidget(custom_widget)
 
     def setup_dashboard_page(self):
@@ -342,10 +341,9 @@ Custom Widget Module
 Example custom widget for the advanced template.
 """
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, QEvent, Qt
 from PySide6.QtWidgets import QFrame, QLabel, QPushButton, QVBoxLayout
 
-from ezqt_app.services.translation import set_tr
 from ezqt_app.utils.printer import get_printer
 
 
@@ -355,6 +353,7 @@ class CustomWidget(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setup_ui()
+        self.retranslate_ui()
 
     def setup_ui(self):
         """Setup the user interface."""
@@ -364,7 +363,6 @@ class CustomWidget(QFrame):
         layout = QVBoxLayout(self)
 
         self.title_label = QLabel()
-        set_tr(self.title_label, "Custom Widget Title")
         self.title_label.setAlignment(Qt.AlignCenter)
         self.title_label.setStyleSheet(
             "font-size: 18px; font-weight: bold; margin: 10px;"
@@ -372,14 +370,30 @@ class CustomWidget(QFrame):
         layout.addWidget(self.title_label)
 
         self.desc_label = QLabel()
-        set_tr(self.desc_label, "This is a custom widget example")
         self.desc_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.desc_label)
 
         self.action_button = QPushButton()
-        set_tr(self.action_button, "Click Me")
         self.action_button.clicked.connect(self.on_button_clicked)
         layout.addWidget(self.action_button)
+
+    def retranslate_ui(self):
+        """Apply current translations to all owned text."""
+        self.title_label.setText(
+            QCoreApplication.translate("CustomWidget", "Custom Widget Title")
+        )
+        self.desc_label.setText(
+            QCoreApplication.translate("CustomWidget", "This is a custom widget example")
+        )
+        self.action_button.setText(
+            QCoreApplication.translate("CustomWidget", "Click Me")
+        )
+
+    def changeEvent(self, event):
+        """Handle language change events."""
+        if event.type() == QEvent.Type.LanguageChange:
+            self.retranslate_ui()
+        super().changeEvent(event)
 
     def on_button_clicked(self):
         """Handle button click event."""

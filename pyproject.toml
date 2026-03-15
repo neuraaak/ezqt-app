@@ -14,7 +14,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ezqt-app"
-version = "5.1.1"
+version = "5.2.0"
 description = "Lightweight framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,7 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Software Development :: User Interfaces",
@@ -264,6 +264,7 @@ no-matching-overload = "ignore"
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
 include = ["src/ezqt_app"]
+extraPaths = ["src"]
 exclude = [
     "**/__pycache__",
     ".venv",
@@ -391,8 +392,8 @@ omit = [
     "examples/*",
     "_temp/*",
     # Modules non testables unitairement (point d'entrée TTY interactif / subprocess vers processus externes)
-    "*/cli/main.py",        # Entrée Click avec affichage Rich/TTY — non invocable sans terminal interactif
-    "*/cli/runner.py",      # Lance des exemples Qt via subprocess.run — processus GUI externes
+    "*/cli/main.py",   # Entrée Click avec affichage Rich/TTY — non invocable sans terminal interactif
+    "*/cli/runner.py", # Lance des exemples Qt via subprocess.run — processus GUI externes
     # Fichier auto-généré par Qt Resource Compiler (données binaires, pas de logique utilisateur)
     "*/shared/resources/base_resources.py",
 ]

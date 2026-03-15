@@ -47,14 +47,10 @@ class TranslationService(TranslationServiceProtocol):
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETONS
-# ///////////////////////////////////////////////////////////////
-_translation_service = TranslationService()
-
-
-# ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
 def get_translation_service() -> TranslationService:
     """Return the singleton translation service."""
-    return _translation_service
+    from .._registry import ServiceRegistry
+
+    return ServiceRegistry.get(TranslationService, TranslationService)

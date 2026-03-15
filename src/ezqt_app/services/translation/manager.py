@@ -3,7 +3,7 @@
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""Core translation manager — QTranslator wrapper with widget retranslation support."""
+"""Core translation manager — QTranslator wrapper with Qt-native language change propagation."""
 
 from __future__ import annotations
 
@@ -40,6 +40,86 @@ def _parse_bool(raw: object) -> bool:
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
+class EzTranslator(QTranslator):
+    """Qt translator that intercepts unknown strings for auto-translation.
+
+    This translator is installed alongside the compiled ``.qm`` translator.
+    Qt calls ``translate()`` on every installed translator in LIFO order until
+    one returns a non-empty string.  When *source_text* is not yet known,
+    ``EzTranslator`` fires the async auto-translation pipeline and returns an
+    empty string so Qt falls back to the source text for this render cycle.
+    On the next ``LanguageChange`` (triggered once the translation arrives) the
+    string is found in ``_ts_translations`` and returned immediately.
+
+    Args:
+        manager: The owning :class:`TranslationManager` instance.
+    """
+
+    _CONTEXT = "EzQt_App"
+
+    def __init__(self, manager: TranslationManager) -> None:
+        super().__init__()
+        self._manager = manager
+
+    # ------------------------------------------------------------------
+    # QTranslator virtual override
+    # ------------------------------------------------------------------
+
+    def translate(  # type: ignore[override]
+        self,
+        context: str,
+        source_text: str,
+        _disambiguation: str | None = None,
+        _n: int = -1,
+    ) -> str | None:
+        """Return the translation for *source_text*, or ``None`` if unknown.
+
+        PySide6 maps a ``None`` return value to a null ``QString``, which tells
+        Qt to continue querying the next installed translator and ultimately to
+        fall back to the source text.  Returning ``""`` (an empty but non-null
+        ``QString``) would be interpreted as "the translation is an empty
+        string", which is incorrect for strings not yet translated.
+
+        When the string is absent from the in-memory cache and auto-translation
+        is active, an async translation request is fired so the string will be
+        available on the next ``LanguageChange`` cycle.
+
+        Args:
+            context: Qt translation context (only ``"EzQt_App"`` is handled).
+            source_text: The English source string to translate.
+            disambiguation: Optional disambiguation hint (unused).
+            n: Plural form selector (unused).
+
+        Returns:
+            The translated string if already cached, ``None`` otherwise.
+        """
+        if context != self._CONTEXT or not source_text:
+            return None
+
+        cached = self._manager._ts_translations.get(source_text)
+        if cached:
+            return cached
+
+        # String is unknown — fire async auto-translation if enabled.
+        if (
+            self._manager.auto_translation_enabled
+            and self._manager.auto_translator.enabled
+        ):
+            result = self._manager.auto_translator.translate(
+                source_text, "en", self._manager.current_language
+            )
+            # translate() returns the cached value immediately (not None) when the
+            # string was already in the local cache, meaning no network request was
+            # fired and no translation_ready signal will arrive later.  Only count
+            # the request as "pending" when translate() returns None, i.e. when an
+            # actual async worker task has been dispatched.
+            if result is None:
+                self._manager._increment_pending()
+
+        # Return None so Qt falls back to the .qm translator or source text.
+        return None
+
+
 class TranslationManager(QObject):
     """Core translation engine for EzQt_App.
 
@@ -48,15 +128,33 @@ class TranslationManager(QObject):
     """
 
     languageChanged = Signal(str)
+    # Emitted when the first pending auto-translation is enqueued (count > 0).
+    # Consumers (e.g. BottomBar) use this to show a progress indicator.
+    translation_started = Signal()
+    # Emitted when all pending auto-translations have been resolved (count == 0).
+    # Consumers use this to hide the progress indicator.
+    translation_finished = Signal()
 
     def __init__(self) -> None:
         super().__init__()
         self.translator = QTranslator()
         self.current_language = DEFAULT_LANGUAGE
 
-        self._translatable_widgets: list[Any] = []
-        self._translatable_texts: dict[Any, str] = {}
         self._ts_translations: dict[str, str] = {}
+
+        # Count of async auto-translation requests that have been fired but
+        # for which no result (ready or error) has arrived yet.  Incremented
+        # each time a new request is dispatched; decremented on every outcome.
+        # When the count transitions 0 → 1 we emit translation_started; when
+        # it transitions 1 → 0 we emit translation_finished.
+        self._pending_auto_translations: int = 0
+
+        # EzTranslator intercepts QCoreApplication.translate("EzQt_App", text)
+        # calls for strings absent from the compiled .qm file (e.g. developer
+        # custom strings not yet added to the .ts).  It is installed once and
+        # kept across language switches; only the .qm-backed translator is
+        # swapped on each language change.
+        self._ez_translator = EzTranslator(self)
 
         self.auto_translator = get_auto_translator()
         self.auto_translation_enabled = False
@@ -81,11 +179,26 @@ class TranslationManager(QObject):
             )
 
         self.auto_translator.enabled = self.auto_translation_enabled
+        self.auto_translator.translation_ready.connect(self._on_auto_translation_ready)
+        self.auto_translator.translation_error.connect(self._on_auto_translation_error)
+
+        # Register cleanup on application exit: stop the worker thread and purge
+        # the expired cache entries. Guard against QCoreApplication not yet existing
+        # (e.g., when the manager is instantiated in a test context without a Qt app).
+        # Also install EzTranslator so it begins intercepting QCoreApplication.translate()
+        # calls immediately — even before the first explicit language switch.
+        _qapp = QCoreApplication.instance()
+        if _qapp is not None:
+            _qapp.aboutToQuit.connect(self.auto_translator.cleanup)
+            QCoreApplication.installTranslator(self._ez_translator)
 
         # Resolve translations directory
         if hasattr(sys, "_MEIPASS"):
             self.translations_dir: Path | None = (
-                Path(sys._MEIPASS) / "ezqt_app" / "resources" / "translations"
+                Path(sys._MEIPASS)  # pyright: ignore[reportAttributeAccessIssue]
+                / "ezqt_app"
+                / "resources"
+                / "translations"
             )
         else:
             project_path = Path.cwd()
@@ -112,13 +225,6 @@ class TranslationManager(QObject):
                 self.translations_dir = project_path / "bin" / "translations"
                 self.translations_dir.mkdir(parents=True, exist_ok=True)
 
-        self.language_mapping: dict[str, str] = {
-            "English": "en",
-            "Français": "fr",
-            "Español": "es",
-            "Deutsch": "de",
-        }
-
     def _get_package_translations_dir(self) -> Path:
         try:
             import pkg_resources  # type: ignore[import-untyped]
@@ -128,6 +234,86 @@ class TranslationManager(QObject):
             )
         except Exception:
             return Path(__file__).parent.parent.parent / "resources" / "translations"
+
+    # ------------------------------------------------------------------
+    # .qm compilation helpers
+    # ------------------------------------------------------------------
+
+    def _find_lrelease(self) -> Path | None:
+        """Locate the pyside6-lrelease executable.
+
+        Searches PATH first (the ``pyside6-lrelease`` wrapper script), then
+        falls back to the ``lrelease[.exe]`` binary inside the PySide6 package
+        directory.  Returns ``None`` if the tool cannot be found.
+        """
+        import shutil
+
+        which = shutil.which("pyside6-lrelease")
+        if which:
+            return Path(which)
+
+        try:
+            import PySide6
+
+            pyside6_dir = Path(PySide6.__file__).parent
+            for name in ("lrelease.exe", "lrelease"):
+                candidate = pyside6_dir / name
+                if candidate.exists():
+                    return candidate
+        except Exception as e:
+            warn_tech(
+                code="translation.manager.pyside6_lrelease_lookup_failed",
+                message="Could not locate lrelease in PySide6 package directory",
+                error=e,
+            )
+
+        return None
+
+    def _ensure_qm_compiled(self, ts_path: Path, qm_path: Path) -> bool:
+        """Compile *ts_path* → *qm_path* using ``pyside6-lrelease`` if needed.
+
+        Skips recompilation when *qm_path* is already up-to-date (mtime ≥
+        *ts_path* mtime).  Returns ``True`` if *qm_path* exists after the
+        method completes (either freshly compiled or already current).
+        """
+        if qm_path.exists() and qm_path.stat().st_mtime >= ts_path.stat().st_mtime:
+            return True
+
+        lrelease = self._find_lrelease()
+        if lrelease is None:
+            warn_tech(
+                code="translation.manager.lrelease_not_found",
+                message=(
+                    "pyside6-lrelease not found; .qm file will not be generated. "
+                    "Install PySide6 tools or ensure pyside6-lrelease is on PATH."
+                ),
+            )
+            return qm_path.exists()
+
+        try:
+            import subprocess
+
+            result = subprocess.run(
+                [str(lrelease), str(ts_path), "-qm", str(qm_path)],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode != 0:
+                warn_tech(
+                    code="translation.manager.lrelease_failed",
+                    message=f"lrelease exited with code {result.returncode}: {result.stderr.strip()}",
+                )
+        except Exception as e:
+            warn_tech(
+                code="translation.manager.qm_compile_failed",
+                message=f"Failed to compile {ts_path.name} to .qm",
+                error=e,
+            )
+
+        return qm_path.exists()
+
+    # ------------------------------------------------------------------
 
     def _load_ts_file(self, ts_file_path: Path) -> bool:
         try:
@@ -175,6 +361,8 @@ class TranslationManager(QObject):
             )
             return False
 
+        self._ts_translations.clear()
+
         app = QCoreApplication.instance()
         if app is not None:
             try:
@@ -198,13 +386,23 @@ class TranslationManager(QObject):
                     f"for language '{language_code}'"
                 ),
             )
-            self._retranslate_all_widgets()
             self.languageChanged.emit(language_code)
             return True
 
         ts_file_path = self.translations_dir / language_info["file"]
 
         if self._load_ts_file(ts_file_path):
+            # Compile .ts → .qm (skipped when .qm is already up to date) and
+            # load into the QTranslator so QCoreApplication.translate() works.
+            qm_path = ts_file_path.with_suffix(".qm")
+            if self._ensure_qm_compiled(
+                ts_file_path, qm_path
+            ) and not self.translator.load(str(qm_path)):
+                warn_tech(
+                    code="translation.manager.load_qm_failed",
+                    message=f"QTranslator.load() failed for {qm_path.name}",
+                )
+
             if app is not None:
                 try:
                     QCoreApplication.installTranslator(self.translator)
@@ -223,7 +421,6 @@ class TranslationManager(QObject):
                 ),
             )
 
-        self._retranslate_all_widgets()
         self.languageChanged.emit(language_code)
         return True
 
@@ -238,6 +435,11 @@ class TranslationManager(QObject):
     def get_current_language_code(self) -> str:
         return self.current_language
 
+    @property
+    def translation_count(self) -> int:
+        """Return the number of cached translations."""
+        return len(self._ts_translations)
+
     def translate(self, text: str) -> str:
         if text in self._ts_translations:
             return self._ts_translations[text]
@@ -246,76 +448,147 @@ class TranslationManager(QObject):
         if translated and translated != text:
             return translated
 
+        # Fire async auto-translation — widgets update via _on_auto_translation_ready
+        # when the result arrives. Never call translate_sync() from the UI thread.
         if self.auto_translation_enabled and self.auto_translator.enabled:
-            auto_translated = self.auto_translator.translate_sync(
-                text, "en", self.current_language
-            )
-            if auto_translated:
-                if self.auto_save_translations:
-                    self._save_auto_translation_to_ts(text, auto_translated)
-                return auto_translated
+            result = self.auto_translator.translate(text, "en", self.current_language)
+            # Increment the pending counter only when a real async request was
+            # dispatched (translate() returns None in that case).  A non-None
+            # result means the cache was hit synchronously and no worker task
+            # will emit translation_ready later.
+            if result is None:
+                self._increment_pending()
 
         return text
 
-    def register_widget(self, widget: Any, original_text: str) -> None:
-        if widget not in self._translatable_widgets:
-            self._translatable_widgets.append(widget)
-            self._translatable_texts[widget] = original_text
+    # ------------------------------------------------------------------
+    # Pending-count helpers
+    # ------------------------------------------------------------------
 
-    def unregister_widget(self, widget: Any) -> None:
-        if widget in self._translatable_widgets:
-            self._translatable_widgets.remove(widget)
-            self._translatable_texts.pop(widget, None)
+    def _increment_pending(self) -> None:
+        """Increment the pending auto-translation counter.
 
-    def set_translatable_text(self, widget: Any, text: str) -> None:
-        self.register_widget(widget, text)
-        self._set_widget_text(widget, text)
+        Emits :attr:`translation_started` when the count transitions from 0
+        to 1, signalling that at least one async translation is in flight.
+        """
+        self._pending_auto_translations += 1
+        if self._pending_auto_translations == 1:
+            self.translation_started.emit()
 
-    def _set_widget_text(self, widget: Any, text: str) -> None:
-        try:
-            translated = self.translate(text)
-            if hasattr(widget, "setText"):
-                widget.setText(translated)
-            elif hasattr(widget, "setTitle"):
-                widget.setTitle(translated)
-            elif hasattr(widget, "setWindowTitle"):
-                widget.setWindowTitle(translated)
-            elif hasattr(widget, "setPlaceholderText"):
-                widget.setPlaceholderText(translated)
-            elif hasattr(widget, "setToolTip"):
-                widget.setToolTip(translated)
-            else:
-                warn_tech(
-                    code="translation.manager.unsupported_widget_for_translation",
-                    message=f"Widget type not supported for translation: {type(widget)}",
-                )
-        except Exception as e:
-            warn_tech(
-                code="translation.manager.widget_translation_failed",
-                message="Error translating widget",
-                error=e,
-            )
+    def _decrement_pending(self) -> None:
+        """Decrement the pending auto-translation counter (floor: 0).
 
-    def _retranslate_all_widgets(self) -> None:
-        for widget in self._translatable_widgets:
-            if widget in self._translatable_texts:
-                self._set_widget_text(widget, self._translatable_texts[widget])
+        Emits :attr:`translation_finished` when the count reaches zero,
+        signalling that all in-flight translations have been resolved.
+        """
+        self._pending_auto_translations = max(0, self._pending_auto_translations - 1)
+        if self._pending_auto_translations == 0:
+            self.translation_finished.emit()
 
-    def clear_registered_widgets(self) -> None:
-        self._translatable_widgets.clear()
-        self._translatable_texts.clear()
+    def _on_auto_translation_error(self, _original: str, _error: str) -> None:
+        """Slot called when an async auto-translation fails.
+
+        Decrements the pending counter so the UI indicator is hidden even on
+        failure.  Error reporting is handled by :class:`AutoTranslator` itself.
+
+        Args:
+            _original: The source string that could not be translated (unused here).
+            _error: The error message reported by the provider (unused here).
+        """
+        self._decrement_pending()
+
+    def _on_auto_translation_ready(self, original: str, translated: str) -> None:
+        """Slot called when an async auto-translation completes.
+
+        Caches the result, optionally persists it to the .ts file (and
+        recompiles the .qm), then triggers a ``QEvent::LanguageChange`` on all
+        widgets by reinstalling ``_ez_translator``.  This causes every widget's
+        ``changeEvent`` / ``retranslate_ui`` to run, at which point
+        ``QCoreApplication.translate("EzQt_App", original)`` finds the new
+        entry either in ``_ts_translations`` (via ``EzTranslator``) or in the
+        freshly reloaded ``.qm`` file.
+
+        Args:
+            original: The source (English) string that was translated.
+            translated: The translated string in the current language.
+        """
+        self._decrement_pending()
+        self._ts_translations[original] = translated
+        if self.auto_save_translations:
+            # _save_auto_translation_to_ts reloads the .qm translator, which
+            # already calls installTranslator() and thus posts LanguageChange.
+            # No need to reinstall _ez_translator separately in that case.
+            self._save_auto_translation_to_ts(original, translated)
+        else:
+            # Without .ts persistence the .qm is not reloaded.  Reinstall
+            # _ez_translator to post LanguageChange so widgets call
+            # retranslate_ui() and pick up the new entry from _ts_translations.
+            app = QCoreApplication.instance()
+            if app is not None:
+                try:
+                    QCoreApplication.installTranslator(self._ez_translator)
+                except Exception as e:
+                    warn_tech(
+                        code="translation.manager.ez_translator_reinstall_failed",
+                        message="Could not reinstall EzTranslator after auto-translation",
+                        error=e,
+                    )
 
     def _save_auto_translation_to_ts(self, original: str, translated: str) -> None:
+        """Persist *translated* to the active .ts file and reload the .qm translator.
+
+        After writing the new entry to the .ts file the method recompiles it to
+        a fresh .qm and reloads ``self.translator``.  Subsequent calls to
+        ``QCoreApplication.translate("EzQt_App", original)`` will therefore
+        find the string in the .qm-backed translator (in addition to
+        ``EzTranslator``'s in-memory cache), making the translation durable
+        across application restarts.
+
+        Args:
+            original: The source (English) string.
+            translated: The translated string to persist.
+        """
         try:
-            if self.current_language in SUPPORTED_LANGUAGES:
-                if self.translations_dir is None:
-                    return
-                language_info = SUPPORTED_LANGUAGES[self.current_language]
-                ts_file_path = self.translations_dir / language_info["file"]
-                self.auto_translator.save_translation_to_ts(
-                    original, translated, self.current_language, ts_file_path
-                )
-                self._ts_translations[original] = translated
+            if self.current_language not in SUPPORTED_LANGUAGES:
+                return
+            if self.translations_dir is None:
+                return
+
+            language_info = SUPPORTED_LANGUAGES[self.current_language]
+            ts_file_path = self.translations_dir / language_info["file"]
+            self.auto_translator.save_translation_to_ts(
+                original, translated, self.current_language, ts_file_path
+            )
+            self._ts_translations[original] = translated
+
+            # Recompile .ts → .qm so the entry is available via the native
+            # QTranslator on the next language load (and on app restart).
+            qm_path = ts_file_path.with_suffix(".qm")
+            if self._ensure_qm_compiled(ts_file_path, qm_path):
+                app = QCoreApplication.instance()
+                if app is not None:
+                    # Swap out the .qm translator atomically: remove the old
+                    # one, load the updated binary, reinstall.
+                    try:
+                        QCoreApplication.removeTranslator(self.translator)
+                        self.translator = QTranslator()
+                        if not self.translator.load(str(qm_path)):
+                            warn_tech(
+                                code="translation.manager.reload_qm_failed",
+                                message=(
+                                    f"QTranslator.load() failed after auto-save "
+                                    f"for {qm_path.name}"
+                                ),
+                            )
+                        # Install first so it is consulted before EzTranslator
+                        # (LIFO order: last installed = first consulted).
+                        QCoreApplication.installTranslator(self.translator)
+                    except Exception as e:
+                        warn_tech(
+                            code="translation.manager.reload_qm_install_failed",
+                            message="Error reloading .qm translator after auto-save",
+                            error=e,
+                        )
         except Exception as e:
             warn_tech(
                 code="translation.manager.auto_translation_save_failed",
@@ -342,18 +615,10 @@ class TranslationManager(QObject):
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETON
+# FUNCTIONS
 # ///////////////////////////////////////////////////////////////
-_translation_manager_instance: TranslationManager | None = None
-
-
 def get_translation_manager() -> TranslationManager:
     """Return the global TranslationManager singleton."""
-    global _translation_manager_instance, translation_manager
-    if _translation_manager_instance is None:
-        _translation_manager_instance = TranslationManager()
-        translation_manager = _translation_manager_instance
-    return _translation_manager_instance
+    from .._registry import ServiceRegistry
 
-
-translation_manager: TranslationManager | None = None
+    return ServiceRegistry.get(TranslationManager, TranslationManager)

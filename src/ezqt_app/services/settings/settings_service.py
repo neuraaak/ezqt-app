@@ -13,13 +13,15 @@ from __future__ import annotations
 # Third-party imports
 from PySide6.QtCore import QSize
 
-# Local imports
 from ...domain.models.settings import (
     AppSettingsModel,
     GuiSettingsModel,
     SettingsStateModel,
 )
 from ...domain.ports.settings_service import SettingsServiceProtocol
+
+# Local imports
+from .._registry import ServiceRegistry
 
 
 # ///////////////////////////////////////////////////////////////
@@ -86,14 +88,8 @@ class SettingsService(SettingsServiceProtocol):
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETONS
-# ///////////////////////////////////////////////////////////////
-_settings_service = SettingsService()
-
-
-# ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
 def get_settings_service() -> SettingsService:
     """Return the singleton settings service."""
-    return _settings_service
+    return ServiceRegistry.get(SettingsService, SettingsService)

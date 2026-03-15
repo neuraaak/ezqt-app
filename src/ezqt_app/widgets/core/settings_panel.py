@@ -15,7 +15,7 @@ import contextlib
 from typing import Any
 
 # Third-party imports
-from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtCore import QCoreApplication, QEvent, QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
     QLabel,
@@ -50,11 +50,18 @@ class SettingsPanel(QFrame):
     # ///////////////////////////////////////////////////////////////
 
     def _settings_storage_prefix(self) -> list[str]:
-        """Return config path prefix used to persist settings values."""
+        """Return config keys (file name + nested path) used to persist setting values.
+
+        The first element is always ``"app"`` (the config file name). The remaining
+        elements are the dot-split path from ``settings_storage_root`` in app.config.yaml,
+        defaulting to ``["settings_panel"]``.  The full list is passed directly to
+        :meth:`AppService.stage_config_value` so that ``keys[0]`` is the file name.
+        """
+        config_name = "app"
         try:
             from ...services.config import get_config_service
 
-            app_config = get_config_service().load_config("app")
+            app_config = get_config_service().load_config(config_name)
             app_section = app_config.get("app", {})
             root = str(app_section.get("settings_storage_root", "settings_panel"))
             parts = [part for part in root.split(".") if part]
@@ -68,18 +75,14 @@ class SettingsPanel(QFrame):
                 return isinstance(current, dict)
 
             if parts and _exists(parts):
-                return parts
-            if _exists(["settings_panel"]):
-                return ["settings_panel"]
-            if _exists(["app", "settings_panel"]):
-                return ["app", "settings_panel"]
+                return [config_name, *parts]
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.storage_prefix_resolution_failed",
                 message="Could not resolve settings storage prefix from app config",
                 error=e,
             )
-        return ["settings_panel"]
+        return [config_name, "settings_panel"]
 
     def _sync_theme_selector_with_settings(self) -> None:
         """Align theme selector UI with the currently active settings theme."""
@@ -191,7 +194,13 @@ class SettingsPanel(QFrame):
 
         # ///////////////////////////////////////////////////////////////
 
-        self.themeLabel = QLabel("Active Theme", self.themeSettingsContainer)
+        # Store the original label text for retranslation.
+        self._theme_label_text: str = "Active Theme"
+
+        self.themeLabel = QLabel(
+            QCoreApplication.translate("EzQt_App", self._theme_label_text),
+            self.themeSettingsContainer,
+        )
         self.themeLabel.setObjectName("themeLabel")
         if Fonts.SEGOE_UI_10_SB is not None:
             self.themeLabel.setFont(Fonts.SEGOE_UI_10_SB)
@@ -565,13 +574,12 @@ class SettingsPanel(QFrame):
         self._processing_setting_change = True
 
         try:
-            # Save to YAML
+            # Stage setting change; flushed to disk on application quit.
             try:
                 # Direct import to avoid circular import
                 from ...services.application.app_service import AppService
 
-                # Save directly to settings_panel[key].default
-                AppService.write_yaml_config(
+                AppService.stage_config_value(
                     [*self._settings_storage_prefix(), key, "default"], value
                 )
             except Exception as e:
@@ -623,13 +631,13 @@ class SettingsPanel(QFrame):
         return {key: widget.get_value() for key, widget in self._settings.items()}
 
     def save_all_settings_to_yaml(self) -> None:
-        """Save all settings to YAML file."""
+        """Stage all current setting values; flushed to disk on application quit."""
         # Direct import to avoid circular import
         from ...services.application.app_service import AppService
 
         for key, widget in self._settings.items():
             try:
-                AppService.write_yaml_config(
+                AppService.stage_config_value(
                     [*self._settings_storage_prefix(), key, "default"],
                     widget.get_value(),
                 )
@@ -639,6 +647,46 @@ class SettingsPanel(QFrame):
                     message=f"Could not save setting '{key}' to YAML",
                     error=e,
                 )
+
+    def retranslate_ui(self) -> None:
+        """Apply current translations to all owned text labels."""
+        self.themeLabel.setText(
+            QCoreApplication.translate("EzQt_App", self._theme_label_text)
+        )
+        # Retranslate each dynamically-created setting widget's label and description.
+        for widget in self._settings.values():
+            label_attr = getattr(widget, "label", None)
+            original_label = getattr(widget, "_label", None)
+            if (
+                label_attr is not None
+                and original_label is not None
+                and hasattr(label_attr, "setText")
+            ):
+                label_attr.setText(
+                    QCoreApplication.translate("EzQt_App", original_label)
+                )
+            desc_attr = getattr(widget, "description_label", None)
+            original_desc = getattr(widget, "_description", None)
+            if (
+                desc_attr is not None
+                and original_desc
+                and hasattr(desc_attr, "setText")
+            ):
+                desc_attr.setText(QCoreApplication.translate("EzQt_App", original_desc))
+        # Retranslate theme selector option labels (Light / Dark).
+        self.update_theme_selector_items()
+
+    def changeEvent(self, event: QEvent) -> None:
+        """Handle Qt change events, triggering UI retranslation on language change.
+
+        Parameters
+        ----------
+        event : QEvent
+            The Qt change event.
+        """
+        if event.type() == QEvent.Type.LanguageChange:
+            self.retranslate_ui()
+        super().changeEvent(event)
 
     # ///////////////////////////////////////////////////////////////
     # Panel management methods
@@ -691,10 +739,10 @@ class SettingsPanel(QFrame):
             # OptionSelector.value already returns "Light" or "Dark"
             english_value = value.lower()
 
-            # Save English value to YAML
+            # Stage theme change; flushed to disk on application quit.
             from ...services.application.app_service import AppService
 
-            AppService.write_yaml_config(
+            AppService.stage_config_value(
                 [*self._settings_storage_prefix(), "theme", "default"],
                 english_value,
             )
@@ -716,10 +764,10 @@ class SettingsPanel(QFrame):
                 # Get text value directly
                 current_value = self.themeToggleButton.value.lower()
 
-                # Save English value to YAML
+                # Stage theme change; flushed to disk on application quit.
                 from ...services.application.app_service import AppService
 
-                AppService.write_yaml_config(
+                AppService.stage_config_value(
                     [*self._settings_storage_prefix(), "theme", "default"],
                     current_value,
                 )
@@ -751,7 +799,7 @@ class SettingsPanel(QFrame):
 
                 # Update widget texts directly
                 if hasattr(theme_button, "_options"):
-                    for i, (_option_id, option_widget) in enumerate(
+                    for i, (_, option_widget) in enumerate(
                         theme_button._options.items()
                     ):
                         if i < len(translated_items):
@@ -760,7 +808,7 @@ class SettingsPanel(QFrame):
                                     translated_items[i].capitalize()
                                 )
                             elif hasattr(option_widget, "setText"):
-                                option_widget.setText(translated_items[i].capitalize())
+                                option_widget.text = translated_items[i].capitalize()
 
                 # Reapply current ID to maintain selection
                 if hasattr(theme_button, "value_id") and hasattr(

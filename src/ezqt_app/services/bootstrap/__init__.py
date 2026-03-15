@@ -10,17 +10,18 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Standard library imports
 from pathlib import Path
 from typing import Any
 
+# Local imports
+from .._registry import ServiceRegistry
 from .contracts import InitOptions, InitStep, OverwritePolicy, StepStatus
 from .exceptions import BootstrapError, InitAlreadyInitializedError, InitStepError
 from .init_service import InitService
 from .initializer import Initializer
 from .sequence import InitializationSequence
 from .startup_config import StartupConfig
-
-_init_service = InitService()
 
 
 # ///////////////////////////////////////////////////////////////
@@ -62,7 +63,7 @@ def init(
         verbose=verbose,
         overwrite_policy=overwrite_policy,
     )
-    return _init_service.run(options).to_dict()
+    return ServiceRegistry.get(InitService, InitService).run(options).to_dict()
 
 
 def setup_project(base_path: str | None = None) -> bool:

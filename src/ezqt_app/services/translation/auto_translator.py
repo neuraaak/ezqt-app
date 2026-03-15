@@ -13,14 +13,16 @@ from __future__ import annotations
 # Standard library imports
 import hashlib
 import json
+import threading
 import time
+from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 # Third-party imports
 import requests
-from PySide6.QtCore import QObject, QThread, Signal
+from PySide6.QtCore import QObject, Signal
 
 # Local imports
 from ...utils.diagnostics import warn_tech, warn_user
@@ -30,7 +32,7 @@ from ...utils.printer import get_printer
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
-class TranslationProvider:
+class TranslationProvider(ABC):
     """Base translation provider class"""
 
     def __init__(self, name: str, base_url: str):
@@ -39,8 +41,10 @@ class TranslationProvider:
         self.timeout = 10
         self.rate_limit_delay = 1.0
 
-    def translate(self, text: str, source_lang: str, target_lang: str) -> str | None:
-        raise NotImplementedError
+    @abstractmethod
+    def translate(
+        self, text: str, source_lang: str, target_lang: str
+    ) -> str | None: ...
 
     def is_available(self) -> bool:
         try:
@@ -259,51 +263,18 @@ class TranslationCache:
             self.save_cache()
 
 
-class AutoTranslationWorker(QThread):
-    """Background thread for automatic translations"""
-
-    translation_completed = Signal(str, str, str)
-    translation_failed = Signal(str, str)
-
-    def __init__(self, providers: list[TranslationProvider], cache: TranslationCache):
-        super().__init__()
-        self.providers = providers
-        self.cache = cache
-        self.running = True
-
-    def translate_text(self, text: str, source_lang: str, target_lang: str) -> None:
-        cached = self.cache.get(text, source_lang, target_lang)
-        if cached:
-            self.translation_completed.emit(text, cached, "cache")
-            return
-
-        for provider in self.providers:
-            if not self.running:
-                break
-            try:
-                translation = provider.translate(text, source_lang, target_lang)
-                if translation:
-                    self.cache.set(
-                        text, source_lang, target_lang, translation, provider.name
-                    )
-                    self.translation_completed.emit(text, translation, provider.name)
-                    return
-                time.sleep(provider.rate_limit_delay)
-            except Exception as e:
-                warn_tech(
-                    code="translation.worker.provider_failed",
-                    message=f"Translation error with {provider.name}",
-                    error=e,
-                )
-
-        self.translation_failed.emit(text, "No translation found")
-
-    def stop(self) -> None:
-        self.running = False
-
-
 class AutoTranslator(QObject):
-    """Automatic translation manager (disabled by default)."""
+    """Automatic translation manager (disabled by default).
+
+    Each call to :meth:`translate` spawns a lightweight daemon thread that
+    performs the HTTP round-trip in the background.  Signals are emitted from
+    that thread; Qt automatically delivers them via a queued connection to
+    slots that live in the main thread, so the UI is never blocked.
+
+    A ``_pending`` set (guarded by ``_lock``) deduplicates in-flight requests:
+    if the same source string is requested while a thread for it is still
+    running, no second thread is spawned.
+    """
 
     translation_ready = Signal(str, str)
     translation_error = Signal(str, str)
@@ -315,12 +286,16 @@ class AutoTranslator(QObject):
         cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache = TranslationCache(cache_dir / "translations.json")
         self.providers: list[TranslationProvider] = []
-        self.worker: AutoTranslationWorker | None = None
+        self._pending: set[str] = set()
+        self._lock = threading.Lock()
         self._setup_providers()
         self.enabled = False
 
     def _setup_providers(self) -> None:
         # Order matters: fastest/unofficial first, then free fallback providers.
+        # is_available() performs a synchronous HTTP GET; calling it at setup time
+        # would block the Qt main thread. Provider availability checking requires
+        # a dedicated health-check mechanism before it can be integrated.
         self.providers = [
             GoogleTranslateProvider(),
             MyMemoryProvider(),
@@ -334,28 +309,98 @@ class AutoTranslator(QObject):
         self.providers = [p for p in self.providers if p.name != provider_name]
 
     def translate(self, text: str, source_lang: str, target_lang: str) -> str | None:
+        """Schedule an async translation and return ``None`` immediately.
+
+        If *text* is already cached or a thread is already translating it,
+        the call is a no-op and returns the cached value or ``None``.
+        The caller receives the result via :attr:`translation_ready`.
+        """
         cached = self.cache.get(text, source_lang, target_lang)
         if cached:
             return cached
 
-        if hasattr(self, "_last_request_time"):
-            elapsed = time.time() - self._last_request_time
-            if elapsed < 1.0:
-                time.sleep(1.0 - elapsed)
+        with self._lock:
+            if text in self._pending:
+                return None
+            self._pending.add(text)
 
-        if not self.worker or not self.worker.isRunning():
-            self.worker = AutoTranslationWorker(self.providers, self.cache)
-            self.worker.translation_completed.connect(self._on_translation_completed)
-            self.worker.translation_failed.connect(self._on_translation_failed)
-            self.worker.start()
-
-        self.worker.translate_text(text, source_lang, target_lang)
-        self._last_request_time = time.time()
+        t = threading.Thread(
+            target=self._do_translate,
+            args=(text, source_lang, target_lang),
+            daemon=True,
+            name=f"ez-translate:{text[:30]}",
+        )
+        t.start()
         return None
+
+    def _do_translate(self, text: str, source_lang: str, target_lang: str) -> None:
+        """Blocking translation worker — runs in a background daemon thread."""
+        try:
+            for provider in self.providers:
+                try:
+                    translation = provider.translate(text, source_lang, target_lang)
+                    if translation:
+                        self.cache.set(
+                            text, source_lang, target_lang, translation, provider.name
+                        )
+                        get_printer().info(
+                            f"Automatic translation ({provider.name}): "
+                            f"'{text}' → '{translation}'"
+                        )
+                        # Signal is delivered to the main thread via queued connection.
+                        self.translation_ready.emit(text, translation)
+                        return
+                    time.sleep(provider.rate_limit_delay)
+                except Exception as e:
+                    warn_tech(
+                        code="translation.worker.provider_failed",
+                        message=f"Translation error with {provider.name}",
+                        error=e,
+                    )
+
+            warn_user(
+                code="translation.auto.failed",
+                user_message=f"Automatic translation failed: '{text}'",
+                log_message=f"All providers failed for '{text}'",
+            )
+            self.translation_error.emit(text, "No translation found")
+        finally:
+            with self._lock:
+                self._pending.discard(text)
 
     def translate_sync(
         self, text: str, source_lang: str, target_lang: str
     ) -> str | None:
+        """Translate text synchronously, blocking until a result is obtained.
+
+        Intended for use in CLI scripts, test helpers, and offline batch-processing
+        tools that run outside the Qt event loop. Each provider call is a blocking
+        HTTP request; the total wait time can reach ``len(providers) × timeout``
+        seconds if all providers fail.
+
+        Warning:
+            **Never call this method from the Qt main (UI) thread.** Doing so
+            blocks the event loop for the entire duration of the HTTP round-trips,
+            freezing the application UI. For in-app translation use
+            :meth:`translate` instead, which runs the request in a daemon thread.
+
+        Example::
+
+            # Appropriate usage — called from a CLI script, not from a Qt slot:
+            translator = get_auto_translator()
+            translator.enabled = True
+            result = translator.translate_sync("Hello", "en", "fr")
+            print(result)  # "Bonjour"
+
+        Args:
+            text: The source text to translate.
+            source_lang: BCP-47 language code of the source text (e.g. ``"en"``).
+            target_lang: BCP-47 language code of the desired output (e.g. ``"fr"``).
+
+        Returns:
+            The translated string, or ``None`` if the translator is disabled or
+            all providers fail.
+        """
         if not self.enabled:
             return None
 
@@ -381,42 +426,44 @@ class AutoTranslator(QObject):
 
         return None
 
-    def _on_translation_completed(
-        self, original: str, translated: str, provider: str
-    ) -> None:
-        get_printer().info(
-            f"Automatic translation ({provider}): '{original}' → '{translated}'"
-        )
-        self.translation_ready.emit(original, translated)
-
-    def _on_translation_failed(self, original: str, error: str) -> None:
-        warn_user(
-            code="translation.auto.failed",
-            user_message=f"Automatic translation failed: '{original}' - {error}",
-            log_message=f"Automatic translation failed for '{original}': {error}",
-        )
-        self.translation_error.emit(original, error)
-
     def save_translation_to_ts(
         self, original: str, translated: str, target_lang: str, ts_file_path: Path
     ) -> None:
+        """Append a single translation entry to a Qt Linguist .ts XML file."""
+        import xml.etree.ElementTree as ET
+
         try:
-            ts_data: dict[str, Any] = {}
             if ts_file_path.exists():
-                with open(ts_file_path, encoding="utf-8") as f:
-                    ts_data = json.load(f)
-            if not ts_data:
-                ts_data = {
-                    "metadata": {
-                        "language": target_lang,
-                        "created": datetime.now().isoformat(),
-                    },
-                    "translations": {},
-                }
-            ts_data["translations"][original] = translated
+                try:
+                    tree = ET.parse(ts_file_path)  # noqa: S314
+                    root = tree.getroot()
+                except ET.ParseError:
+                    root = ET.Element("TS", {"language": target_lang, "version": "2.1"})
+                    tree = ET.ElementTree(root)
+            else:
+                root = ET.Element("TS", {"language": target_lang, "version": "2.1"})
+                tree = ET.ElementTree(root)
+
+            context = root.find("context")
+            if context is None:
+                context = ET.SubElement(root, "context")
+                ET.SubElement(context, "name").text = "ezqt_app"
+
+            # Update existing entry if source already present, otherwise append.
+            for msg in context.findall("message"):
+                src = msg.find("source")
+                if src is not None and src.text == original:
+                    trans = msg.find("translation")
+                    if trans is not None:
+                        trans.text = translated
+                    break
+            else:
+                msg = ET.SubElement(context, "message")
+                ET.SubElement(msg, "source").text = original
+                ET.SubElement(msg, "translation").text = translated
+
             ts_file_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(ts_file_path, "w", encoding="utf-8") as f:
-                json.dump(ts_data, f, indent=2, ensure_ascii=False)
+            tree.write(ts_file_path, encoding="unicode", xml_declaration=True)
             get_printer().info(f"Translation saved to {ts_file_path}")
         except Exception as e:
             warn_tech(
@@ -444,24 +491,16 @@ class AutoTranslator(QObject):
         return stats
 
     def cleanup(self) -> None:
-        if self.worker:
-            self.worker.stop()
-            self.worker.wait()
+        # Background threads are daemon threads — they exit automatically when
+        # the process exits.  We only need to flush the on-disk cache.
         self.cache.clear_expired()
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETON
+# FUNCTIONS
 # ///////////////////////////////////////////////////////////////
-_auto_translator_instance: AutoTranslator | None = None
-
-
 def get_auto_translator() -> AutoTranslator:
     """Return the global AutoTranslator singleton."""
-    global _auto_translator_instance
-    if _auto_translator_instance is None:
-        _auto_translator_instance = AutoTranslator()
-    return _auto_translator_instance
+    from .._registry import ServiceRegistry
 
-
-auto_translator = get_auto_translator  # alias
+    return ServiceRegistry.get(AutoTranslator, AutoTranslator)

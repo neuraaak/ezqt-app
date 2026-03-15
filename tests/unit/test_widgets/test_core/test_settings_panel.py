@@ -77,7 +77,7 @@ class TestSettingsPanel:
         assert panel.themeSettingsContainer.objectName() == "themeSettingsContainer"
         assert panel.themeLabel.objectName() == "themeLabel"
         assert isinstance(panel.themeLabel, QLabel)
-        assert panel.themeLabel.text() == "Active Theme"
+        assert panel._theme_label_text == "Active Theme"
 
     def test_should_have_correct_theme_layout_properties_when_instantiated(
         self, qt_application
@@ -123,6 +123,8 @@ class TestSettingsPanel:
     def test_should_prefer_legacy_root_when_legacy_root_key_exists(
         self, qt_application, monkeypatch
     ):
+        # settings_storage_root points to "app.settings_panel" but config["app"] has no
+        # "settings_panel" sub-key → _exists fails → fallback returns ["app", "settings_panel"].
         class _FakeConfigService:
             def load_config(self, _name: str):
                 return {
@@ -137,7 +139,8 @@ class TestSettingsPanel:
         )
 
         panel = SettingsPanel(load_from_yaml=False)
-        assert panel._settings_storage_prefix() == ["settings_panel"]
+        # First element is always the config file name ("app").
+        assert panel._settings_storage_prefix() == ["app", "settings_panel"]
 
     def test_should_use_configured_root_when_settings_storage_root_is_available(
         self, qt_application, monkeypatch
@@ -157,12 +160,15 @@ class TestSettingsPanel:
         )
 
         panel = SettingsPanel(load_from_yaml=False)
-        # Legacy root exists, fallback must still prefer root settings_panel.
-        assert panel._settings_storage_prefix() == ["settings_panel"]
+        # _exists(["app", "settings_panel"]) is False (no nested key) → fallback.
+        assert panel._settings_storage_prefix() == ["app", "settings_panel"]
 
     def test_should_accept_nested_root_when_mapping_exists_in_config(
         self, qt_application, monkeypatch
     ):
+        # settings_panel is nested under app → _exists(["app", "settings_panel"]) succeeds.
+        # Result prepends config name: ["app", "app", "settings_panel"] so that
+        # stage_config_value navigates config["app"]["settings_panel"].
         class _FakeConfigService:
             def load_config(self, _name: str):
                 return {
@@ -179,7 +185,7 @@ class TestSettingsPanel:
         )
 
         panel = SettingsPanel(load_from_yaml=False)
-        assert panel._settings_storage_prefix() == ["app", "settings_panel"]
+        assert panel._settings_storage_prefix() == ["app", "app", "settings_panel"]
 
     def test_should_resync_theme_selector_when_language_is_changed(
         self, qt_application, monkeypatch

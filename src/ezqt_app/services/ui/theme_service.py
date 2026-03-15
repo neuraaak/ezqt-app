@@ -10,9 +10,9 @@ from __future__ import annotations
 # Standard library imports
 import re
 from pathlib import Path
-from typing import Any
 
 # Local imports
+from ...domain.ports.main_window import MainWindowProtocol
 from ...utils.runtime_paths import APP_PATH
 from ..config import get_config_service
 from ..settings import get_settings_service
@@ -38,7 +38,9 @@ class ThemeService:
     """
 
     @staticmethod
-    def apply_theme(window: Any, custom_theme_file: str | None = None) -> None:
+    def apply_theme(
+        window: MainWindowProtocol, custom_theme_file: str | None = None
+    ) -> None:
         """Load and apply either a custom QSS file or the default package theme.
 
         Args:

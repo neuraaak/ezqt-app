@@ -14,7 +14,7 @@ from __future__ import annotations
 import platform
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 # Third-party imports
 from PySide6.QtCore import Qt
@@ -22,6 +22,7 @@ from PySide6.QtGui import QMouseEvent, QPixmap, QResizeEvent
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 
 # Local imports
+from .domain.ports.main_window import MainWindowProtocol
 from .services.application.app_service import AppService
 from .services.config import get_config_service
 from .services.settings import get_settings_service
@@ -35,7 +36,7 @@ from .services.ui import (
     UiDefinitionsService,
 )
 from .shared.resources import Images
-from .utils.diagnostics import warn_tech, warn_user
+from .utils.diagnostics import warn_tech
 from .utils.printer import get_printer
 from .widgets.core.ez_app import EzApplication
 from .widgets.ui_main import Ui_MainWindow
@@ -63,6 +64,10 @@ class EzQt_App(QMainWindow):
     This class represents the main application window
     with all its components (menu, pages, settings, etc.).
     """
+
+    def _as_window(self) -> MainWindowProtocol:
+        """Cast self to MainWindowProtocol (EzQt_App is a QMainWindow satisfying the protocol)."""
+        return cast(MainWindowProtocol, self)
 
     def __init__(
         self,
@@ -125,42 +130,11 @@ class EzQt_App(QMainWindow):
 
         # ////// LOAD TRANSLATIONS
         # ///////////////////////////////////////////////////////////////
-        # Load language from settings
+        # Language is read from settings_panel.language.default in app.config.yaml
+        # (display name, e.g. "English"). "en" is the hardcoded ultimate fallback.
         try:
-            # Load default language from translation.config.yaml, then allow app override.
-            default_language_code = "en"
-            translation_config_data = config_service.load_config("translation")
-
-            supported_languages = translation_config_data.get("supported_languages", [])
-            supported_codes = {
-                str(item.get("code", "")).lower()
-                for item in supported_languages
-                if isinstance(item, dict)
-            }
-
-            detection = translation_config_data.get("language_detection", {})
-            if isinstance(detection, dict):
-                default_language_code = str(
-                    detection.get("default_source_language", "en")
-                ).lower()
-
-            if default_language_code not in supported_codes:
-                warn_user(
-                    code="app.language.invalid_default_source_language",
-                    user_message=(
-                        "Invalid default_source_language in translation config; "
-                        "falling back to English"
-                    ),
-                    log_message=(
-                        "default_source_language is not declared in supported_languages"
-                    ),
-                )
-                default_language_code = "en"
-
             app_config = config_service.load_config("app")
-            language_value = _get_setting_default(
-                app_config, "language", default_language_code
-            )
+            language_value = _get_setting_default(app_config, "language", "en")
 
             translation_service = get_translation_service()
             # Accept both display names ("Français") and codes ("fr").
@@ -198,13 +172,13 @@ class EzQt_App(QMainWindow):
         # ==> TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
         self.ui.menuContainer.toggleButton.clicked.connect(
-            lambda: PanelService.toggle_menu_panel(self, True)
+            lambda: PanelService.toggle_menu_panel(self._as_window(), True)
         )
 
         # ==> TOGGLE SETTINGS
         # ///////////////////////////////////////////////////////////////
         self.ui.headerContainer.settingsTopBtn.clicked.connect(
-            lambda: PanelService.toggle_settings_panel(self, True)
+            lambda: PanelService.toggle_settings_panel(self._as_window(), True)
         )
 
         # SET UI DEFINITIONS
@@ -235,7 +209,7 @@ class EzQt_App(QMainWindow):
         settings_service.set_theme(_theme)
 
         # Apply stylesheet after active theme has been resolved.
-        ThemeService.apply_theme(self, self._themeFileName)
+        ThemeService.apply_theme(self._as_window(), self._themeFileName)
 
         theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
         if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
@@ -259,13 +233,25 @@ class EzQt_App(QMainWindow):
             elif hasattr(theme_toggle, "clicked"):
                 theme_toggle.clicked.connect(self.setAppTheme)
 
-        # ==> REGISTER ALL WIDGETS FOR TRANSLATION
+        # ==> COLLECT STRINGS FOR TRANSLATION (opt-in)
         # ///////////////////////////////////////////////////////////////
-        self._register_all_widgets_for_translation()
+        # Only run if explicitly enabled via translation.collect_strings = true
+        # in translation.config.yaml. Disabled by default to avoid unwanted filesystem
+        # writes (pending_strings.txt, language_detected.txt, translation_tasks.json)
+        # on every application startup.
+        try:
+            _translation_cfg = config_service.load_config("translation")
+            _translation_section = _translation_cfg.get("translation", {})
+            _collect_enabled = bool(
+                _translation_section.get("collect_strings", False)
+                if isinstance(_translation_section, dict)
+                else False
+            )
+        except Exception:
+            _collect_enabled = False
 
-        # ==> COLLECT STRINGS FOR TRANSLATION
-        # ///////////////////////////////////////////////////////////////
-        self._collect_strings_for_translation()
+        if _collect_enabled:
+            self._collect_strings_for_translation()
 
     # SET APP THEME
     # ///////////////////////////////////////////////////////////////
@@ -289,8 +275,8 @@ class EzQt_App(QMainWindow):
             # Update active theme
             settings_service.set_theme(theme)
 
-            # Save directly to app.settings_panel.theme.default
-            AppService.write_yaml_config(
+            # Stage theme change; flushed to disk on application quit.
+            AppService.stage_config_value(
                 ["app", "settings_panel", "theme", "default"], theme
             )
 
@@ -307,7 +293,7 @@ class EzQt_App(QMainWindow):
             pass
 
         # //////
-        ThemeService.apply_theme(self, self._themeFileName)
+        ThemeService.apply_theme(self._as_window(), self._themeFileName)
         # //////
         ez_app = EzApplication.instance()
         if isinstance(ez_app, EzApplication):
@@ -363,240 +349,14 @@ class EzQt_App(QMainWindow):
         # SHOW HOME PAGE
         for btnName, _ in self.ui.menuContainer.menus.items():
             if senderName == f"menu_{btnName}":
-                MenuService.deselect_menu(self, senderName)
-                MenuService.select_menu(self, senderName)
+                MenuService.deselect_menu(self._as_window(), senderName)
+                MenuService.select_menu(self._as_window(), senderName)
 
     # RESIZE EVENTS
     # ///////////////////////////////////////////////////////////////
     def resizeEvent(self, event: QResizeEvent) -> None:  # noqa: ARG002
         # Update Size Grips
-        UiDefinitionsService.resize_grips(self)
-
-    # REGISTER ALL WIDGETS FOR TRANSLATION
-    # ///////////////////////////////////////////////////////////////
-    def _register_all_widgets_for_translation(self) -> None:
-        """Automatically register all widgets with text for translation."""
-        try:
-            # Safe import of translation functions
-            try:
-                from .services.translation import set_tr
-                from .services.translation import tr as translate_text
-            except ImportError as import_error:
-                warn_tech(
-                    code="app.translation.import_helpers_failed",
-                    message="Could not import translation helpers",
-                    error=import_error,
-                )
-                return
-
-            registered_count = 0
-            registered_widgets = set()  # To avoid duplicates
-
-            def register_widget_recursive(widget):
-                """Recursive function to register all widgets."""
-                nonlocal registered_count
-
-                try:
-                    # Avoid already registered widgets
-                    if widget in registered_widgets:
-                        return
-
-                    # Check if widget has text
-                    if hasattr(widget, "text") and callable(
-                        getattr(widget, "text", None)
-                    ):
-                        try:
-                            text = widget.text().strip()
-                            # Avoid widgets with technical text, numeric values, or too short
-                            if (
-                                text
-                                and not text.isdigit()
-                                and len(text) > 1
-                                and not text.startswith("_")
-                                and not text.startswith("menu_")
-                                and not text.startswith("btn_")
-                                and not text.startswith("setting")
-                            ):
-                                # Register widget for translation
-                                set_tr(widget, text)
-                                registered_widgets.add(widget)
-                                registered_count += 1
-                        except Exception as e:
-                            warn_tech(
-                                code="app.translation.read_widget_text_failed",
-                                message=f"Could not read widget text for {type(widget)}",
-                                error=e,
-                            )
-
-                    # Check tooltips
-                    if hasattr(widget, "toolTip") and callable(
-                        getattr(widget, "toolTip", None)
-                    ):
-                        try:
-                            tooltip = widget.toolTip().strip()
-                            if (
-                                tooltip
-                                and not tooltip.isdigit()
-                                and len(tooltip) > 1
-                                and not tooltip.startswith("_")
-                            ):
-                                # For tooltips, we can use setToolTip with tr()
-                                widget.setToolTip(translate_text(tooltip))
-                        except Exception as e:
-                            warn_tech(
-                                code="app.translation.read_widget_tooltip_failed",
-                                message=f"Could not read widget tooltip for {type(widget)}",
-                                error=e,
-                            )
-
-                    # Check placeholders
-                    if hasattr(widget, "placeholderText") and callable(
-                        getattr(widget, "placeholderText", None)
-                    ):
-                        try:
-                            placeholder = widget.placeholderText().strip()
-                            if (
-                                placeholder
-                                and not placeholder.isdigit()
-                                and len(placeholder) > 1
-                                and not placeholder.startswith("_")
-                            ):
-                                widget.setPlaceholderText(translate_text(placeholder))
-                        except Exception as e:
-                            warn_tech(
-                                code="app.translation.read_widget_placeholder_failed",
-                                message=(
-                                    f"Could not read widget placeholder for {type(widget)}"
-                                ),
-                                error=e,
-                            )
-
-                    # Iterate through all children
-                    try:
-                        for child in widget.findChildren(QWidget):
-                            register_widget_recursive(child)
-                    except Exception as e:
-                        warn_tech(
-                            code="app.translation.iter_widget_children_failed",
-                            message=(
-                                f"Could not iterate children for widget {type(widget)}"
-                            ),
-                            error=e,
-                        )
-                except Exception as e:
-                    warn_tech(
-                        code="app.translation.scan_widget_failed",
-                        message=f"Could not scan widget {type(widget)}",
-                        error=e,
-                    )
-
-            # Start with main window
-            register_widget_recursive(self)
-
-            # Manually register specific widgets with fixed text
-            self._register_specific_widgets_for_translation()
-            get_printer().action(
-                f"[EzQt_App] {registered_count} widgets registered for translation."
-            )
-
-        except Exception as e:
-            warn_tech(
-                code="app.translation.register_widgets_failed",
-                message="Could not register widgets for translation",
-                error=e,
-            )
-
-    def _register_specific_widgets_for_translation(self) -> None:
-        """Manually register specific widgets with fixed text."""
-        try:
-            from .services.translation import set_tr
-
-            # Widgets in ui_main.py with fixed text
-            # Widgets in settings_panel with fixed text
-            if hasattr(self.ui, "settingsPanel"):
-                settings_panel = self.ui.settingsPanel
-
-                # Register dynamically created settings widgets
-                for widget in getattr(settings_panel, "_widgets", []):
-                    if hasattr(widget, "label") and widget.label:
-                        try:
-                            text = widget.label.text()
-                            if text and len(text) > 1:
-                                set_tr(widget.label, text)
-                        except Exception as e:
-                            warn_tech(
-                                code="app.translation.register_settings_widget_failed",
-                                message="Could not register settings widget label",
-                                error=e,
-                            )
-
-                # Register theme label
-                if hasattr(settings_panel, "themeLabel"):
-                    set_tr(settings_panel.themeLabel, "Theme")
-
-                # Register theme selector options
-                # OptionSelector version handles translations automatically
-
-            # Widgets in menu with fixed text
-            if hasattr(self.ui, "menuContainer"):
-                menu_container = self.ui.menuContainer
-
-                # Register dynamically created menu buttons
-                for button in getattr(menu_container, "_buttons", []):
-                    if hasattr(button, "text_label") and button.text_label:
-                        try:
-                            text = button.text_label.text()
-                            if text and len(text) > 1:
-                                set_tr(button.text_label, text)
-                        except Exception as e:
-                            warn_tech(
-                                code="app.translation.register_menu_widget_failed",
-                                message="Could not register menu widget label",
-                                error=e,
-                            )
-
-            # Widgets in header with fixed text
-            if hasattr(self.ui, "headerContainer"):
-                header_container = self.ui.headerContainer
-
-                # Register header labels
-                if hasattr(header_container, "headerAppName"):
-                    try:
-                        text = header_container.headerAppName.text()
-                        if text and len(text) > 1:
-                            set_tr(header_container.headerAppName, text)
-                    except Exception as e:
-                        warn_tech(
-                            code="app.translation.register_header_name_failed",
-                            message="Could not register header app name",
-                            error=e,
-                        )
-
-                if hasattr(header_container, "headerAppDescription"):
-                    try:
-                        text = header_container.headerAppDescription.text()
-                        if text and len(text) > 1:
-                            set_tr(header_container.headerAppDescription, text)
-                    except Exception as e:
-                        warn_tech(
-                            code="app.translation.register_header_description_failed",
-                            message="Could not register header app description",
-                            error=e,
-                        )
-
-            # ezqt_widgets widgets with text
-            # Note: These widgets generally handle their own translations
-            # but we can register their text for automatic retranslation
-
-            # ToggleSwitch widgets (in setting_widgets)
-            # OptionSelector widgets (in settings_panel)
-            # These widgets are already handled by automatic registration
-        except Exception as e:
-            warn_tech(
-                code="app.translation.register_specific_widgets_failed",
-                message="Could not register specific widgets for translation",
-                error=e,
-            )
+        UiDefinitionsService.resize_grips(self._as_window())
 
     # MOUSE CLICK EVENTS
     # ///////////////////////////////////////////////////////////////
@@ -638,70 +398,6 @@ class EzQt_App(QMainWindow):
 
     # TRANSLATION MANAGEMENT METHODS
     # ///////////////////////////////////////////////////////////////
-
-    def scan_widgets_for_translation(self, widget=None, recursive=True):
-        """
-        Scan a widget to find translatable text.
-
-        Parameters
-        ----------
-        widget : QWidget, optional
-            Widget to scan (default: main window)
-        recursive : bool
-            If True, also scan child widgets
-
-        Returns
-        -------
-        List[Tuple[QWidget, str]]
-            List of tuples (widget, text) found
-        """
-        from .services.translation import scan_widgets_for_translation
-
-        if widget is None:
-            widget = self
-
-        return scan_widgets_for_translation(widget, recursive)
-
-    def register_widgets_manually(self, widgets_list):
-        """
-        Manually register a list of widgets for translation.
-
-        Parameters
-        ----------
-        widgets_list : List[Tuple[QWidget, str]]
-            List of tuples (widget, text) to register
-
-        Returns
-        -------
-        int
-            Number of widgets registered
-        """
-        from .services.translation import register_widgets_manually
-
-        return register_widgets_manually(widgets_list)
-
-    def scan_and_register_widgets(self, widget=None, recursive=True):
-        """
-        Scan a widget and automatically register all found widgets.
-
-        Parameters
-        ----------
-        widget : QWidget, optional
-            Widget to scan (default: main window)
-        recursive : bool
-            If True, also scan child widgets
-
-        Returns
-        -------
-        int
-            Number of widgets registered
-        """
-        from .services.translation import scan_and_register_widgets
-
-        if widget is None:
-            widget = self
-
-        return scan_and_register_widgets(widget, recursive)
 
     def get_translation_stats(self):
         """
@@ -789,19 +485,6 @@ class EzQt_App(QMainWindow):
         from .services.translation import get_new_strings
 
         return get_new_strings()
-
-    def mark_strings_as_registered(self, strings=None):
-        """
-        Mark strings as registered.
-
-        Parameters
-        ----------
-        strings : set, optional
-            Strings to mark (default: all new strings)
-        """
-        from .services.translation import mark_strings_as_registered
-
-        mark_strings_as_registered(strings)
 
     def get_string_collector_stats(self):
         """

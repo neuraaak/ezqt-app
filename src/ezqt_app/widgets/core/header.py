@@ -14,7 +14,7 @@ from __future__ import annotations
 from typing import Any
 
 # Third-party imports
-from PySide6.QtCore import QMargins, QRect, QSize, Qt
+from PySide6.QtCore import QCoreApplication, QEvent, QMargins, QRect, QSize, Qt
 from PySide6.QtGui import QCursor, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
@@ -71,6 +71,10 @@ class Header(QFrame):
         super().__init__(parent, *args, **kwargs)
         self._buttons: list[QPushButton] = []
         self._icons: list[Any] = []
+
+        # Store originals so retranslate_ui() can re-apply them after a language change.
+        self._app_name: str = app_name
+        self._description: str = description
 
         # ////// SETUP WIDGET PROPERTIES
         self.setObjectName("headerContainer")
@@ -274,6 +278,9 @@ class Header(QFrame):
         #
         self.HL_headerButtons.addWidget(self.closeAppBtn)
 
+        # ////// APPLY INITIAL TRANSLATIONS
+        self.retranslate_ui()
+
     # ///////////////////////////////////////////////////////////////
     # UTILITY FUNCTIONS
 
@@ -286,7 +293,8 @@ class Header(QFrame):
         app_name : str
             The new application name.
         """
-        self.headerAppName.setText(app_name)
+        self._app_name = app_name
+        self.headerAppName.setText(QCoreApplication.translate("EzQt_App", app_name))
 
     def set_app_description(self, description: str) -> None:
         """
@@ -297,7 +305,31 @@ class Header(QFrame):
         description : str
             The new application description.
         """
-        self.headerAppDescription.setText(description)
+        self._description = description
+        self.headerAppDescription.setText(
+            QCoreApplication.translate("EzQt_App", description)
+        )
+
+    def retranslate_ui(self) -> None:
+        """Apply current translations to all owned text labels."""
+        self.headerAppName.setText(
+            QCoreApplication.translate("EzQt_App", self._app_name)
+        )
+        self.headerAppDescription.setText(
+            QCoreApplication.translate("EzQt_App", self._description)
+        )
+
+    def changeEvent(self, event: QEvent) -> None:
+        """Handle Qt change events, triggering UI retranslation on language change.
+
+        Parameters
+        ----------
+        event : QEvent
+            The Qt change event.
+        """
+        if event.type() == QEvent.Type.LanguageChange:
+            self.retranslate_ui()
+        super().changeEvent(event)
 
     def set_app_logo(
         self, logo: str | QPixmap, y_shrink: int = 0, y_offset: int = 0

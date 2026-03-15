@@ -131,6 +131,14 @@
         <translation>Example</translation>
     </message>
     <message>
+        <source>Hide</source>
+        <translation>Hide</translation>
+    </message>
+    <message>
+        <source>Made with ❤️ by</source>
+        <translation>Made with ❤️ by</translation>
+    </message>
+    <message>
         <source>Made with ❤️ by EzQt_App</source>
         <translation>Made with ❤️ by EzQt_App</translation>
     </message>
