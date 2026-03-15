@@ -12,7 +12,7 @@ Elle propose une gestion intégrée des ressources, thèmes, widgets réutilisab
 
 | Donnée        | Valeur                                     |
 | ------------- | ------------------------------------------ |
-| Python        | >= 3.10                                    |
+| Python        | >= 3.11                                    |
 | Framework Qt  | PySide6 >= 6.7.3, < 7.0.0                  |
 | Build backend | setuptools (PEP 517) — `src/` layout       |
 | Licence       | MIT                                        |

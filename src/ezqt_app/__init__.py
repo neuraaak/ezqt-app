@@ -71,7 +71,7 @@ __description__ = (
     "Lightweight framework based on PySide6 to quickly build modern desktop "
     "applications, with integrated resource, theme, and reusable component management."
 )
-__python_requires__ = ">=3.10"
+__python_requires__ = ">=3.11"
 __keywords__ = ["qt", "pyside6", "application", "framework", "gui", "desktop"]
 __url__ = "https://github.com/neuraaak/ezqt-app"
 __repository__ = "https://github.com/neuraaak/ezqt-app"
@@ -80,9 +80,9 @@ __repository__ = "https://github.com/neuraaak/ezqt-app"
 # PYTHON VERSION CHECK
 # ///////////////////////////////////////////////////////////////
 
-if sys.version_info < (3, 10):  # noqa: UP036
+if sys.version_info < (3, 11):  # noqa: UP036
     raise RuntimeError(
-        f"ezqt_app {__version__} requires Python 3.10 or higher. "
+        f"ezqt_app {__version__} requires Python 3.11 or higher. "
         f"Current version: {sys.version}"
     )
 

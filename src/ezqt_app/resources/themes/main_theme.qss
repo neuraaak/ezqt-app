@@ -1091,6 +1091,7 @@ Theme Label */
 
 /* ==> Bottom Bar */
 #bottomBar {
+	border-top: 3px solid var(--main_border);
 	background-color: var(--main_surface);
 }
 
@@ -1100,4 +1101,19 @@ Theme Label */
 	padding-left: 10px;
 	padding-right: 10px;
 	padding-bottom: 2px;
+}
+
+/* Keep credits + separator + translating visually compact as a left group. */
+#bottomBar #creditsLabel {
+	padding-right: 4px;
+}
+
+#bottomBar #translationSeparator {
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+#bottomBar #translationIndicator {
+	padding-left: 4px;
+	padding-right: 6px;
 }
