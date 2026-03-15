@@ -2404,25 +2404,41 @@ available on the next <code>LanguageChange</code> cycle.</p>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>disambiguation</code>
+                <code>_disambiguation</code>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
                 <p>Optional disambiguation hint (unused).</p>
               </div>
               <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="str">str</span> | None</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>None</code>
+                  </span>
               </p>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>n</code>
+                <code>_n</code>
             </td>
             <td class="doc-param-details">
               <div class="doc-md-description">
                 <p>Plural form selector (unused).</p>
               </div>
               <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code>-1</code>
+                  </span>
               </p>
             </td>
           </tr>
@@ -2537,8 +2553,8 @@ available on the next <code>LanguageChange</code> cycle.</p>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">    Args:</span>
 </span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">        context: Qt translation context (only ``&quot;EzQt_App&quot;`` is handled).</span>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">        source_text: The English source string to translate.</span>
-</span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">        disambiguation: Optional disambiguation hint (unused).</span>
-</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">        n: Plural form selector (unused).</span>
+</span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span class="sd">        _disambiguation: Optional disambiguation hint (unused).</span>
+</span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">        _n: Plural form selector (unused).</span>
 </span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a>
 </span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">    Returns:</span>
 </span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span class="sd">        The translated string if already cached, ``None`` otherwise.</span>
