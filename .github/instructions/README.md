@@ -1,7 +1,7 @@
 # ezqt_app - Guide de Projet
 
 Guide de référence pour comprendre, maintenir et faire évoluer la bibliothèque **ezqt_app**.
-Ce document décrit la structure du projet, ses conventions et les pratiques à suivre pour contribuer dans la continuité de l'existant.
+Ce document décrit la structure du projet, ses conventions et les pratiques à suivre pour contribuer au développement de cette architecture stabilisée.
 
 ---
 
@@ -10,51 +10,42 @@ Ce document décrit la structure du projet, ses conventions et les pratiques à 
 **ezqt_app** est une bibliothèque Python modulaire pour créer des applications desktop modernes avec PySide6.
 Elle propose une gestion intégrée des ressources, thèmes, widgets réutilisables et outils CLI, adaptée à un environnement corporate (proxy, Windows).
 
+Le projet a finalisé sa migration vers l'architecture v5, offrant une structure robuste, testable et évolutive.
+
 | Donnée        | Valeur                                     |
 | ------------- | ------------------------------------------ |
 | Python        | >= 3.11                                    |
 | Framework Qt  | PySide6 >= 6.7.3, < 7.0.0                  |
 | Build backend | setuptools (PEP 517) — `src/` layout       |
 | Licence       | MIT                                        |
-| Statut        | Production/Stable                          |
+| Statut        | Production/Stable (v5)                     |
 | Configuration | `pyproject.toml` (source unique de vérité) |
 
 ---
 
-## Objectif de migration v5
+## Architecture Hexagonale Stabilisée
 
-La v5 impose une architecture explicite, stable et maintenable dans le temps.
+Le projet suit une **architecture hexagonale complète** (Ports & Adapters).
+Ce modèle place le **domaine** (logique métier et contrats) au centre, isolant les détails techniques et les frameworks (comme Qt) dans des adaptateurs interchangeables.
 
-Le modèle retenu est une **architecture hexagonale adaptée** (Ports & Adapters), appliquée à une bibliothèque Qt.
-Ce choix résout le problème central de la v4 : le `kernel` monolithique était le centre de gravité réel, rendant impossible le test unitaire et le remplacement des composants.
-
-En hexagonale, c'est le **domaine** (contrats purs) qui est au centre, pas l'infrastructure.
-
----
-
-## Architecture hexagonale — principe
+### Principe de l'Architecture
 
 ```text
 ┌──────────────────────────────────────────────────────────┐
 │  PRESENTATION (widgets/)                                 │
-│    Qt widgets, UI uniquement, aucune logique métier      │
+│    Composants Qt, UI uniquement, aucune logique métier   │
 │                        │                                 │
 │              appelle via ports                           │
 │                        ↓                                 │
 │  APPLICATION (services/)                                 │
 │    Implémentations concrètes des ports (Adapters)        │
-│    Orchestration, cas d'usage                            │
+│    Orchestration et cas d'usage                          │
 │                        │                                 │
 │              implémente                                  │
 │                        ↓                                 │
 │  DOMAINE (domain/)   ← CENTRE ─────────────────────────  │
 │    domain/ports/   : Protocoles abstraits (les "Ports")  │
-│    domain/models/  : Dataclasses, TypedDicts (à venir)   │
-│                        ↑                                 │
-│              dépend de                                   │
-│                        │                                 │
-│  INFRASTRUCTURE (kernel/)                                │
-│    Adaptateurs techniques, façade legacy transitoire     │
+│    domain/models/  : Dataclasses, structures de données  │
 └──────────────────────────────────────────────────────────┘
          shared/   : types transverses multi-couches
          utils/    : helpers techniques purs (sans domaine)
@@ -64,10 +55,9 @@ En hexagonale, c'est le **domaine** (contrats purs) qui est au centre, pas l'inf
 
 > **Le domaine ne dépend de rien. Tout dépend du domaine.**
 
-- `domain/ports/` → aucune dépendance externe (ni Qt, ni kernel)
-- `services/` → implémente les ports, peut dépendre de `kernel/` (phase transitoire)
-- `widgets/` → appelle les services via les ports, ne dépend jamais de `kernel/` directement
-- `kernel/` → couche résiduelle legacy, doit être progressivement vidée
+- `domain/ports/` et `domain/models/` → aucune dépendance externe (ni Qt, ni services).
+- `services/` → implémente les ports du domaine, gère l'orchestration technique.
+- `widgets/` → couche de présentation pure, appelle les services uniquement via les ports.
 
 ---
 
@@ -78,190 +68,104 @@ src/
   ezqt_app/
     domain/               ← DOMAINE (centre architectural)
       ports/              ← Contrats abstraits (Protocols Python)
-      models/             ← Dataclasses, structures de données (à venir)
+      models/             ← Dataclasses et structures de données
+      errors/             ← Exceptions métier spécifiques
+      results/            ← Types de retour standardisés
     services/             ← ADAPTERS (implémentations des ports)
-      config/
-      runtime/
-      settings/
-      translation/
-      ui/
-      protocols/          ← Shim de compat (re-export depuis domain.ports)
-    shared/               ← Types transverses (migration vers domain/models/ prévue)
-    utils/                ← Helpers techniques réutilisables
-    kernel/               ← Infrastructure legacy (façade transitoire)
-    widgets/              ← Couche présentation Qt
-    cli/                  ← Interface ligne de commande
+      config/             ← Gestion de la configuration persistante
+      runtime/            ← État d'exécution de l'application
+      settings/           ← Paramètres utilisateur et applicatifs
+      translation/        ← Moteur de traduction et i18n
+      ui/                 ← Orchestration des fonctions UI
+    shared/               ← Types et utilitaires partagés entre couches
+    utils/                ← Helpers techniques (logger, diagnostics, paths)
+    widgets/              ← PRÉSENTATION (Composants Qt)
+    cli/                  ← Interface en ligne de commande (utils, assets)
     resources/            ← Ressources statiques (themes, fonts, icons)
-tests/
-pyproject.toml
+tests/                    ← Tests unitaires, intégration et robustesse
+pyproject.toml            ← Configuration centrale du projet
 ```
 
 ### Pourquoi `src/` layout ?
 
-Le package source est dans `src/ezqt_app/` (PEP 517 best practice).
-Cela empêche les imports accidentels depuis la racine et force l'installation explicite du package :
-
-```bash
-pip install -e .   # développement
-pip install .      # production
-```
+Le package source est dans `src/ezqt_app/` (PEP 517). Cela empêche les imports accidentels depuis la racine et garantit que les tests s'exécutent contre le package installé.
 
 ---
 
 ## Responsabilités par couche
 
-| Couche           | Chemin           | Rôle                                | Dépendances autorisées                                  |
-| ---------------- | ---------------- | ----------------------------------- | ------------------------------------------------------- |
-| Domaine — Ports  | `domain/ports/`  | Contrats abstraits (`Protocol`)     | Aucune                                                  |
-| Domaine — Models | `domain/models/` | Dataclasses, TypedDicts             | stdlib uniquement                                       |
-| Services         | `services/*/`    | Implémentations concrètes des ports | `domain/`, `shared/`, `utils/`, `kernel/` (transitoire) |
-| Shared           | `shared/`        | Structures de données transverses   | stdlib, PySide6 minimal                                 |
-| Utils            | `utils/`         | Helpers techniques purs             | stdlib, PySide6                                         |
-| Kernel           | `kernel/`        | Façade legacy, bootstrap            | Tout (couche d'infrastructure)                          |
-| Widgets          | `widgets/`       | Composants Qt (présentation)        | `services/`, `shared/`, `utils/`                        |
-| CLI              | `cli/`           | Interface commandes                 | `services/`, `kernel/`                                  |
+| Couche           | Chemin           | Rôle                                | Dépendances autorisées            |
+| ---------------- | ---------------- | ----------------------------------- | --------------------------------- |
+| Domaine — Ports  | `domain/ports/`  | Contrats abstraits (`Protocol`)     | Aucune                            |
+| Domaine — Models | `domain/models/` | Structures de données pures         | stdlib uniquement                 |
+| Services         | `services/*/`    | Implémentations concrètes des ports | `domain/`, `shared/`, `utils/`    |
+| Shared           | `shared/`        | Types transverses                   | stdlib, PySide6 minimal           |
+| Utils            | `utils/`         | Helpers techniques                  | stdlib, PySide6                   |
+| Widgets          | `widgets/`       | Composants Qt (UI)                  | `services/`, `shared/`, `utils/`  |
+| CLI              | `cli/`           | Outils ligne de commande            | `services/`, `domain/`, `shared/` |
 
 ---
 
-## Ports & Adapters — comment ça fonctionne
+## Fonctionnement des Ports & Adapters
 
-### Port (contrat abstrait)
+### 1. Port (Contrat)
 
-Un port est un `Protocol` Python dans `domain/ports/`. Il définit le **quoi**, pas le **comment**.
+Défini dans `domain/ports/` comme un `Protocol`. Il décrit **ce que** le système fait.
 
 ```python
-# domain/ports/config_service.py
-class ConfigServiceProtocol(Protocol):
-    def load_config(self, config_name: str) -> dict[str, Any]: ...
-    def save_config(self, config_name: str, data: dict[str, Any]) -> bool: ...
+# domain/ports/settings_service.py
+class SettingsServiceProtocol(Protocol):
+    def set_theme(self, theme: str) -> None: ...
 ```
 
-### Adapter (implémentation concrète)
+### 2. Adapter (Implémentation)
 
-Un adapter dans `services/` implémente le port via duck typing (structural subtyping).
+Défini dans `services/`. Il implémente le contrat de manière concrète.
 
 ```python
-# services/config/config_service.py
-class ConfigService:  # satisfait ConfigServiceProtocol implicitement
-    def load_config(self, config_name: str) -> dict[str, Any]:
-        return get_config_manager().load_config(config_name)
+# services/settings/settings_service.py
+class SettingsService(SettingsServiceProtocol):
+    def set_theme(self, theme: str) -> None:
+        self._state.gui.THEME = theme.lower()
 ```
 
-### Consommateur (widget ou service)
+### 3. Consommateur (Usage)
 
-Le consommateur dépend du **port**, pas de l'adapter. Il est découplé de l'infrastructure.
+Utilisé dans `widgets/` via le port pour garantir le découplage.
 
 ```python
-# widgets/core/some_widget.py
-from ezqt_app.services.config import get_config_service
-# ou, typé via le port :
-from ezqt_app.domain.ports import ConfigServiceProtocol
+# widgets/core/settings_panel.py
+from ezqt_app.domain.ports import SettingsServiceProtocol
 ```
 
 ---
 
-## Règles de dépendances (enforceable)
+## Stratégie d'imports et API Publique
 
-```text
-domain/      →  rien
-utils/       →  stdlib, PySide6
-shared/      →  stdlib, PySide6 minimal
-services/    →  domain/, shared/, utils/, kernel/ (transitoire)
-widgets/     →  services/, shared/, utils/
-cli/         →  services/, kernel/ (CLI tools)
-kernel/      →  tout (couche infrastructure)
-```
+Le contrat public stable est défini uniquement par `src/ezqt_app/__init__.py`.
 
-**Interdictions explicites :**
+### Rôle des `__init__.py`
 
-- `domain/` ne doit jamais importer depuis `services/`, `kernel/`, `widgets/`
-- `widgets/` ne doit jamais importer directement depuis `kernel/`
-- `shared/` ne doit pas importer depuis `kernel/`
-- Aucun wildcard import (`from x import *`) en dehors de `kernel/` legacy
+- `ezqt_app/__init__.py` : **Seul point d'entrée public** (utilisé par le client de la lib).
+- `domain/__init__.py` : Agrège les ports et modèles pour usage interne.
+- `services/__init__.py` : Agrège les accès aux services pour les widgets et la CLI.
+
+### Principe de Masquage
+
+Si un utilisateur doit importer un fichier profond (ex: `ezqt_app.services.config.config_service`), l'encapsulation est brisée. Seule l'API exposée dans `ezqt_app/__init__.py` via `__all__` doit être utilisée par les consommateurs externes.
 
 ---
 
-## Stratégie d'imports — contrat public vs relais internes
+## Principes de Qualité (v5)
 
-La structure interne du package est un **détail d'implémentation**. L'utilisateur ne doit jamais en dépendre directement.
-
-### Rôle de chaque `__init__.py`
-
-```text
-domain/__init__.py          → agrège pour que services/ importe proprement
-services/__init__.py        → agrège pour les consommateurs internes (widgets, cli)
-kernel/__init__.py          → intentionnellement minimal (façade legacy uniquement)
-ezqt_app/__init__.py        → SEUL fichier que l'utilisateur connaît, avec __all__
-```
-
-**Principe clé** : si l'utilisateur peut écrire `from ezqt_app.services.config.config_service import ConfigService` et que ça fonctionne, la stratégie d'exports est cassée. Les chemins internes doivent être des détails opaques.
-
-### Test de cohérence
-
-> Si on renomme un fichier interne et que le code utilisateur casse, la stratégie d'exports est mal faite.
-
-Seul `ezqt_app/__init__.py` (et ce qu'il expose via `__all__`) constitue le contrat public stable.
-
-### Trois outils complémentaires
-
-| Outil                                          | Rôle                                                                            | Exemple                                                   |
-| ---------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `__all__` dans `ezqt_app/__init__.py`          | Documentation machine-readable de l'API publique                                | `__all__ = ["EzQt_App", "EzApplication"]`                 |
-| Préfixe `_` sur les classes/fonctions internes | Signal "privé" sans interdiction technique                                      | `_config_service = ConfigService()`                       |
-| `if TYPE_CHECKING:`                            | Imports uniquement pour annotations, évite les circulaires et allège le runtime | `from ezqt_app.domain.ports import ConfigServiceProtocol` |
-
-### Application dans ce projet
-
-```python
-# ezqt_app/__init__.py — seul contrat public
-from .app import EzQt_App
-from .widgets.core.ez_app import EzApplication
-# ...
-__all__ = ["EzQt_App", "EzApplication", "init"]
-
-# domain/__init__.py — agrégat interne pour services/
-from .ports import ConfigServiceProtocol, SettingsServiceProtocol
-# ...
-
-# services/__init__.py — agrégat interne pour widgets/ et cli/
-from .config import get_config_service
-from .settings import get_settings_service
-# ...
-```
-
----
-
-## Shims de compatibilité
-
-Les shims permettent aux imports legacy de continuer à fonctionner sans modification
-pendant la migration progressive vers la nouvelle architecture.
-
-| Shim                                     | Pointe vers                         | État  |
-| ---------------------------------------- | ----------------------------------- | ----- |
-| `kernel/app_functions/config_manager.py` | `services/config/config_service.py` | actif |
-| `shared/runtime/specs.py`                | `domain/models/runtime.py`          | actif |
-| `shared/ui/specs.py`                     | `domain/models/ui.py`               | actif |
-
-> `services/protocols/` a été **supprimé** — tous les consommateurs importent désormais directement depuis `domain.ports`.
-
----
-
-## Principes fondamentaux v5 (qualité)
-
-1. **Source unique de vérité** : Toute configuration centralisée dans `pyproject.toml`.
-2. **Architecture hexagonale** : Les ports définissent les contrats, les adapters les implémentent.
-3. **Type hints obligatoires** : Tous les modules et fonctions doivent être typés.
-4. **Docstrings Google** : Style Google pour toute documentation de fonction/classe.
-5. **Formatage strict** : PEP 8, ruff, black, isort.
-6. **Tests systématiques** : Toute nouvelle fonctionnalité couverte par des tests pytest.
-7. **Atomic commits** : Un commit = une modification logique, message structuré.
-8. **CI/CD** : Validation lint, tests et couverture via GitHub Actions.
-9. **Gestion des dépendances** : Wheels locales, pas de dépendances non vérifiées.
-10. **Sécurité** : Jamais de credentials ou données sensibles dans le code.
-11. **Documentation vivante** : Toute évolution documentée dans ce README et les docstrings.
-12. **Instructions hiérarchisées** : En cas de conflit, suivre la priorité ci-dessous.
-13. **Proxy/Environnement** : Code adapté à l'environnement corporate (proxy, Windows).
-14. **Revue de code** : Toute PR relue et validée avant merge.
+1. **Source unique de vérité** : Tout est dans `pyproject.toml`.
+2. **Architecture Hexagonale** : Respect strict du flux de dépendances vers le domaine.
+3. **Type Hints Obligatoires** : Code 100% typé pour une meilleure maintenabilité.
+4. **Docstrings Google (EN)** : Documentation technique obligatoirement en anglais.
+5. **Formatage Strict** : Utilisation de `ruff` pour le linting et le formatage.
+6. **Tests Systématiques** : Utilisation de `pytest` (unitaires et intégration).
+7. **Atomic Commits** : Messages de commit suivant la convention `conventional commits`.
+8. **Environnement Corporate** : Gestion robuste des proxys et dépendances locales (Windows).
 
 ---
 
@@ -269,13 +173,9 @@ pendant la migration progressive vers la nouvelle architecture.
 
 1. **Ce fichier** (`README.md`) - Contexte projet et architecture
 2. `core/advanced-cognitive-conduct.instructions.md` - Principes de raisonnement
-3. `languages/python/python-development-standards.instructions.md` - Standards Python
-4. `languages/python/python-formatting-standards.instructions.md` - Formatage et sections
-5. `languages/python/pyproject-standards.instructions.md` - Standards pyproject.toml
-6. `CLAUDE.md` (racine) - Préférences spécifiques à Claude
-7. `AGENTS.md` (racine) - Instructions générales pour agents IA
-
-En cas de conflit, le fichier le plus haut dans cette liste prévaut.
+3. `core/hexagonal-architecture-standards.instructions.md` - Standards d'architecture
+4. `languages/python/python-development-standards.instructions.md` - Standards Python
+5. `languages/python/python-formatting-standards.instructions.md` - Formatage et sections
 
 ---
 
@@ -283,52 +183,19 @@ En cas de conflit, le fichier le plus haut dans cette liste prévaut.
 
 ### Langue
 
-- Tous les **docstrings** doivent être en anglais.
-- Tous les **commentaires techniques** doivent être en anglais.
-- Les messages utilisateurs peuvent suivre la langue du contexte produit.
-
-### Structure des modules Python
-
-Ordre recommandé :
-
-1. Header section du module
-2. Module docstring
-3. `from __future__ import annotations`
-4. Sections d'imports (`standard`, `third-party`, `local`)
-5. Sections de code (`CLASSES`, `FUNCTIONS`, `PUBLIC API`, etc.)
-
-Exigences :
-
-- Utiliser les séparateurs de sections standard du projet.
-- Éviter les sections vides inutiles.
-- Maintenir un style homogène avec les modules v5 déjà créés.
+- **Docstrings** : Anglais uniquement.
+- **Commentaires techniques** : Anglais uniquement.
+- **Messages Utilisateurs** : Français/Anglais selon le contexte de déploiement.
 
 ### Qt / PySide6
 
-- Préférer les enums Qt6 typés (`QEvent.Type`, `Qt.WindowType`, `Qt.WidgetAttribute`, `Qt.MouseButton`, `Qt.Edge`, etc.).
-- Éviter les accès legacy susceptibles de casser les vérifications statiques.
+- Utiliser exclusivement les enums Qt6 typés (`Qt.WindowType`, `Qt.MouseButton`, etc.).
+- Éviter les accès legacy (`QtCore.Qt.LeftButton`).
 
 ### Gestion d'erreurs
 
-- Éviter `except: pass`.
-- Utiliser des mécanismes explicites (`warnings`, logging structuré, ou remontée d'exception selon le contexte).
-- Les exceptions silencieuses sont interdites.
-
----
-
-## Méthode de migration recommandée
-
-Pour tout refactor architectural :
-
-1. **Cartographier** les usages et dépendances.
-2. **Écrire le port** dans `domain/ports/` si absent.
-3. **Migrer** l'implémentation dans `services/`.
-4. **Basculer** les consommateurs vers le service.
-5. **Supprimer** le code legacy devenu inutilisé.
-6. **Nettoyer** les exports publics et la documentation.
-
-Règle clé : ne pas laisser une architecture hybride durable.
-Chaque migration doit réduire le couplage vers `kernel/`.
+- Utiliser les exceptions définies dans `domain/errors/`.
+- Interdiction des exceptions silencieuses (`except: pass`).
 
 ---
 
@@ -336,21 +203,12 @@ Chaque migration doit réduire le couplage vers `kernel/`.
 
 Un changement est considéré conforme si :
 
-- Il respecte la hiérarchie des instructions.
-- Il respecte l'architecture hexagonale (ports → adapters → présentation).
-- Il n'ajoute pas de dépendance directe vers `kernel/` depuis `widgets/` ou `domain/`.
-- Il suit les conventions de formatage du projet.
-- Il n'introduit pas de nouvelle dette legacy.
-- Il passe les vérifications statiques/lint/tests applicables.
+- Il respecte l'architecture hexagonale (port → adapter → présentation).
+- Il ne contient aucune dépendance cyclique.
+- Il est entièrement typé et documenté (Google Style).
+- Il passe les tests existants et inclut de nouveaux tests si nécessaire.
+- Il n'ajoute pas de dette technique ou de code legacy.
 
 ---
 
-## Cycle de vie projet
-
-- Toute évolution doit respecter cette charte.
-- Les incohérences ou conflits doivent être remontés et résolus selon la hiérarchie ci-dessus.
-- Les standards sont évolutifs mais toute modification doit être validée en équipe.
-
----
-
-_Document de référence à appliquer avant toute action de génération, refactor ou migration._
+_Document de référence à appliquer avant toute action de génération, refactor ou évolution._

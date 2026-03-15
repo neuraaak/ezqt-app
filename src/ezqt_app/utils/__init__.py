@@ -14,7 +14,7 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Local imports
 from .diagnostics import info_user, warn_tech, warn_user
-from .logger import get_logger, set_global_log_level
+from .logger import get_logger, set_global_log_file, set_global_log_level
 from .printer import get_printer
 from .qt_runtime import (
     configure_qt_environment,
@@ -34,6 +34,7 @@ __all__ = [
     "info_user",
     "get_logger",
     "get_printer",
+    "set_global_log_file",
     "set_global_log_level",
     "warn_tech",
     "warn_user",

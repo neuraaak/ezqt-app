@@ -87,8 +87,8 @@ class EzTranslator(QTranslator):
         Args:
             context: Qt translation context (only ``"EzQt_App"`` is handled).
             source_text: The English source string to translate.
-            disambiguation: Optional disambiguation hint (unused).
-            n: Plural form selector (unused).
+            _disambiguation: Optional disambiguation hint (unused).
+            _n: Plural form selector (unused).
 
         Returns:
             The translated string if already cached, ``None`` otherwise.

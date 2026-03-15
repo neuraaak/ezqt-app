@@ -273,7 +273,6 @@ import sys
 import ezqt_app.main as ezqt
 from ezqt_app.app import EzApplication, EzQt_App
 from ezqt_app.services.translation import tr
-from ezqt_app.utils.app_utils import ensure_data_dir, get_app_data_dir, get_config_file
 
 from src.widgets.custom_widget import CustomWidget
 
