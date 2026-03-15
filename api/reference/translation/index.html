@@ -3064,7 +3064,9 @@ print(result)  # &quot;Bonjour&quot;
 <span class="normal"><a href="#__codelineno-0-475">475</a></span>
 <span class="normal"><a href="#__codelineno-0-476">476</a></span>
 <span class="normal"><a href="#__codelineno-0-477">477</a></span>
-<span class="normal"><a href="#__codelineno-0-478">478</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-434"><a id="__codelineno-0-434" name="__codelineno-0-434"></a><span class="k">def</span><span class="w"> </span><span class="nf">save_translation_to_ts</span><span class="p">(</span>
+<span class="normal"><a href="#__codelineno-0-478">478</a></span>
+<span class="normal"><a href="#__codelineno-0-479">479</a></span>
+<span class="normal"><a href="#__codelineno-0-480">480</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-434"><a id="__codelineno-0-434" name="__codelineno-0-434"></a><span class="k">def</span><span class="w"> </span><span class="nf">save_translation_to_ts</span><span class="p">(</span>
 </span><span id="__span-0-435"><a id="__codelineno-0-435" name="__codelineno-0-435"></a>    <span class="bp">self</span><span class="p">,</span> <span class="n">original</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">translated</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">target_lang</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ts_file_path</span><span class="p">:</span> <span class="n">Path</span>
 </span><span id="__span-0-436"><a id="__codelineno-0-436" name="__codelineno-0-436"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="__span-0-437"><a id="__codelineno-0-437" name="__codelineno-0-437"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Append a single translation entry to a Qt Linguist .ts XML file.&quot;&quot;&quot;</span>
@@ -3102,13 +3104,15 @@ print(result)  # &quot;Bonjour&quot;
 </span><span id="__span-0-469"><a id="__codelineno-0-469" name="__codelineno-0-469"></a>
 </span><span id="__span-0-470"><a id="__codelineno-0-470" name="__codelineno-0-470"></a>        <span class="n">ts_file_path</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-0-471"><a id="__codelineno-0-471" name="__codelineno-0-471"></a>        <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ts_file_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;unicode&quot;</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-0-472"><a id="__codelineno-0-472" name="__codelineno-0-472"></a>        <span class="n">get_printer</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Translation saved to </span><span class="si">{</span><span class="n">ts_file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</span><span id="__span-0-473"><a id="__codelineno-0-473" name="__codelineno-0-473"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-</span><span id="__span-0-474"><a id="__codelineno-0-474" name="__codelineno-0-474"></a>        <span class="n">warn_tech</span><span class="p">(</span>
-</span><span id="__span-0-475"><a id="__codelineno-0-475" name="__codelineno-0-475"></a>            <span class="n">code</span><span class="o">=</span><span class="s2">&quot;translation.ts.save_failed&quot;</span><span class="p">,</span>
-</span><span id="__span-0-476"><a id="__codelineno-0-476" name="__codelineno-0-476"></a>            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Error saving translation to .ts file&quot;</span><span class="p">,</span>
-</span><span id="__span-0-477"><a id="__codelineno-0-477" name="__codelineno-0-477"></a>            <span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
-</span><span id="__span-0-478"><a id="__codelineno-0-478" name="__codelineno-0-478"></a>        <span class="p">)</span>
+</span><span id="__span-0-472"><a id="__codelineno-0-472" name="__codelineno-0-472"></a>        <span class="n">get_printer</span><span class="p">()</span><span class="o">.</span><span class="n">debug_msg</span><span class="p">(</span>
+</span><span id="__span-0-473"><a id="__codelineno-0-473" name="__codelineno-0-473"></a>            <span class="sa">f</span><span class="s2">&quot;[TranslationService] Translation saved to </span><span class="si">{</span><span class="n">ts_file_path</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-0-474"><a id="__codelineno-0-474" name="__codelineno-0-474"></a>        <span class="p">)</span>
+</span><span id="__span-0-475"><a id="__codelineno-0-475" name="__codelineno-0-475"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span id="__span-0-476"><a id="__codelineno-0-476" name="__codelineno-0-476"></a>        <span class="n">warn_tech</span><span class="p">(</span>
+</span><span id="__span-0-477"><a id="__codelineno-0-477" name="__codelineno-0-477"></a>            <span class="n">code</span><span class="o">=</span><span class="s2">&quot;translation.ts.save_failed&quot;</span><span class="p">,</span>
+</span><span id="__span-0-478"><a id="__codelineno-0-478" name="__codelineno-0-478"></a>            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Error saving translation to .ts file&quot;</span><span class="p">,</span>
+</span><span id="__span-0-479"><a id="__codelineno-0-479" name="__codelineno-0-479"></a>            <span class="n">error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+</span><span id="__span-0-480"><a id="__codelineno-0-480" name="__codelineno-0-480"></a>        <span class="p">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
