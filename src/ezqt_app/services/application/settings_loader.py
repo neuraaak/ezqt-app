@@ -12,10 +12,12 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 from pathlib import Path
+from typing import Any
 
 # Third-party imports
 import yaml
 
+from ...utils.logger import build_log_file_path, set_global_log_file
 from ...utils.printer import get_printer, set_global_debug
 
 # Local imports
@@ -38,7 +40,11 @@ class SettingsLoader:
     # -----------------------------------------------------------
 
     @staticmethod
-    def load_app_settings(yaml_file: Path | None = None) -> dict:
+    def load_app_settings(
+        yaml_file: Path | None = None,
+        logs_dir_override: str | Path | None = None,
+        log_file_name_override: str | None = None,
+    ) -> dict:
         """Load application settings from YAML and apply to SettingsService.
 
         Parameters
@@ -60,6 +66,25 @@ class SettingsLoader:
                 app_data = data.get("app", {})
 
         settings_service = get_settings_service()
+        app_name = str(app_data.get("name", "ezqt_app"))
+        logging_cfg: dict[str, Any] = (
+            app_data.get("logging", {})
+            if isinstance(app_data.get("logging", {}), dict)
+            else {}
+        )
+
+        config_logs_dir = app_data.get("logs_dir") or logging_cfg.get("dir")
+        config_log_file_name = app_data.get("log_file_name") or logging_cfg.get(
+            "file_name"
+        )
+
+        resolved_log_file = build_log_file_path(
+            app_name=app_name,
+            logs_dir=logs_dir_override or config_logs_dir,
+            log_file_name=log_file_name_override or config_log_file_name,
+        )
+        set_global_log_file(resolved_log_file)
+
         debug_enabled = bool(app_data.get("debug", False))
 
         # App identity

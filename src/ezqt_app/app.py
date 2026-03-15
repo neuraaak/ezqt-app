@@ -72,6 +72,8 @@ class EzQt_App(QMainWindow):
     def __init__(
         self,
         themeFileName: str | None = None,
+        logs_dir: str | Path | None = None,
+        log_file_name: str | None = None,
     ) -> None:
         """
         Initialize the EzQt_App application.
@@ -80,13 +82,20 @@ class EzQt_App(QMainWindow):
         ----------
         themeFileName : str, optional
             Name of the theme file to use (default: None).
+        logs_dir : str | Path, optional
+            Custom logs directory overriding config/default path.
+        log_file_name : str, optional
+            Custom log file name overriding config/default naming.
         """
         QMainWindow.__init__(self)
 
         # ////// APP SERVICE LOADER
         # ///////////////////////////////////////////////////////////////
         AppService.load_fonts_resources()
-        AppService.load_app_settings()
+        AppService.load_app_settings(
+            logs_dir_override=logs_dir,
+            log_file_name_override=log_file_name,
+        )
 
         config_service = get_config_service()
 

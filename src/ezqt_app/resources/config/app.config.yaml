@@ -16,6 +16,10 @@ app:
   # GUI
   # //////
   debug: false
+  # Optional logger overrides. If omitted, logs go to ~/.ezqt/logs and
+  # the file name is derived from app.name (e.g. myapplication.log).
+  logs_dir: "~/.ezqt/logs"
+  log_file_name: ""
   # Initial/fallback theme used on first launch or when settings_panel.theme.default
   # is absent. Once the user picks a theme, the persisted value in
   # settings_panel.theme.default takes precedence (see _get_setting_default in app.py).
