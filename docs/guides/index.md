@@ -10,6 +10,7 @@ This section provides practical guides for setup, contribution workflow, testing
 
 | Guide                                                                        | Description                                 | Level        |
 | ---------------------------------------------------------------------------- | ------------------------------------------- | ------------ |
+| [Modular UI Guide](https://neuraaak.github.io/ezqt-app/guides/modular-ui/)   | Configure and disable UI components         | Beginner     |
 | [QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/)   | Visual customization with Qt stylesheets    | Beginner     |
 | [Development Guide](https://neuraaak.github.io/ezqt-app/guides/development/) | Development workflow and contribution guide | Intermediate |
 | [Testing Guide](https://neuraaak.github.io/ezqt-app/guides/testing/)         | Test suite execution and quality strategy   | Advanced     |

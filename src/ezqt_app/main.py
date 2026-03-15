@@ -35,18 +35,22 @@ def init(
     overwrite_policy: OverwritePolicy | None = None,
     verbose: bool = True,
 ) -> dict[str, object]:
-    """
-    Initialize the EzQt_App application using the new modular system.
+    """Initialize the EzQt_App application using the new modular system.
 
     This function uses the new initialization package to:
     - Configure UTF-8 encoding at system level
     - Load required resources and generate necessary files
     - Setup the complete application environment
 
-    Parameters
-    ----------
-    mk_theme : bool, optional
-        Generate theme file (default: True).
+    Args:
+        mk_theme: Generate theme file. Defaults to True.
+        project_root: Project root directory. Defaults to None.
+        bin_path: Binary path. Defaults to None.
+        overwrite_policy: Policy for overwriting existing files. Defaults to None.
+        verbose: Enable verbose output mode. Defaults to True.
+
+    Returns:
+        dict[str, object]: Initialization result dictionary.
     """
     from ezqt_app.services.bootstrap.contracts import OverwritePolicy
 
@@ -64,18 +68,13 @@ def init(
 
 
 def setup_project(base_path: str | None = None) -> bool:
-    """
-    Setup a new EzQt_App project using the new modular system.
+    """Setup a new EzQt_App project using the new modular system.
 
-    Parameters
-    ----------
-    base_path : str, optional
-        Base path for the project (default: current directory).
+    Args:
+        base_path: Base path for the project. Defaults to current directory.
 
-    Returns
-    -------
-    bool
-        True if setup was successful.
+    Returns:
+        bool: True if setup was successful.
     """
     from ezqt_app.services.bootstrap import setup_project as setup_project_app
 
@@ -83,13 +82,10 @@ def setup_project(base_path: str | None = None) -> bool:
 
 
 def generate_assets() -> bool:
-    """
-    Generate all required assets using the new modular system.
+    """Generate all required assets using the new modular system.
 
-    Returns
-    -------
-    bool
-        True if generation was successful.
+    Returns:
+        bool: True if generation was successful.
     """
     from ezqt_app.services.bootstrap import generate_assets as generate_assets_app
 
@@ -97,9 +93,7 @@ def generate_assets() -> bool:
 
 
 def configure_startup() -> None:
-    """
-    Configure startup settings using the new modular system.
-    """
+    """Configure startup settings using the new modular system."""
     from ezqt_app.services.bootstrap import configure_startup as configure_startup_app
 
     configure_startup_app()
@@ -111,13 +105,10 @@ def configure_startup() -> None:
 
 
 def get_initializer() -> Initializer:
-    """
-    Get the main initializer instance.
+    """Get the main initializer instance.
 
-    Returns
-    -------
-    Initializer
-        The main initializer instance.
+    Returns:
+        Initializer: The main initializer instance.
     """
     from ezqt_app.services.bootstrap import Initializer
 
@@ -125,18 +116,13 @@ def get_initializer() -> Initializer:
 
 
 def get_file_service(verbose: bool = False) -> FileService:
-    """
-    Get the file service instance.
+    """Get the file service instance.
 
-    Parameters
-    ----------
-    verbose : bool, optional
-        Enable verbose output mode, default False
+    Args:
+        verbose: Enable verbose output mode. Defaults to False.
 
-    Returns
-    -------
-    FileService
-        The file service instance.
+    Returns:
+        FileService: The file service instance.
     """
     from ezqt_app.services.application import FileService
 
@@ -144,13 +130,10 @@ def get_file_service(verbose: bool = False) -> FileService:
 
 
 def get_startup_config() -> StartupConfig:
-    """
-    Get the startup configuration instance.
+    """Get the startup configuration instance.
 
-    Returns
-    -------
-    StartupConfig
-        The startup configuration instance.
+    Returns:
+        StartupConfig: The startup configuration instance.
     """
     from ezqt_app.services.bootstrap import StartupConfig
 

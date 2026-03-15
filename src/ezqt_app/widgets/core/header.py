@@ -31,10 +31,11 @@ from ...services.settings import get_settings_service
 from ...services.ui import Fonts, SizePolicy
 from ...shared.resources import Icons
 
-
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
+
+
 class Header(QFrame):
     """
     Application header with logo, name and control buttons.
@@ -43,6 +44,10 @@ class Header(QFrame):
     the application logo, its name, description and window
     control buttons (minimize, maximize, close).
     """
+
+    # ///////////////////////////////////////////////////////////////
+    # INIT
+    # ///////////////////////////////////////////////////////////////
 
     def __init__(
         self,
@@ -55,34 +60,28 @@ class Header(QFrame):
         """
         Initialize the application header.
 
-        Parameters
-        ----------
-        app_name : str, optional
-            Application name (default: "").
-        description : str, optional
-            Application description (default: "").
-        parent : QWidget, optional
-            The parent widget (default: None).
-        *args : Any
-            Additional positional arguments.
-        **kwargs : Any
-            Additional keyword arguments.
+        Args:
+            app_name: Application name (default: "").
+            description: Application description (default: "").
+            parent: The parent widget (default: None).
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
         """
         super().__init__(parent, *args, **kwargs)
         self._buttons: list[QPushButton] = []
         self._icons: list[Any] = []
 
-        # Store originals so retranslate_ui() can re-apply them after a language change.
+        # Store originals for retranslation
         self._app_name: str = app_name
         self._description: str = description
 
-        # ////// SETUP WIDGET PROPERTIES
+        # Widget properties
         self.setObjectName("headerContainer")
         self.setFixedHeight(50)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setFrameShadow(QFrame.Shadow.Raised)
 
-        # Check if SizePolicy is initialized, otherwise use default policy
+        # Size policy initialization
         if (
             hasattr(SizePolicy, "H_EXPANDING_V_PREFERRED")
             and SizePolicy.H_EXPANDING_V_PREFERRED is not None
@@ -92,7 +91,6 @@ class Header(QFrame):
                 self.sizePolicy().hasHeightForWidth()
             )
         else:
-            # Use default size policy if SizePolicy is not initialized
             default_policy = QSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
@@ -100,13 +98,13 @@ class Header(QFrame):
             default_policy.setVerticalStretch(0)
             self.setSizePolicy(default_policy)
 
-        # ////// SETUP MAIN LAYOUT
+        # Main layout
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setObjectName("header_layout")
         self._layout.setContentsMargins(0, 0, 10, 0)
 
-        # ////// SETUP META INFO SECTION
+        # Meta info section
         self._info_frame = QFrame(self)
         self._info_frame.setObjectName("info_frame")
         self._info_frame.setMinimumSize(QSize(0, 50))
@@ -115,7 +113,7 @@ class Header(QFrame):
         self._info_frame.setFrameShadow(QFrame.Shadow.Raised)
         self._layout.addWidget(self._info_frame)
 
-        # ////// SETUP APP LOGO
+        # App logo
         self._logo_label = QLabel(self._info_frame)
         self._logo_label.setObjectName("app_logo")
         self._logo_label.setGeometry(QRect(10, 4, 40, 40))
@@ -124,12 +122,11 @@ class Header(QFrame):
         self._logo_label.setFrameShape(QFrame.Shape.NoFrame)
         self._logo_label.setFrameShadow(QFrame.Shadow.Raised)
 
-        # ////// SETUP APP NAME
+        # App title
         self._title_label = QLabel(app_name, self._info_frame)
         self._title_label.setObjectName("app_title")
         self._title_label.setGeometry(QRect(65, 6, 160, 20))
 
-        # Check if Fonts is initialized, otherwise use default font
         if hasattr(Fonts, "SEGOE_UI_12_SB") and Fonts.SEGOE_UI_12_SB is not None:
             self._title_label.setFont(Fonts.SEGOE_UI_12_SB)
         else:
@@ -141,7 +138,6 @@ class Header(QFrame):
                 default_font.setPointSize(12)
                 self._title_label.setFont(default_font)
             except ImportError:
-                # If QFont is not available, ignore font
                 pass
 
         self._title_label.setAlignment(
@@ -149,13 +145,13 @@ class Header(QFrame):
             | Qt.AlignmentFlag.AlignLeft
             | Qt.AlignmentFlag.AlignTop
         )
-        # //////
+
+        # App subtitle
         self._subtitle_label = QLabel(description, self._info_frame)
         self._subtitle_label.setObjectName("app_subtitle")
         self._subtitle_label.setGeometry(QRect(65, 26, 240, 16))
         self._subtitle_label.setMaximumSize(QSize(16777215, 16))
 
-        # Check if Fonts is initialized, otherwise use default font
         if hasattr(Fonts, "SEGOE_UI_8_REG") and Fonts.SEGOE_UI_8_REG is not None:
             self._subtitle_label.setFont(Fonts.SEGOE_UI_8_REG)
         else:
@@ -167,7 +163,6 @@ class Header(QFrame):
                 default_font.setPointSize(8)
                 self._subtitle_label.setFont(default_font)
             except ImportError:
-                # If QFont is not available, ignore font
                 pass
 
         self._subtitle_label.setAlignment(
@@ -176,69 +171,65 @@ class Header(QFrame):
             | Qt.AlignmentFlag.AlignTop
         )
 
-        # /////////////////////////////////////////////////////////////////////
+        # Spacer
         self._spacer = QSpacerItem(
             20, 20, QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
         )
-        #
         self._layout.addItem(self._spacer)
 
-        # /////////////////////////////////////////////////////////////////////
-
+        # Buttons frame
         self._buttons_frame = QFrame(self)
         self._buttons_frame.setObjectName("buttons_frame")
         self._buttons_frame.setMinimumSize(QSize(0, 28))
         self._buttons_frame.setFrameShape(QFrame.Shape.NoFrame)
         self._buttons_frame.setFrameShadow(QFrame.Shadow.Raised)
-        #
         self._layout.addWidget(self._buttons_frame, 0, Qt.AlignmentFlag.AlignRight)
-        # //////
+
         self._buttons_layout = QHBoxLayout(self._buttons_frame)
         self._buttons_layout.setSpacing(5)
         self._buttons_layout.setObjectName("buttons_layout")
         self._buttons_layout.setContentsMargins(0, 0, 0, 0)
 
-        # /////////////////////////////////////////////////////////////////////
-
+        # Theme buttons
         from ezqt_widgets import ThemeIcon
 
         current_theme = get_settings_service().gui.THEME
 
+        # Settings button
         self.settings_btn = QPushButton(self._buttons_frame)
         self._buttons.append(self.settings_btn)
         self.settings_btn.setObjectName("settings_btn")
         self.settings_btn.setMinimumSize(QSize(28, 28))
         self.settings_btn.setMaximumSize(QSize(28, 28))
         self.settings_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        #
+
         icon_settings = ThemeIcon(Icons.icon_settings, theme=current_theme)
         self._icons.append(icon_settings)
         self.settings_btn.setIcon(icon_settings)
         self.settings_btn.setIconSize(QSize(20, 20))
-        #
         self._buttons_layout.addWidget(self.settings_btn)
-        # //////
+
+        # Minimize button
         self.minimize_btn = QPushButton(self._buttons_frame)
         self._buttons.append(self.minimize_btn)
         self.minimize_btn.setObjectName("minimize_btn")
         self.minimize_btn.setMinimumSize(QSize(28, 28))
         self.minimize_btn.setMaximumSize(QSize(28, 28))
         self.minimize_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        #
+
         icon_minimize = ThemeIcon(Icons.icon_minimize, theme=current_theme)
         self._icons.append(icon_minimize)
         self.minimize_btn.setIcon(icon_minimize)
         self.minimize_btn.setIconSize(QSize(20, 20))
-        #
         self._buttons_layout.addWidget(self.minimize_btn)
-        # //////
+
+        # Maximize button
         self.maximize_restore_btn = QPushButton(self._buttons_frame)
         self._buttons.append(self.maximize_restore_btn)
         self.maximize_restore_btn.setObjectName("maximize_restore_btn")
         self.maximize_restore_btn.setMinimumSize(QSize(28, 28))
         self.maximize_restore_btn.setMaximumSize(QSize(28, 28))
 
-        # Check if Fonts is initialized, otherwise use default font
         if hasattr(Fonts, "SEGOE_UI_10_REG") and Fonts.SEGOE_UI_10_REG is not None:
             self.maximize_restore_btn.setFont(Fonts.SEGOE_UI_10_REG)
         else:
@@ -250,46 +241,41 @@ class Header(QFrame):
                 default_font.setPointSize(10)
                 self.maximize_restore_btn.setFont(default_font)
             except ImportError:
-                # If QFont is not available, ignore font
                 pass
 
         self.maximize_restore_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        #
         icon_maximize = ThemeIcon(Icons.icon_maximize, theme=current_theme)
         self._icons.append(icon_maximize)
         self.maximize_restore_btn.setIcon(icon_maximize)
         self.maximize_restore_btn.setIconSize(QSize(20, 20))
-        #
         self._buttons_layout.addWidget(self.maximize_restore_btn)
-        # //////
+
+        # Close button
         self.close_btn = QPushButton(self._buttons_frame)
         self._buttons.append(self.close_btn)
         self.close_btn.setObjectName("close_btn")
         self.close_btn.setMinimumSize(QSize(28, 28))
         self.close_btn.setMaximumSize(QSize(28, 28))
         self.close_btn.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-        #
+
         icon_close = ThemeIcon(Icons.icon_close, theme=current_theme)
         self._icons.append(icon_close)
         self.close_btn.setIcon(icon_close)
         self.close_btn.setIconSize(QSize(20, 20))
-        #
         self._buttons_layout.addWidget(self.close_btn)
 
-        # ////// APPLY INITIAL TRANSLATIONS
         self.retranslate_ui()
 
     # ///////////////////////////////////////////////////////////////
-    # UTILITY FUNCTIONS
+    # PUBLIC METHODS
+    # ///////////////////////////////////////////////////////////////
 
     def set_app_name(self, app_name: str) -> None:
         """
         Set the application name in the header.
 
-        Parameters
-        ----------
-        app_name : str
-            The new application name.
+        Args:
+            app_name: The new application name.
         """
         self._app_name = app_name
         self._title_label.setText(QCoreApplication.translate("EzQt_App", app_name))
@@ -298,10 +284,8 @@ class Header(QFrame):
         """
         Set the application description in the header.
 
-        Parameters
-        ----------
-        description : str
-            The new application description.
+        Args:
+            description: The new application description.
         """
         self._description = description
         self._subtitle_label.setText(
@@ -317,7 +301,6 @@ class Header(QFrame):
             QCoreApplication.translate("EzQt_App", self._description)
         )
 
-        # Retranslate tooltips
         self.settings_btn.setToolTip(QCoreApplication.translate("EzQt_App", "Settings"))
         self.minimize_btn.setToolTip(QCoreApplication.translate("EzQt_App", "Minimize"))
         self.maximize_restore_btn.setToolTip(
@@ -326,12 +309,11 @@ class Header(QFrame):
         self.close_btn.setToolTip(QCoreApplication.translate("EzQt_App", "Close"))
 
     def changeEvent(self, event: QEvent) -> None:
-        """Handle Qt change events, triggering UI retranslation on language change.
+        """
+        Handle Qt change events, triggering UI retranslation on language change.
 
-        Parameters
-        ----------
-        event : QEvent
-            The Qt change event.
+        Args:
+            event: The QEvent instance.
         """
         if event.type() == QEvent.Type.LanguageChange:
             self.retranslate_ui()
@@ -343,14 +325,10 @@ class Header(QFrame):
         """
         Set the application logo in the header.
 
-        Parameters
-        ----------
-        logo : str or QPixmap
-            The logo to display (file path or QPixmap).
-        y_shrink : int, optional
-            Vertical reduction of the logo (default: 0).
-        y_offset : int, optional
-            Vertical offset of the logo (default: 0).
+        Args:
+            logo: The logo to display (file path or QPixmap).
+            y_shrink: Vertical reduction of the logo (default: 0).
+            y_offset: Vertical offset of the logo (default: 0).
         """
 
         def offsetY(y_offset: int = 0, x_offset: int = 0) -> None:
@@ -364,7 +342,7 @@ class Header(QFrame):
             )
             self._logo_label.setGeometry(new_rect)
 
-        # ////// PROCESS LOGO
+        # Process logo
         pixmap_logo = QPixmap(logo) if isinstance(logo, str) else logo
         if pixmap_logo.size() != self._logo_label.minimumSize():
             pixmap_logo = pixmap_logo.scaled(
@@ -392,4 +370,5 @@ class Header(QFrame):
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API
 # ///////////////////////////////////////////////////////////////
+
 __all__ = ["Header"]

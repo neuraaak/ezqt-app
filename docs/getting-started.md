@@ -75,7 +75,7 @@ from ezqt_app import EzApplication, EzQt_App, init
 
 init()
 app = EzApplication(sys.argv)
-window = EzQt_App(theme_file_name="main_theme.qss")
+window = EzQt_App(theme_file_name="main_theme.qss").build()
 window.show()
 sys.exit(app.exec())
 ```
@@ -112,7 +112,7 @@ change_language_by_code("fr")
 ### Toggle Theme in App
 
 ```python
-window = EzQt_App()
+window = EzQt_App().build()
 window.enable_auto_translation(False)
 window.set_app_theme()
 ```
@@ -120,7 +120,7 @@ window.set_app_theme()
 ### Add Pages to App Shell
 
 ```python
-window = EzQt_App()
+window = EzQt_App().build()
 home_page = window.add_menu("Home", "home")
 settings_page = window.add_menu("Settings", "settings")
 window.show()
@@ -133,7 +133,7 @@ window.show()
 EzQt App uses a QSS-based theming workflow. Theme files are loaded at runtime:
 
 ```python
-window = EzQt_App(theme_file_name="main_theme.qss")
+window = EzQt_App(theme_file_name="main_theme.qss").build()
 ```
 
 Theme files live in `bin/themes/` in your bootstrapped project. See the
