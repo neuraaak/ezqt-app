@@ -100,21 +100,28 @@ class EzTranslator(QTranslator):
         if cached:
             return cached
 
-        # String is unknown — fire async auto-translation if enabled.
+        # String is unknown — fire auto-translation if enabled.
+        # auto_translator.translate() handles all cases uniformly:
+        #   • source == target  → returns text immediately (identity, no HTTP)
+        #   • cache hit         → returns cached value immediately
+        #   • cache miss        → spawns a daemon thread, returns None
+        # All languages including English are processed so that every .ts file
+        # is populated with real entries and compiled to a valid .qm.
         if (
             self._manager.auto_translation_enabled
             and self._manager.auto_translator.enabled
         ):
             result = self._manager.auto_translator.translate(
-                source_text, "en", self._manager.current_language
+                source_text, DEFAULT_LANGUAGE, self._manager.current_language
             )
-            # translate() returns the cached value immediately (not None) when the
-            # string was already in the local cache, meaning no network request was
-            # fired and no translation_ready signal will arrive later.  Only count
-            # the request as "pending" when translate() returns None, i.e. when an
-            # actual async worker task has been dispatched.
-            if result is None:
-                self._manager._increment_pending()
+            if result is not None:
+                # Immediate result (identity or cache hit): populate in-memory
+                # cache and persist to .ts so the string survives the next load.
+                self._manager._ts_translations[source_text] = result
+                self._manager._persist_translation(source_text, result)
+                return result
+            # Async request dispatched — a thread is running the HTTP round-trip.
+            self._manager._increment_pending()
 
         # Return None so Qt falls back to the .qm translator or source text.
         return None
@@ -402,24 +409,32 @@ class TranslationManager(QObject):
                     code="translation.manager.load_qm_failed",
                     message=f"QTranslator.load() failed for {qm_path.name}",
                 )
-
-            if app is not None:
-                try:
-                    QCoreApplication.installTranslator(self.translator)
-                except Exception as e:
-                    warn_tech(
-                        code="translation.manager.install_translator_failed",
-                        message="Error installing translator",
-                        error=e,
-                    )
             get_printer().info(f"Language switched to {language_info['name']}")
-        else:
+        elif language_code != DEFAULT_LANGUAGE:
+            # No .ts file yet for this language. Warn but continue: installing an
+            # empty translator still fires Qt's LanguageChange event, which causes
+            # all widgets to call retranslate_ui() → QCoreApplication.translate()
+            # → EzTranslator.translate() → auto-translation for every string.
             warn_user(
                 code="translation.manager.load_language_failed",
                 user_message=(
-                    f"Unable to load translations for {language_info['name']}"
+                    f"No translation file found for {language_info['name']} — "
+                    "auto-translation will populate it progressively."
                 ),
             )
+
+        # Always install the translator (empty or .qm-backed) so Qt posts a
+        # LanguageChange event.  Without this call, widgets never call
+        # retranslate_ui() and EzTranslator is never invoked for the new language.
+        if app is not None:
+            try:
+                QCoreApplication.installTranslator(self.translator)
+            except Exception as e:
+                warn_tech(
+                    code="translation.manager.install_translator_failed",
+                    message="Error installing translator",
+                    error=e,
+                )
 
         self.languageChanged.emit(language_code)
         return True
@@ -533,6 +548,32 @@ class TranslationManager(QObject):
                         message="Could not reinstall EzTranslator after auto-translation",
                         error=e,
                     )
+
+    def _persist_translation(self, original: str, translated: str) -> None:
+        """Persist an immediately-resolved translation to the current .ts file.
+
+        Called by :class:`EzTranslator` when ``auto_translator.translate()``
+        returns a result synchronously (identity translation or cache hit).
+        Unlike :meth:`_save_auto_translation_to_ts` this method does **not**
+        recompile the .qm or reinstall the translator — the text is already
+        correct in the UI, so no ``LanguageChange`` event is needed.  The .qm
+        will be recompiled on the next :meth:`load_language_by_code` call (the
+        mtime check in :meth:`_ensure_qm_compiled` detects the stale .qm).
+
+        Args:
+            original: The source (English) string.
+            translated: The translation to persist (may equal *original* for the
+                source language — identity mapping).
+        """
+        if not self.auto_save_translations or self.translations_dir is None:
+            return
+        if self.current_language not in SUPPORTED_LANGUAGES:
+            return
+        language_info = SUPPORTED_LANGUAGES[self.current_language]
+        ts_file_path = self.translations_dir / language_info["file"]
+        self.auto_translator.save_translation_to_ts(
+            original, translated, self.current_language, ts_file_path
+        )
 
     def _save_auto_translation_to_ts(self, original: str, translated: str) -> None:
         """Persist *translated* to the active .ts file and reload the .qm translator.

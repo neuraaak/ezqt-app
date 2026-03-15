@@ -2,16 +2,16 @@
 # TRANSLATION & DETECTION
 # ///////////////////////////////////////////////////////////////
 translation:
-  auto_translation_enabled: false
-  auto_translate_new_strings: true
-  save_to_ts_files: true
-  cache_translations: true
-  max_cache_age_days: 30
   # Set to true to enable automatic string collection at startup.
   # When enabled, EzQt_App scans all widgets on launch and writes
   # pending_strings.txt, language_detected.txt and translation_tasks.json
   # to ~/.ezqt/translations/. Disabled by default (opt-in).
   collect_strings: false
+  auto_translation_enabled: true
+  auto_translate_new_strings: true
+  save_to_ts_files: true
+  cache_translations: true
+  max_cache_age_days: 30
 
 # Configuration de la détection de langue
 language_detection:

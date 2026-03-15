@@ -311,10 +311,15 @@ class AutoTranslator(QObject):
     def translate(self, text: str, source_lang: str, target_lang: str) -> str | None:
         """Schedule an async translation and return ``None`` immediately.
 
-        If *text* is already cached or a thread is already translating it,
-        the call is a no-op and returns the cached value or ``None``.
-        The caller receives the result via :attr:`translation_ready`.
+        If *source_lang* equals *target_lang* the method returns *text*
+        immediately (identity translation — no HTTP request is made).
+        If *text* is already cached the cached value is returned immediately.
+        Otherwise a daemon thread is started and ``None`` is returned; the
+        caller receives the result via :attr:`translation_ready`.
         """
+        if source_lang == target_lang:
+            return text
+
         cached = self.cache.get(text, source_lang, target_lang)
         if cached:
             return cached

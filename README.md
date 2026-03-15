@@ -2,12 +2,12 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/OS-Independent-lightgray.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
-[![Version](https://img.shields.io/badge/Version-5.2.0-orange.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
+[![Version](https://img.shields.io/badge/Version-5.2.1-orange.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
 [![PyPI](https://img.shields.io/badge/PyPI-ezqt--app-green.svg?style=for-the-badge&logo=pypi)](https://pypi.org/project/ezqt-app/)
 [![Docs](https://img.shields.io/badge/Docs-Online-blue.svg?style=for-the-badge&logo=readthedocs)](https://neuraaak.github.io/ezqt-app/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Beta-yellow.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
-[![Tests](https://img.shields.io/badge/Tests-176%2B%20passing-success.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
+[![Tests](https://img.shields.io/badge/Tests-426%2B%20passing-success.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
 
 ![EzQt Widgets Logo](docs/assets/logo-min.png)
 
@@ -56,11 +56,11 @@ app_service.exec()
 - **✅ Full Type Hints**: Complete typing support for IDEs and linters
 - **✅ Dynamic Themes**: Light/dark themes with integrated toggle via QSS
 - **✅ Global Translation**: Multi-language support (EN, FR, ES, DE)
-- **✅ Automatic Translation**: Multi-provider system (LibreTranslate, MyMemory, Google)
+- **✅ Automatic Translation**: Non-blocking multi-provider system (Google, MyMemory, LibreTranslate) with daemon-thread HTTP, in-flight deduplication, and progressive `.ts`/`.qm` file population
 - **✅ CLI Tools**: Project initialization, template generation, and management
 - **✅ Template System**: Basic and advanced project scaffolding
 - **✅ Standardized Logging**: Consistent message formatting across all components
-- **✅ Comprehensive Tests**: Complete test suite (~176 tests)
+- **✅ Comprehensive Tests**: Complete test suite (~426 tests)
 
 ## 📚 Documentation
 
@@ -115,11 +115,12 @@ src/ezqt_app/
 
 ### 🌍 Translation System (`ezqt_app.services.translation`)
 
-| Component              | Description                                |
-| ---------------------- | ------------------------------------------ |
-| **TranslationManager** | Central translation registry and dispatch  |
-| **AutoTranslator**     | Multi-provider automatic translation       |
-| **StringCollector**    | Automatic string discovery for translation |
+| Component              | Description                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| **TranslationManager** | Central translation registry, `.ts`/`.qm` lifecycle        |
+| **EzTranslator**       | Qt interceptor — feeds unknown strings to auto-translation |
+| **AutoTranslator**     | Non-blocking multi-provider translation (daemon threads)   |
+| **StringCollector**    | Automatic string discovery for translation                 |
 
 ### 🎨 Widgets (`ezqt_app.widgets`)
 
@@ -133,7 +134,7 @@ src/ezqt_app/
 
 ## 🧪 Testing
 
-Comprehensive test suite with 176+ test cases covering services, widgets, and integration scenarios.
+Comprehensive test suite with 426+ test cases covering services, widgets, and integration scenarios.
 
 ```bash
 # Install dev dependencies
@@ -189,23 +190,22 @@ ezqt docs [--serve] [--port <port>]
 ## 🌍 Translation System
 
 ```python
-from ezqt_app.shared.helpers import tr, set_tr
+# Use Qt's standard translation call — EzTranslator intercepts automatically
+from PySide6.QtCore import QCoreApplication
+text = QCoreApplication.translate("EzQt_App", "Hello World")
 
-# Translate a string
-text = tr("Hello World")  # Returns "Bonjour le monde" in French
+# Change active language (triggers LanguageChange on all widgets)
+from ezqt_app.services.translation import get_translation_manager
+get_translation_manager().load_language("Français")
 
-# Bind a widget for auto-retranslation on language change
-from PySide6.QtWidgets import QLabel
-label = QLabel()
-set_tr(label, "Hello World")
-
-# Change active language
-from ezqt_app.services.translation.translation_service import TranslationService
-TranslationService.instance().set_language("Français")
+# Enable auto-translation: unknown strings are translated via external providers
+# and progressively saved to .ts files, then compiled to .qm
+window.enable_auto_translation(True)
 ```
 
 **Supported languages:** English, Français, Español, Deutsch
-**Translation providers:** LibreTranslate, MyMemory, Google Translate
+**Translation providers:** Google Translate, MyMemory, LibreTranslate (tried in order, daemon threads — UI never blocked)
+**Auto-populate:** `.ts` files are updated at runtime; `.qm` files are recompiled via `pyside6-lrelease` on each language load. Identity entries are written for the source language so `en.ts` is always populated.
 
 ## 🛠️ Development Setup
 
