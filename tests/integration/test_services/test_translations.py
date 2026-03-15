@@ -11,7 +11,7 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 # Third-party imports
 import pytest
@@ -23,10 +23,7 @@ from ezqt_app.services.translation import (
     get_available_languages,
     get_current_language,
     get_translation_manager,
-    register_tr,
-    set_tr,
     tr,
-    unregister_tr,
 )
 
 # ///////////////////////////////////////////////////////////////
@@ -62,9 +59,6 @@ class TestTranslationSystem:
         """Test d'intégration des helpers de traduction."""
         # Vérifier que les fonctions helper existent
         assert callable(tr)
-        assert callable(set_tr)
-        assert callable(register_tr)
-        assert callable(unregister_tr)
         assert callable(change_language)
         assert callable(get_available_languages)
         assert callable(get_current_language)
@@ -85,32 +79,6 @@ class TestTranslationSystem:
             success = manager.load_language_by_code("fr")
             assert success
             assert manager.get_current_language_code() == "fr"
-
-    @pytest.mark.integration
-    def test_should_register_and_unregister_widget_when_registration_api_is_used(
-        self, qt_application
-    ):
-        """Test du workflow d'enregistrement de widgets."""
-        # Créer le gestionnaire de traduction
-        manager = TranslationManager()
-
-        # Créer un widget mock
-        mock_widget = MagicMock()
-        original_text = "Hello World"
-
-        # Enregistrer le widget
-        manager.register_widget(mock_widget, original_text)
-
-        # Vérifier que le widget est enregistré
-        assert mock_widget in manager._translatable_widgets
-        assert manager._translatable_texts[mock_widget] == original_text
-
-        # Désenregistrer le widget
-        manager.unregister_widget(mock_widget)
-
-        # Vérifier que le widget est désenregistré
-        assert mock_widget not in manager._translatable_widgets
-        assert mock_widget not in manager._translatable_texts
 
     @pytest.mark.integration
     def test_should_return_original_text_when_no_translation_file_is_loaded(
@@ -143,33 +111,6 @@ class TestTranslationSystem:
                 success = manager.load_language_by_code(lang_code)
                 assert success
                 assert manager.get_current_language_code() == lang_code
-
-    @pytest.mark.integration
-    def test_should_unregister_all_widgets_when_clear_registered_widgets_is_called(
-        self, qt_application
-    ):
-        """Test du workflow de retraduction des widgets."""
-        # Créer le gestionnaire de traduction
-        manager = TranslationManager()
-
-        # Créer plusieurs widgets mock
-        widgets = []
-        texts = ["Hello", "World", "Test"]
-
-        for _i, text in enumerate(texts):
-            mock_widget = MagicMock()
-            manager.register_widget(mock_widget, text)
-            widgets.append(mock_widget)
-
-        # Vérifier que tous les widgets sont enregistrés
-        assert len(manager._translatable_widgets) == 3
-
-        # Nettoyer tous les widgets
-        manager.clear_registered_widgets()
-
-        # Vérifier que tous les widgets sont désenregistrés
-        assert len(manager._translatable_widgets) == 0
-        assert len(manager._translatable_texts) == 0
 
     @pytest.mark.integration
     def test_should_emit_language_changed_signal_when_language_is_loaded(
@@ -228,17 +169,13 @@ class TestTranslationSystem:
         # Créer le gestionnaire de traduction
         manager = TranslationManager()
 
-        # Vérifier le mapping des langues
+        # Tester la conversion de noms vers codes via load_language()
         expected_mapping = {
             "English": "en",
             "Français": "fr",
             "Español": "es",
             "Deutsch": "de",
         }
-
-        assert manager.language_mapping == expected_mapping
-
-        # Tester la conversion de noms vers codes
         for name, code in expected_mapping.items():
             # Simuler le chargement d'une langue par nom
             with patch("ezqt_app.services.translation.manager.QCoreApplication"):
@@ -283,52 +220,7 @@ class TestTranslationSystem:
         assert manager1 is manager2
 
         # Elles partagent les mêmes données de base
-        assert manager1.language_mapping == manager2.language_mapping
         assert manager1.get_available_languages() == manager2.get_available_languages()
-
-    @pytest.mark.integration
-    def test_should_register_widget_with_text_when_set_translatable_text_is_called(
-        self, qt_application
-    ):
-        """Test du workflow de définition de texte traduisible."""
-        # Créer le gestionnaire de traduction
-        manager = TranslationManager()
-
-        # Créer un widget mock
-        mock_widget = MagicMock()
-
-        # Définir un texte traduisible
-        text = "New Text"
-        manager.set_translatable_text(mock_widget, text)
-
-        # Vérifier que le widget est enregistré avec le nouveau texte
-        assert mock_widget in manager._translatable_widgets
-        assert manager._translatable_texts[mock_widget] == text
-
-    @pytest.mark.integration
-    def test_should_empty_widget_registries_when_clear_registered_widgets_is_called(
-        self, qt_application
-    ):
-        """Test du nettoyage du gestionnaire de traduction."""
-        # Créer le gestionnaire de traduction
-        manager = TranslationManager()
-
-        # Ajouter des widgets
-        widgets = []
-        for i in range(5):
-            mock_widget = MagicMock()
-            manager.register_widget(mock_widget, f"Text {i}")
-            widgets.append(mock_widget)
-
-        # Vérifier que les widgets sont enregistrés
-        assert len(manager._translatable_widgets) == 5
-
-        # Nettoyer
-        manager.clear_registered_widgets()
-
-        # Vérifier que tout est nettoyé
-        assert len(manager._translatable_widgets) == 0
-        assert len(manager._translatable_texts) == 0
 
     @pytest.mark.integration
     def test_should_persist_language_code_when_manager_is_retrieved_again(

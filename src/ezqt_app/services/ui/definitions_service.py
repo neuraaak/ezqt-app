@@ -16,6 +16,7 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QGraphicsDropShadowEffect, QSizeGrip
 
 # Local imports
+from ...domain.ports.main_window import MainWindowProtocol
 from ...utils.custom_grips import CustomGrip
 from ..settings import get_settings_service
 from .window_service import WindowService
@@ -56,8 +57,9 @@ class UiDefinitionsService:
                 if WindowService.get_status():
                     WindowService.maximize_restore(window)
                 if event.buttons() == Qt.MouseButton.LeftButton:
-                    window.move(window.pos() + event.globalPos() - window.dragPos)
-                    window.dragPos = event.globalPos()
+                    global_pos = event.globalPosition().toPoint()
+                    window.move(window.pos() + global_pos - window.dragPos)
+                    window.dragPos = global_pos
                     event.accept()
 
             window.ui.headerContainer.mouseMoveEvent = move_window
@@ -94,7 +96,7 @@ class UiDefinitionsService:
         window.ui.headerContainer.closeAppBtn.clicked.connect(lambda: window.close())
 
     @staticmethod
-    def resize_grips(window: Any) -> None:
+    def resize_grips(window: MainWindowProtocol) -> None:
         """Resize custom grips when the main window size changes."""
         if get_settings_service().app.ENABLE_CUSTOM_TITLE_BAR:
             window.left_grip.setGeometry(0, 10, 10, window.height())

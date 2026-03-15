@@ -46,12 +46,12 @@ from .services.settings import SettingsService, get_settings_service
 from .services.translation import (
     change_language,
     change_language_by_code,
+    clear_auto_translation_cache,
+    enable_auto_translation,
     get_available_languages,
     get_current_language,
-    register_tr,
-    set_tr,
+    get_translation_stats,
     tr,
-    unregister_tr,
 )
 from .services.ui import UIFunctions
 from .version import __version__
@@ -107,15 +107,13 @@ __all__ = [
     "get_settings_service",
     # Translation
     "tr",
-    "set_tr",
-    "register_tr",
-    "unregister_tr",
     "change_language",
     "change_language_by_code",
     "get_available_languages",
     "get_current_language",
-    # CLI
-    "cli",
+    "get_translation_stats",
+    "enable_auto_translation",
+    "clear_auto_translation_cache",
     # Widgets
     "Header",
     "Menu",

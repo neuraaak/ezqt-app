@@ -15,6 +15,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from ezqt_app.services.translation import is_translatable
 from ezqt_app.services.translation.string_collector import StringCollector
 
 # ///////////////////////////////////////////////////////////////
@@ -54,72 +55,49 @@ class TestStringCollectorInit:
         assert len(collector._collected_strings) == 0
 
 
-class TestIsValidString:
-    """Tests for StringCollector._is_valid_string()."""
+class TestIsTranslatableViaCollector:
+    """Tests for is_translatable() — the filter used by StringCollector.
 
-    @pytest.fixture
-    def collector(self, tmp_path: Path) -> StringCollector:
-        return StringCollector(user_dir=tmp_path)
+    ``StringCollector._is_valid_string()`` was removed in P1 and replaced by
+    the standalone ``is_translatable()`` from ``_scanner``.  These tests verify
+    the same contract through the public re-export.
+    """
 
-    def test_should_return_false_when_string_is_empty(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("")
+    def test_should_return_false_when_string_is_empty(self) -> None:
+        assert not is_translatable("")
 
-    def test_should_return_false_when_string_is_single_character(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("a")
+    def test_should_return_false_when_string_is_single_character(self) -> None:
+        assert not is_translatable("a")
 
-    def test_should_return_false_when_string_is_digits_only(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("42")
+    def test_should_return_false_when_string_is_digits_only(self) -> None:
+        assert not is_translatable("42")
 
-    def test_should_return_false_when_string_has_underscore_prefix(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("_private_var")
+    def test_should_return_false_when_string_has_underscore_prefix(self) -> None:
+        assert not is_translatable("_private_var")
 
-    def test_should_return_false_when_string_has_menu_prefix(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("menu_action")
+    def test_should_return_false_when_string_has_menu_prefix(self) -> None:
+        assert not is_translatable("menu_action")
 
-    def test_should_return_false_when_string_has_btn_prefix(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("btn_ok")
+    def test_should_return_false_when_string_has_btn_prefix(self) -> None:
+        assert not is_translatable("btn_ok")
 
-    def test_should_return_false_when_string_has_setting_prefix(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("settingTheme")
+    def test_should_return_false_when_string_has_setting_prefix(self) -> None:
+        assert not is_translatable("settingTheme")
 
-    def test_should_return_false_when_string_is_constant_case(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("MY_CONSTANT")
+    def test_should_return_false_when_string_is_constant_case(self) -> None:
+        assert not is_translatable("MY_CONSTANT")
 
-    def test_should_return_false_when_string_is_all_lowercase_identifier(
-        self, collector: StringCollector
-    ) -> None:
-        assert not collector._is_valid_string("somevariable")
+    def test_should_return_false_when_string_is_all_lowercase_identifier(self) -> None:
+        assert not is_translatable("somevariable")
 
-    def test_should_return_true_when_string_has_spaces(
-        self, collector: StringCollector
-    ) -> None:
-        assert collector._is_valid_string("Click to continue")
+    def test_should_return_true_when_string_has_spaces(self) -> None:
+        assert is_translatable("Click to continue")
 
-    def test_should_return_true_when_string_is_ui_label_text(
-        self, collector: StringCollector
-    ) -> None:
-        assert collector._is_valid_string("Save Settings")
+    def test_should_return_true_when_string_is_ui_label_text(self) -> None:
+        assert is_translatable("Save Settings")
 
-    def test_should_return_true_when_string_has_mixed_case_with_spaces(
-        self, collector: StringCollector
-    ) -> None:
-        assert collector._is_valid_string("Open File")
+    def test_should_return_true_when_string_has_mixed_case_with_spaces(self) -> None:
+        assert is_translatable("Open File")
 
 
 class TestCollectStringsFromWidget:

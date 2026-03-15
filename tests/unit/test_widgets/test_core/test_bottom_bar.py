@@ -148,3 +148,78 @@ class TestBottomBarSetVersion:
             Qt.AlignmentFlag.AlignRight in alignment
             or Qt.AlignmentFlag.AlignTrailing in alignment
         )
+
+
+class TestBottomBarTranslationIndicator:
+    """Tests for the translation-in-progress indicator widget."""
+
+    def test_should_have_translation_indicator_label_when_instantiated(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        assert hasattr(bar, "translationIndicator")
+        assert isinstance(bar.translationIndicator, QLabel)
+
+    def test_should_be_hidden_by_default_when_instantiated(
+        self, qt_application
+    ) -> None:
+        # isHidden() reflects explicit setVisible(False) regardless of parent state.
+        bar = BottomBar()
+        assert bar.translationIndicator.isHidden()
+
+    def test_should_become_visible_when_show_translation_indicator_is_called(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        bar.show_translation_indicator()
+        assert not bar.translationIndicator.isHidden()
+
+    def test_should_become_hidden_when_hide_translation_indicator_is_called(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        bar.show_translation_indicator()
+        bar.hide_translation_indicator()
+        assert bar.translationIndicator.isHidden()
+
+    def test_should_have_non_empty_text_in_indicator_when_instantiated(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        assert bar.translationIndicator.text() != ""
+
+    def test_should_refresh_indicator_text_when_retranslate_ui_is_called(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        bar.show_translation_indicator()
+        # Simulate language change — text must remain non-empty.
+        bar.retranslate_ui()
+        assert bar.translationIndicator.text() != ""
+
+    def test_should_preserve_indicator_visibility_when_retranslate_ui_is_called(
+        self, qt_application
+    ) -> None:
+        bar = BottomBar()
+        bar.show_translation_indicator()
+        bar.retranslate_ui()
+        # retranslate_ui must not hide the indicator.
+        assert not bar.translationIndicator.isHidden()
+
+    def test_should_connect_to_translation_manager_signals_when_wired(
+        self, qt_application
+    ) -> None:
+        """Verify signal/slot wiring: manager signals control indicator visibility."""
+        from ezqt_app.services.translation.manager import TranslationManager
+
+        bar = BottomBar()
+        manager = TranslationManager()
+
+        manager.translation_started.connect(bar.show_translation_indicator)
+        manager.translation_finished.connect(bar.hide_translation_indicator)
+
+        manager._increment_pending()
+        assert not bar.translationIndicator.isHidden()
+
+        manager._decrement_pending()
+        assert bar.translationIndicator.isHidden()

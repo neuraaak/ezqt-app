@@ -12,14 +12,15 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 import json
-import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 # Local imports
+from ...domain.models.translation import SUPPORTED_LANGUAGES
 from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
+from ._scanner import is_translatable, scan_widget
 
 
 # ///////////////////////////////////////////////////////////////
@@ -55,99 +56,13 @@ class StringCollector:
     def collect_strings_from_widget(
         self, widget: Any, recursive: bool = True
     ) -> set[str]:
-        collected: set[str] = set()
-
-        def collect_recursive(w: Any) -> None:
-            try:
-                if hasattr(w, "text") and callable(getattr(w, "text", None)):
-                    try:
-                        text = w.text().strip()
-                        if self._is_valid_string(text):
-                            collected.add(text)
-                    except Exception as e:
-                        warn_tech(
-                            code="translation.collector.read_text_failed",
-                            message="Could not read widget text",
-                            error=e,
-                        )
-
-                if hasattr(w, "toolTip") and callable(getattr(w, "toolTip", None)):
-                    try:
-                        tooltip = w.toolTip().strip()
-                        if self._is_valid_string(tooltip):
-                            collected.add(tooltip)
-                    except Exception as e:
-                        warn_tech(
-                            code="translation.collector.read_tooltip_failed",
-                            message="Could not read widget toolTip",
-                            error=e,
-                        )
-
-                if hasattr(w, "placeholderText") and callable(
-                    getattr(w, "placeholderText", None)
-                ):
-                    try:
-                        placeholder = w.placeholderText().strip()
-                        if self._is_valid_string(placeholder):
-                            collected.add(placeholder)
-                    except Exception as e:
-                        warn_tech(
-                            code="translation.collector.read_placeholder_failed",
-                            message="Could not read widget placeholderText",
-                            error=e,
-                        )
-
-                if hasattr(w, "windowTitle") and callable(
-                    getattr(w, "windowTitle", None)
-                ):
-                    try:
-                        title = w.windowTitle().strip()
-                        if self._is_valid_string(title):
-                            collected.add(title)
-                    except Exception as e:
-                        warn_tech(
-                            code="translation.collector.read_window_title_failed",
-                            message="Could not read widget windowTitle",
-                            error=e,
-                        )
-
-                if recursive:
-                    try:
-                        for child in w.findChildren(type(w)):
-                            collect_recursive(child)
-                    except Exception as e:
-                        warn_tech(
-                            code="translation.collector.iter_children_failed",
-                            message="Could not iterate widget children",
-                            error=e,
-                        )
-
-            except Exception as e:
-                warn_tech(
-                    code="translation.collector.scan_widget_failed",
-                    message=f"Error scanning widget {type(w)}",
-                    error=e,
-                )
-
-        collect_recursive(widget)
+        collected = {
+            entry.original_text
+            for _, entry in scan_widget(widget, recursive=recursive)
+            if is_translatable(entry.original_text)
+        }
+        self._collected_strings.update(collected)
         return collected
-
-    def _is_valid_string(self, text: str) -> bool:
-        if not text or len(text) < 2:
-            return False
-        if (
-            text.startswith(("_", "menu_", "btn_", "setting"))
-            or text.isdigit()
-            or text in ("", " ", "\n", "\t")
-        ):
-            return False
-        technical_patterns = [
-            r"^[A-Z_]+$",
-            r"^[a-z_]+$",
-            r"^[a-z]+[A-Z][a-z]+$",
-            r"^[A-Z][a-z]+[A-Z][a-z]+$",
-        ]
-        return not any(re.match(p, text) for p in technical_patterns)
 
     def _detect_language(self, text: str) -> str:
         try:
@@ -250,7 +165,7 @@ class StringCollector:
         return processed
 
     def get_supported_languages(self) -> list[str]:
-        return ["en", "fr", "de", "es", "it", "pt", "ru", "ja", "ko", "zh"]
+        return list(SUPPORTED_LANGUAGES.keys())
 
     def generate_translation_tasks(
         self, language_detected: list[tuple[str, str]]
@@ -344,14 +259,10 @@ class StringCollector:
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETON
+# FUNCTIONS
 # ///////////////////////////////////////////////////////////////
-_string_collector_instance: StringCollector | None = None
-
-
 def get_string_collector(user_dir: Path | None = None) -> StringCollector:
     """Return the global StringCollector singleton."""
-    global _string_collector_instance
-    if _string_collector_instance is None:
-        _string_collector_instance = StringCollector(user_dir)
-    return _string_collector_instance
+    from .._registry import ServiceRegistry
+
+    return ServiceRegistry.get(StringCollector, lambda: StringCollector(user_dir))

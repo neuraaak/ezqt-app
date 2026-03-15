@@ -163,6 +163,14 @@
         <translation>• Changez de langue via le panneau de paramètres ou programmatiquement</translation>
     </message>
     <message>
+        <source>Hide</source>
+        <translation>Masquer</translation>
+    </message>
+    <message>
+        <source>Made with ❤️ by</source>
+        <translation>Fait avec ❤️ par</translation>
+    </message>
+    <message>
         <source>Made with ❤️ by EzQt_App</source>
         <translation>Fait avec ❤️ par EzQt_App</translation>
     </message>

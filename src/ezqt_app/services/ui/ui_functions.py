@@ -11,7 +11,10 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
+from typing import cast
+
 # Local imports
+from ...domain.ports.main_window import MainWindowProtocol
 from .definitions_service import UiDefinitionsService
 from .menu_service import MenuService
 from .panel_service import PanelService
@@ -35,9 +38,13 @@ class UIFunctions:
     # ///////////////////////////////////////////////////////////////
     # WINDOW MANAGEMENT
 
+    def _w(self) -> MainWindowProtocol:
+        """Cast self to MainWindowProtocol (UIFunctions is a QMainWindow mixin)."""
+        return cast(MainWindowProtocol, self)
+
     def maximize_restore(self) -> None:
         """Maximize or restore window based on current state."""
-        WindowService.maximize_restore(self)
+        WindowService.maximize_restore(self._w())
 
     def returnStatus(self):
         """Return current window state."""
@@ -52,22 +59,22 @@ class UIFunctions:
 
     def toggleMenuPanel(self, enable) -> None:
         """Toggle menu panel display."""
-        PanelService.toggle_menu_panel(self, enable)
+        PanelService.toggle_menu_panel(self._w(), enable)
 
     def toggleSettingsPanel(self, enable) -> None:
         """Toggle settings panel display."""
-        PanelService.toggle_settings_panel(self, enable)
+        PanelService.toggle_settings_panel(self._w(), enable)
 
     # ///////////////////////////////////////////////////////////////
     # MENU MANAGEMENT
 
     def selectMenu(self, widget) -> None:
         """Select a menu item."""
-        MenuService.select_menu(self, widget)
+        MenuService.select_menu(self._w(), widget)
 
     def deselectMenu(self, widget) -> None:
         """Deselect a menu item."""
-        MenuService.deselect_menu(self, widget)
+        MenuService.deselect_menu(self._w(), widget)
 
     def refreshStyle(self, w):
         """Refresh widget style."""
@@ -78,7 +85,7 @@ class UIFunctions:
 
     def theme(self, customThemeFile: str | None = None) -> None:
         """Load and apply theme to interface."""
-        ThemeService.apply_theme(self, customThemeFile)
+        ThemeService.apply_theme(self._w(), customThemeFile)
 
     # ///////////////////////////////////////////////////////////////
     # UI DEFINITIONS
@@ -89,7 +96,7 @@ class UIFunctions:
 
     def resize_grips(self) -> None:
         """Resize window resize grips."""
-        UiDefinitionsService.resize_grips(self)
+        UiDefinitionsService.resize_grips(self._w())
 
 
 # ///////////////////////////////////////////////////////////////

@@ -86,5 +86,13 @@
         <source>This is an example description</source>
         <translation>Dies ist eine Beispielbeschreibung</translation>
     </message>
+    <message>
+        <source>Hide</source>
+        <translation>Ausblenden</translation>
+    </message>
+    <message>
+        <source>Made with ❤️ by</source>
+        <translation>Erstellt mit ❤️ von</translation>
+    </message>
 </context>
 </TS>

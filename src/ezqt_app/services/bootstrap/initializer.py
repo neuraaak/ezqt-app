@@ -15,6 +15,7 @@ from pathlib import Path
 
 # Local imports
 from ...domain.results import InitResult
+from ...utils.logger import get_logger
 from ..application.app_service import AppService
 from ..application.file_service import FileService
 from .contracts.options import InitOptions, OverwritePolicy
@@ -22,10 +23,12 @@ from .init_service import InitService
 from .sequence import InitializationSequence
 from .startup_config import StartupConfig
 
-
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
+_logger = get_logger()
+
+
 class Initializer:
     """Coordinates the complete EzQt_App initialization process.
 
@@ -41,7 +44,6 @@ class Initializer:
         self._file_service = FileService()
         self._sequence = InitializationSequence()
         self._init_service = InitService()
-        self._initialized = False
 
     # ------------------------------------------------------------------
     # Main entry points
@@ -102,7 +104,8 @@ class Initializer:
         try:
             AppService.check_assets_requirements()
             return True
-        except Exception:
+        except Exception as e:
+            _logger.error(f"Asset requirements check failed: {e}")
             return False
 
     def make_required_files(self, mk_theme: bool = True) -> None:
@@ -114,10 +117,9 @@ class Initializer:
     # ------------------------------------------------------------------
 
     def is_initialized(self) -> bool:
-        return self._initialized
+        return self._init_service.is_initialized()
 
     def reset(self) -> None:
-        self._initialized = False
         self._init_service.reset()
         self._startup_config.reset()
         self._sequence.reset()

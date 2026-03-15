@@ -21,10 +21,7 @@ from ezqt_app.services.translation.helpers import (
     get_auto_translation_stats,
     get_available_languages,
     get_current_language,
-    register_tr,
-    set_tr,
     tr,
-    unregister_tr,
 )
 
 # ///////////////////////////////////////////////////////////////
@@ -63,45 +60,6 @@ class TestTr:
         with patch(_MANAGER_PATH, return_value=mock):
             result = tr("hello")
         assert result == "hello"
-
-
-class TestSetTr:
-    """Tests for set_tr()."""
-
-    def test_should_delegate_to_set_translatable_text_when_set_tr_is_called(
-        self,
-    ) -> None:
-        widget = MagicMock()
-        mock = _mock_manager()
-        with patch(_MANAGER_PATH, return_value=mock):
-            set_tr(widget, "Click here")
-        mock.set_translatable_text.assert_called_once_with(widget, "Click here")
-
-
-class TestRegisterTr:
-    """Tests for register_tr()."""
-
-    def test_should_delegate_to_register_widget_when_register_tr_is_called(
-        self,
-    ) -> None:
-        widget = MagicMock()
-        mock = _mock_manager()
-        with patch(_MANAGER_PATH, return_value=mock):
-            register_tr(widget, "my text")
-        mock.register_widget.assert_called_once_with(widget, "my text")
-
-
-class TestUnregisterTr:
-    """Tests for unregister_tr()."""
-
-    def test_should_delegate_to_unregister_widget_when_unregister_tr_is_called(
-        self,
-    ) -> None:
-        widget = MagicMock()
-        mock = _mock_manager()
-        with patch(_MANAGER_PATH, return_value=mock):
-            unregister_tr(widget)
-        mock.unregister_widget.assert_called_once_with(widget)
 
 
 class TestChangeLanguage:

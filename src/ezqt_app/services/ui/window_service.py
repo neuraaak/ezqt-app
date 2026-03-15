@@ -7,13 +7,11 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
-# Standard library imports
-from typing import Any
-
 # Third-party imports
 from PySide6.QtGui import QIcon
 
 # Local imports
+from ...domain.ports.main_window import MainWindowProtocol
 from ..runtime import get_runtime_state_service
 
 
@@ -24,7 +22,7 @@ class WindowService:
     """Service responsible for maximize/restore and window state flags."""
 
     @staticmethod
-    def maximize_restore(window: Any) -> None:
+    def maximize_restore(window: MainWindowProtocol) -> None:
         """Toggle between maximized and restored window state."""
         runtime_state_service = get_runtime_state_service()
         is_maximized = runtime_state_service.get_global_state()

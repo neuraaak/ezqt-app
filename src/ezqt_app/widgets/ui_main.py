@@ -16,6 +16,7 @@ from PySide6.QtWidgets import QFrame, QHBoxLayout, QMainWindow, QVBoxLayout, QWi
 
 # Local imports
 from ..services.settings import get_settings_service
+from ..services.translation import get_translation_manager
 from ..services.ui import Fonts
 from ..widgets.core import BottomBar, Header, Menu, PageContainer, SettingsPanel
 
@@ -140,6 +141,17 @@ class Ui_MainWindow:
         # ////// SETUP BOTTOM BAR
         self.bottomBar = BottomBar(parent=self.contentBottom)
         self.VL_contentBottom.addWidget(self.bottomBar)
+
+        # ////// CONNECT TRANSLATION INDICATOR
+        # Wire the TranslationManager signals to the BottomBar indicator so the
+        # widget stays decoupled from the service (signal/slot, no direct reference).
+        translation_manager = get_translation_manager()
+        translation_manager.translation_started.connect(
+            self.bottomBar.show_translation_indicator
+        )
+        translation_manager.translation_finished.connect(
+            self.bottomBar.hide_translation_indicator
+        )
 
         # ////// FINAL SETUP
         MainWindow.setCentralWidget(self.styleSheet)

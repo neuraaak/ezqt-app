@@ -29,19 +29,6 @@ class TestTranslationManager:
         manager = TranslationManager()
         assert manager.current_language == "en"
         assert manager.translator is not None
-        assert len(manager._translatable_widgets) == 0
-        assert len(manager._translatable_texts) == 0
-
-    def test_should_have_correct_language_mapping_when_instantiated(self):
-        """Test language mapping."""
-        manager = TranslationManager()
-        expected_mapping = {
-            "English": "en",
-            "Français": "fr",
-            "Español": "es",
-            "Deutsch": "de",
-        }
-        assert manager.language_mapping == expected_mapping
 
     def test_should_return_list_of_available_languages_when_called(self):
         """Test retrieval of available languages."""
@@ -113,47 +100,6 @@ class TestTranslationManager:
         assert not result
         assert manager.get_current_language_code() == "en"  # Should remain default
 
-    def test_should_add_widget_to_registry_when_register_widget_is_called(self):
-        """Test widget registration."""
-        manager = TranslationManager()
-        mock_widget = MagicMock()
-
-        manager.register_widget(mock_widget, "Hello")
-        assert mock_widget in manager._translatable_widgets
-
-    def test_should_remove_widget_from_registry_when_unregister_widget_is_called(self):
-        """Test widget unregistration."""
-        manager = TranslationManager()
-        mock_widget = MagicMock()
-
-        # Register then unregister
-        manager.register_widget(mock_widget, "Hello")
-        manager.unregister_widget(mock_widget)
-        assert mock_widget not in manager._translatable_widgets
-
-    def test_should_clear_all_widgets_when_clear_registered_widgets_is_called(self):
-        """Test clearing all registered widgets."""
-        manager = TranslationManager()
-        mock_widget1 = MagicMock()
-        mock_widget2 = MagicMock()
-
-        # Register multiple widgets
-        manager.register_widget(mock_widget1, "Hello")
-        manager.register_widget(mock_widget2, "World")
-        assert len(manager._translatable_widgets) == 2
-
-        # Clear all
-        manager.clear_registered_widgets()
-        assert len(manager._translatable_widgets) == 0
-
-    def test_should_store_text_mapping_when_set_translatable_text_is_called(self):
-        """Test setting translatable text for a widget."""
-        manager = TranslationManager()
-        mock_widget = MagicMock()
-
-        manager.set_translatable_text(mock_widget, "Hello")
-        assert manager._translatable_texts[mock_widget] == "Hello"
-
     @patch("ezqt_app.services.translation.manager.QCoreApplication")
     def test_should_load_language_when_code_is_given(self, mock_qcore):
         """Test loading language by code."""
@@ -183,3 +129,102 @@ class TestTranslationManager:
         manager.languageChanged.connect(on_language_changed)
         manager.load_language("Français")
         assert signal_emitted
+
+
+class TestTranslationManagerPendingCount:
+    """Tests for the pending auto-translation counter and related signals."""
+
+    def test_should_start_with_zero_pending_count_when_instantiated(self):
+        """Pending counter must be zero before any requests are fired."""
+        manager = TranslationManager()
+        assert manager._pending_auto_translations == 0
+
+    def test_should_increment_pending_when_increment_is_called(self):
+        """_increment_pending raises counter from 0 to 1."""
+        manager = TranslationManager()
+        manager._increment_pending()
+        assert manager._pending_auto_translations == 1
+
+    def test_should_decrement_pending_when_decrement_is_called(self):
+        """_decrement_pending lowers counter by one."""
+        manager = TranslationManager()
+        manager._increment_pending()
+        manager._decrement_pending()
+        assert manager._pending_auto_translations == 0
+
+    def test_should_not_go_below_zero_when_decrement_is_called_on_empty_counter(self):
+        """_decrement_pending is idempotent at zero — no underflow."""
+        manager = TranslationManager()
+        manager._decrement_pending()
+        assert manager._pending_auto_translations == 0
+
+    def test_should_emit_translation_started_when_count_transitions_from_zero(
+        self, qt_application
+    ):
+        """translation_started is emitted exactly when pending goes 0 → 1."""
+        manager = TranslationManager()
+        started_count = 0
+
+        def on_started():
+            nonlocal started_count
+            started_count += 1
+
+        manager.translation_started.connect(on_started)
+        manager._increment_pending()
+        assert started_count == 1
+
+        # Second increment must NOT re-emit translation_started.
+        manager._increment_pending()
+        assert started_count == 1
+
+    def test_should_emit_translation_finished_when_count_reaches_zero(
+        self, qt_application
+    ):
+        """translation_finished is emitted exactly when pending reaches 0."""
+        manager = TranslationManager()
+        finished_count = 0
+
+        def on_finished():
+            nonlocal finished_count
+            finished_count += 1
+
+        manager.translation_finished.connect(on_finished)
+        manager._increment_pending()
+        manager._decrement_pending()
+        assert finished_count == 1
+
+    def test_should_not_emit_translation_finished_while_requests_remain_pending(
+        self, qt_application
+    ):
+        """translation_finished must not fire while counter is still above zero."""
+        manager = TranslationManager()
+        finished_count = 0
+
+        def on_finished():
+            nonlocal finished_count
+            finished_count += 1
+
+        manager.translation_finished.connect(on_finished)
+        manager._increment_pending()
+        manager._increment_pending()
+        manager._decrement_pending()
+        # One request still in flight — finished must not have been emitted.
+        assert finished_count == 0
+
+        manager._decrement_pending()
+        # Now all resolved — finished must have fired exactly once.
+        assert finished_count == 1
+
+    def test_should_decrement_pending_when_auto_translation_error_is_received(self):
+        """_on_auto_translation_error must decrement the pending counter."""
+        manager = TranslationManager()
+        manager._increment_pending()
+        manager._on_auto_translation_error("Hello", "Network error")
+        assert manager._pending_auto_translations == 0
+
+    def test_should_decrement_pending_when_auto_translation_ready_is_received(self):
+        """_on_auto_translation_ready must decrement the pending counter."""
+        manager = TranslationManager()
+        manager._increment_pending()
+        manager._on_auto_translation_ready("Hello", "Bonjour")
+        assert manager._pending_auto_translations == 0

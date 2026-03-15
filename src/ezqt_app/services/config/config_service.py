@@ -13,6 +13,7 @@ from __future__ import annotations
 # Standard library imports
 import shutil
 import sys
+from importlib.resources import files as _pkg_files
 from pathlib import Path
 from typing import Any
 
@@ -310,9 +311,8 @@ class ConfigService(ConfigServiceProtocol):
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETONS
+# SINGLETONS / FUNCTIONS
 # ///////////////////////////////////////////////////////////////
-_config_service: ConfigService | None = None
 
 
 def _get_installed_package_root() -> Path | None:
@@ -364,10 +364,9 @@ def _resource_candidates(resource_path: str) -> list[Path]:
 # ///////////////////////////////////////////////////////////////
 def get_config_service() -> ConfigService:
     """Return the singleton configuration service instance."""
-    global _config_service
-    if _config_service is None:
-        _config_service = ConfigService()
-    return _config_service
+    from .._registry import ServiceRegistry
+
+    return ServiceRegistry.get(ConfigService, ConfigService)
 
 
 def get_package_resource(resource_path: str) -> Path:
@@ -388,14 +387,12 @@ def get_package_resource(resource_path: str) -> Path:
             return candidate
 
     try:
-        import pkg_resources  # type: ignore[import-untyped]
-
-        pkg_candidate = Path(pkg_resources.resource_filename("ezqt_app", resource_path))
+        pkg_candidate = Path(str(_pkg_files("ezqt_app").joinpath(resource_path)))
         if pkg_candidate.exists():
             return pkg_candidate
     except Exception as e:
         get_printer().verbose_msg(
-            f"pkg_resources lookup failed for '{resource_path}': {e}"
+            f"importlib.resources lookup failed for '{resource_path}': {e}"
         )
 
     package_root = _get_installed_package_root()
@@ -423,9 +420,9 @@ def get_package_resource_content(resource_path: str) -> str:
         If the resource cannot be located by any strategy.
     """
     try:
-        import pkg_resources  # type: ignore[import-untyped]
-
-        return pkg_resources.resource_string("ezqt_app", resource_path).decode("utf-8")
+        return (
+            _pkg_files("ezqt_app").joinpath(resource_path).read_text(encoding="utf-8")
+        )
     except Exception:
         file_path = get_package_resource(resource_path)
         if file_path.exists():

@@ -13,6 +13,7 @@ from __future__ import annotations
 # Local imports
 from ...domain.models.runtime import RuntimeStateModel
 from ...domain.ports.runtime_state_service import RuntimeStateServiceProtocol
+from .._registry import ServiceRegistry
 
 
 # ///////////////////////////////////////////////////////////////
@@ -63,14 +64,8 @@ class RuntimeStateService(RuntimeStateServiceProtocol):
 
 
 # ///////////////////////////////////////////////////////////////
-# SINGLETONS
-# ///////////////////////////////////////////////////////////////
-_runtime_state_service = RuntimeStateService()
-
-
-# ///////////////////////////////////////////////////////////////
 # FUNCTIONS
 # ///////////////////////////////////////////////////////////////
 def get_runtime_state_service() -> RuntimeStateService:
     """Return the singleton runtime state service."""
-    return _runtime_state_service
+    return ServiceRegistry.get(RuntimeStateService, RuntimeStateService)

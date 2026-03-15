@@ -266,18 +266,24 @@ class TestMyMemoryProvider:
         assert result is None
 
 
+class _ConcreteProvider(TranslationProvider):
+    """Minimal concrete provider for testing the base class."""
+
+    def translate(self, text: str, source_lang: str, target_lang: str) -> str | None:
+        return None
+
+
 class TestTranslationProviderBase:
     """Tests for the base TranslationProvider class."""
 
-    def test_should_raise_not_implemented_when_translate_is_called_on_base(
+    def test_should_raise_type_error_when_instantiated_without_translate_implementation(
         self,
     ) -> None:
-        provider = TranslationProvider("test", "http://example.com")
-        with pytest.raises(NotImplementedError):
-            provider.translate("text", "en", "fr")
+        with pytest.raises(TypeError):
+            TranslationProvider("test", "http://example.com")  # type: ignore[abstract]
 
     def test_should_return_false_when_is_available_raises_exception(self) -> None:
-        provider = TranslationProvider("test", "http://unreachable.invalid")
+        provider = _ConcreteProvider("test", "http://unreachable.invalid")
         with patch(
             "ezqt_app.services.translation.auto_translator.requests.get",
             side_effect=Exception("unreachable"),
