@@ -12,7 +12,7 @@
 - **✅ Application Bootstrap**: `init`, assets generation, and project setup workflows
 - **✅ Modular Services**: config, settings, runtime, translation, and UI service layers
 - **✅ Hexagonal Migration**: `domain` contracts with `services` adapters and explicit boundaries
-- **✅ Translation Stack**: `.ts` loading, widget registration, string collection, optional API auto-translation
+- **✅ Translation Stack**: `.ts` loading + on-the-fly `.qm` compilation, `EzTranslator` Qt interceptor, non-blocking auto-translation with in-app progress indicator
 - **✅ Built-in CLI**: `ezqt` commands for init, tests, docs, and utility workflows
 - **✅ Test Scopes**: unit, integration, and robustness test suites
 
