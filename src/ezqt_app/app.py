@@ -71,23 +71,34 @@ class EzQt_App(QMainWindow):
 
     def __init__(
         self,
-        themeFileName: str | None = None,
+        theme_file_name: str | None = None,
         logs_dir: str | Path | None = None,
         log_file_name: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize the EzQt_App application.
 
         Parameters
         ----------
-        themeFileName : str, optional
+        theme_file_name : str, optional
             Name of the theme file to use (default: None).
         logs_dir : str | Path, optional
             Custom logs directory overriding config/default path.
         log_file_name : str, optional
             Custom log file name overriding config/default naming.
+        **kwargs : dict
+            Backward compatibility for legacy arguments (e.g., themeFileName).
         """
         QMainWindow.__init__(self)
+
+        # Handle backward compatibility
+        if "themeFileName" in kwargs:
+            warn_tech(
+                code="app.legacy_arg",
+                message="Argument 'themeFileName' is deprecated. Use 'theme_file_name' instead.",
+            )
+            theme_file_name = kwargs.pop("themeFileName")
 
         # ////// APP SERVICE LOADER
         # ///////////////////////////////////////////////////////////////
@@ -176,17 +187,17 @@ class EzQt_App(QMainWindow):
         # ////// APP DATA
         # ///////////////////////////////////////////////////////////////
         self.setWindowTitle(settings_service.app.NAME)
-        self.setAppIcon(Images.logo_placeholder, yShrink=0)
+        self.set_app_icon(Images.logo_placeholder, y_shrink=0)
 
         # ==> TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
-        self.ui.menuContainer.toggleButton.clicked.connect(
+        self.ui.menu_container.toggle_button.clicked.connect(
             lambda: PanelService.toggle_menu_panel(self._as_window(), True)
         )
 
         # ==> TOGGLE SETTINGS
         # ///////////////////////////////////////////////////////////////
-        self.ui.headerContainer.settingsTopBtn.clicked.connect(
+        self.ui.header_container.settings_btn.clicked.connect(
             lambda: PanelService.toggle_settings_panel(self._as_window(), True)
         )
 
@@ -196,7 +207,7 @@ class EzQt_App(QMainWindow):
 
         # SET THEME
         # ///////////////////////////////////////////////////////////////
-        self._themeFileName = themeFileName
+        self._theme_file_name = theme_file_name
 
         # Load theme from settings_panel if it exists, otherwise from app
         try:
@@ -218,9 +229,9 @@ class EzQt_App(QMainWindow):
         settings_service.set_theme(_theme)
 
         # Apply stylesheet after active theme has been resolved.
-        ThemeService.apply_theme(self._as_window(), self._themeFileName)
+        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
 
-        theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
+        theme_toggle = self.ui.settings_panel.get_theme_selector()
         if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
             try:
                 # Convert theme value to ID
@@ -232,15 +243,15 @@ class EzQt_App(QMainWindow):
                     message="Could not initialize theme selector",
                     error=e,
                 )
-        self.ui.headerContainer.update_all_theme_icons()
-        self.ui.menuContainer.update_all_theme_icons()
+        self.ui.header_container.update_all_theme_icons()
+        self.ui.menu_container.update_all_theme_icons()
         # //////
         if theme_toggle:
             # Connect valueChanged signal instead of clicked for new version
             if hasattr(theme_toggle, "valueChanged"):
-                theme_toggle.valueChanged.connect(self.setAppTheme)
+                theme_toggle.valueChanged.connect(self.set_app_theme)
             elif hasattr(theme_toggle, "clicked"):
-                theme_toggle.clicked.connect(self.setAppTheme)
+                theme_toggle.clicked.connect(self.set_app_theme)
 
         # ==> COLLECT STRINGS FOR TRANSLATION (opt-in)
         # ///////////////////////////////////////////////////////////////
@@ -262,11 +273,59 @@ class EzQt_App(QMainWindow):
         if _collect_enabled:
             self._collect_strings_for_translation()
 
-    # SET APP THEME
     # ///////////////////////////////////////////////////////////////
+    # BACKWARD COMPATIBILITY ALIASES (DEPRECATED)
+    # ///////////////////////////////////////////////////////////////
+
     def setAppTheme(self) -> None:
+        """Deprecated alias for set_app_theme."""
+        warn_tech(
+            code="app.legacy_method",
+            message="Method 'setAppTheme' is deprecated. Use 'set_app_theme' instead.",
+        )
+        self.set_app_theme()
+
+    def updateUI(self) -> None:
+        """Deprecated alias for update_ui."""
+        warn_tech(
+            code="app.legacy_method",
+            message="Method 'updateUI' is deprecated. Use 'update_ui' instead.",
+        )
+        self.update_ui()
+
+    def setAppIcon(
+        self, logo: str | QPixmap, y_shrink: int = 0, y_offset: int = 0
+    ) -> None:
+        """Deprecated alias for set_app_icon."""
+        warn_tech(
+            code="app.legacy_method",
+            message="Method 'setAppIcon' is deprecated. Use 'set_app_icon' instead.",
+        )
+        self.set_app_icon(logo, y_shrink, y_offset)
+
+    def addMenu(self, name: str, icon: str) -> QWidget:
+        """Deprecated alias for add_menu."""
+        warn_tech(
+            code="app.legacy_method",
+            message="Method 'addMenu' is deprecated. Use 'add_menu' instead.",
+        )
+        return self.add_menu(name, icon)
+
+    def switchMenu(self) -> None:
+        """Deprecated alias for switch_menu."""
+        warn_tech(
+            code="app.legacy_method",
+            message="Method 'switchMenu' is deprecated. Use 'switch_menu' instead.",
+        )
+        self.switch_menu()
+
+    # ///////////////////////////////////////////////////////////////
+    # NEW SNAKE_CASE METHODS
+    # ///////////////////////////////////////////////////////////////
+
+    def set_app_theme(self) -> None:
         settings_service = get_settings_service()
-        theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
+        theme_toggle = self.ui.settings_panel.get_theme_selector()
         if theme_toggle:
             # Handle both cases: valueChanged (string) and clicked (no parameter)
             if hasattr(theme_toggle, "value_id"):
@@ -290,26 +349,26 @@ class EzQt_App(QMainWindow):
             )
 
             # Force immediate update
-            self.updateUI()
+            self.update_ui()
 
     # UPDATE UI
     # ///////////////////////////////////////////////////////////////
-    def updateUI(self) -> None:
-        theme_toggle = self.ui.settingsPanel.get_theme_toggle_button()
+    def update_ui(self) -> None:
+        theme_toggle = self.ui.settings_panel.get_theme_selector()
         if theme_toggle and hasattr(theme_toggle, "get_value_option"):
             # New OptionSelector version handles positioning automatically
             # No need for manual move_selector
             pass
 
         # //////
-        ThemeService.apply_theme(self._as_window(), self._themeFileName)
+        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
         # //////
         ez_app = EzApplication.instance()
         if isinstance(ez_app, EzApplication):
             ez_app.themeChanged.emit()
-        self.ui.headerContainer.update_all_theme_icons()
-        self.ui.menuContainer.update_all_theme_icons()
-        self.ui.settingsPanel.update_all_theme_icons()
+        self.ui.header_container.update_all_theme_icons()
+        self.ui.menu_container.update_all_theme_icons()
+        self.ui.settings_panel.update_all_theme_icons()
 
         # //////
         QApplication.processEvents()
@@ -323,40 +382,38 @@ class EzQt_App(QMainWindow):
 
     # SET APP ICON
     # ///////////////////////////////////////////////////////////////
-    def setAppIcon(
-        self, icon: str | QPixmap, yShrink: int = 0, yOffset: int = 0
+    def set_app_icon(
+        self, icon: str | QPixmap, y_shrink: int = 0, y_offset: int = 0
     ) -> None:
-        return self.ui.headerContainer.set_app_logo(
-            logo=icon, y_shrink=yShrink, y_offset=yOffset
+        return self.ui.header_container.set_app_logo(
+            logo=icon, y_shrink=y_shrink, y_offset=y_offset
         )
 
     # ADD MENU & PAGE
     # ///////////////////////////////////////////////////////////////
-    def addMenu(self, name: str, icon: str) -> QWidget:
-        page = self.ui.pagesContainer.add_page(name)
+    def add_menu(self, name: str, icon: str) -> QWidget:
+        page = self.ui.pages_container.add_page(name)
         # //////
-        menu = self.ui.menuContainer.add_menu(name, icon)
+        menu = self.ui.menu_container.add_menu(name, icon)
         menu.setProperty("page", page)
-        if len(self.ui.menuContainer.menus) == 1:
+        if len(self.ui.menu_container.menus) == 1:
             menu.setProperty("class", "active")
         # //////
-        menu.clicked.connect(
-            lambda: self.ui.pagesContainer.stackedWidget.setCurrentWidget(page)
-        )
-        menu.clicked.connect(self.switchMenu)
+        menu.clicked.connect(lambda: self.ui.pages_container.set_current_widget(page))
+        menu.clicked.connect(self.switch_menu)
 
         # //////
         return page
 
     # MENU SWITCH
     # ///////////////////////////////////////////////////////////////
-    def switchMenu(self) -> None:
+    def switch_menu(self) -> None:
         # GET BUTTON CLICKED
         sender = self.sender()
         senderName = sender.objectName()
 
         # SHOW HOME PAGE
-        for btnName, _ in self.ui.menuContainer.menus.items():
+        for btnName, _ in self.ui.menu_container.menus.items():
             if senderName == f"menu_{btnName}":
                 MenuService.deselect_menu(self._as_window(), senderName)
                 MenuService.select_menu(self._as_window(), senderName)
@@ -394,16 +451,16 @@ class EzQt_App(QMainWindow):
         Set the credits text in the bottom bar.
         Can be a simple string, a dict {"name": ..., "email": ...}, or a JSON string.
         """
-        if hasattr(self.ui, "bottomBar") and self.ui.bottomBar:
-            self.ui.bottomBar.set_credits(credits)
+        if hasattr(self.ui, "bottom_bar") and self.ui.bottom_bar:
+            self.ui.bottom_bar.set_credits(credits)
 
     def set_version(self, version):
         """
         Set the version text in the bottom bar.
         Can be a string ("1.0.0", "v1.0.0", etc).
         """
-        if hasattr(self.ui, "bottomBar") and self.ui.bottomBar:
-            self.ui.bottomBar.set_version(version)
+        if hasattr(self.ui, "bottom_bar") and self.ui.bottom_bar:
+            self.ui.bottom_bar.set_version(version)
 
     # TRANSLATION MANAGEMENT METHODS
     # ///////////////////////////////////////////////////////////////

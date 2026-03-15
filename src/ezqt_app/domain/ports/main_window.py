@@ -24,20 +24,25 @@ from typing import TYPE_CHECKING, Any, Protocol
 if TYPE_CHECKING:
     from PySide6.QtCore import QPoint, QPropertyAnimation, QSize, Qt
     from PySide6.QtGui import QIcon
-    from PySide6.QtWidgets import QGraphicsDropShadowEffect, QSizeGrip, QToolButton
+    from PySide6.QtWidgets import (
+        QGraphicsDropShadowEffect,
+        QSizeGrip,
+        QToolButton,
+        QWidget,
+    )
 
 
 # ///////////////////////////////////////////////////////////////
 # SUB-PROTOCOLS — window.ui.*
 # ///////////////////////////////////////////////////////////////
 class StyleSheetWidgetProtocol(Protocol):
-    """Minimal contract for the style-sheet target widget (``ui.styleSheet``)."""
+    """Minimal contract for the style-sheet target widget (``ui.style_sheet``)."""
 
     def setStyleSheet(self, style: str) -> None: ...
 
 
-class AppMarginsProtocol(Protocol):
-    """Minimal contract for the outer margin container (``ui.appMargins``)."""
+class AppMarginsLayoutProtocol(Protocol):
+    """Minimal contract for the outer margin layout (``ui.app_margins_layout``)."""
 
     def setContentsMargins(
         self, left: int, top: int, right: int, bottom: int
@@ -55,11 +60,11 @@ class _AppButtonProtocol(Protocol):
 
 
 class HeaderContainerProtocol(Protocol):
-    """Minimal contract for the title-bar / header widget (``ui.headerContainer``)."""
+    """Minimal contract for the title-bar / header widget (``ui.header_container``)."""
 
-    minimizeAppBtn: _AppButtonProtocol
-    maximizeRestoreAppBtn: _AppButtonProtocol
-    closeAppBtn: _AppButtonProtocol
+    minimize_btn: _AppButtonProtocol
+    maximize_restore_btn: _AppButtonProtocol
+    close_btn: _AppButtonProtocol
     mouseDoubleClickEvent: Any  # settable event handler
     mouseMoveEvent: Any  # settable event handler
 
@@ -75,21 +80,22 @@ class _SizeGripSlotProtocol(Protocol):
 
 
 class BottomBarProtocol(Protocol):
-    """Minimal contract for the bottom status / size-grip bar (``ui.bottomBar``)."""
+    """Minimal contract for the bottom status bar (``ui.bottom_bar``)."""
 
-    appSizeGrip: _SizeGripSlotProtocol
+    size_grip_spacer: _SizeGripSlotProtocol
 
 
 class _TopMenuProtocol(Protocol):
-    """Minimal contract for the top-menu widget (``ui.menuContainer.topMenu``)."""
+    """Minimal contract for the top-menu widget (``ui.menu_container.top_menu``)."""
 
     def findChildren(self, child_type: type[QToolButton]) -> list[QToolButton]: ...
 
 
 class MenuContainerProtocol(Protocol):
-    """Minimal contract for the collapsible left menu (``ui.menuContainer``)."""
+    """Minimal contract for the collapsible left menu (``ui.menu_container``)."""
 
-    topMenu: _TopMenuProtocol
+    top_menu: _TopMenuProtocol
+    toggle_button: Any
 
     def width(self) -> int: ...
     def get_extended_width(self) -> int: ...
@@ -97,14 +103,21 @@ class MenuContainerProtocol(Protocol):
 
 
 class SettingsPanelProtocol(Protocol):
-    """Minimal contract for the settings slide-in panel (``ui.settingsPanel``)."""
+    """Minimal contract for the settings slide-in panel (``ui.settings_panel``)."""
 
     def width(self) -> int: ...
-    def get_theme_toggle_button(self) -> Any: ...
+    def get_theme_selector(self) -> Any: ...
+
+
+class PageContainerProtocol(Protocol):
+    """Minimal contract for the central page receptacle (``ui.pages_container``)."""
+
+    def add_page(self, name: str) -> QWidget: ...
+    def set_current_widget(self, widget: QWidget) -> None: ...
 
 
 class BgAppProtocol(Protocol):
-    """Minimal contract for the background app widget (``ui.bgApp``)."""
+    """Minimal contract for the background app widget (``ui.bg_app_frame``)."""
 
     def setGraphicsEffect(self, effect: QGraphicsDropShadowEffect) -> None: ...
 
@@ -112,13 +125,14 @@ class BgAppProtocol(Protocol):
 class MainUiProtocol(Protocol):
     """Aggregated contract for the ``window.ui`` object."""
 
-    styleSheet: StyleSheetWidgetProtocol
-    appMargins: AppMarginsProtocol
-    headerContainer: HeaderContainerProtocol
-    bottomBar: BottomBarProtocol
-    menuContainer: MenuContainerProtocol
-    settingsPanel: SettingsPanelProtocol
-    bgApp: BgAppProtocol
+    style_sheet: StyleSheetWidgetProtocol
+    app_margins_layout: AppMarginsLayoutProtocol
+    header_container: HeaderContainerProtocol
+    bottom_bar: BottomBarProtocol
+    menu_container: MenuContainerProtocol
+    settings_panel: SettingsPanelProtocol
+    pages_container: PageContainerProtocol
+    bg_app_frame: BgAppProtocol
 
 
 # ///////////////////////////////////////////////////////////////

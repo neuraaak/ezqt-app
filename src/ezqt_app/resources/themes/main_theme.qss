@@ -706,7 +706,7 @@ BaseSettingWidget QLabel {
 	font-weight: bold;
 }
 
-BaseSettingWidget QLabel[objectName="settingDescription"] {
+BaseSettingWidget QLabel[objectName="setting_description"] {
 	color: var(--accent_color4);
 	font: 8pt "Segoe UI";
 	margin-top: 2px;
@@ -805,7 +805,7 @@ SettingSlider QSlider::handle:horizontal:hover {
 	background-color: var(--main_accent_color);
 }
 
-SettingSlider QLabel[objectName="settingValueLabel"] {
+SettingSlider QLabel[objectName="setting_value_label"] {
 	color: var(--main_accent_color);
 	font: 9pt "Segoe UI";
 	font-weight: bold;
@@ -862,21 +862,21 @@ SettingCheckbox QCheckBox:hover {
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 Setting Containers */
-QFrame[objectName^="settingContainer_"] {
+QFrame[objectName^="setting_container_"] {
 	background-color: transparent;
 	border: none;
 }
 
-#themeSettingsContainer {
+#theme_section_frame {
 	background-color: transparent;
 	border: none;
 }
 
-#VL_settingsPanel {
+#settings_layout {
 	background-color: var(--main_surface);
 }
 
-#VL_contentSettings {
+#content_layout {
 	background-color: var(--main_surface);
 }
 
@@ -888,53 +888,53 @@ QFrame[objectName^="settingContainer_"] {
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 Bg App */
-#bgApp {
+#bg_app_frame {
 	background-color: var(--page_color);
 	border: 1px solid var(--main_border);
 }
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 HEADER */
-#headerContainer {
+#header_container {
 	background-color: var(--main_surface);
 }
 
-#headerAppLogo {
+#app_logo {
 	background-color: transparent;
 	background-position: centered;
 	background-repeat: no-repeat;
 }
 
-#headerAppName {
+#app_title {
 	font: 63 12pt "Segoe UI Semibold";
 }
 
-#headerAppDescription {
+#app_subtitle {
 	font: 8pt "Segoe UI";
 	color: var(--main_accent_color);
 }
 
 /* ==> Top Buttons */
-#headerButtons .QPushButton {
+#buttons_frame .QPushButton {
 	background-color: var(--transparent);
 	border: none;
 	border-radius: 5px;
 }
 
-#headerButtons .QPushButton:hover {
+#buttons_frame .QPushButton:hover {
 	background-color: var(--main_border);
 	border-style: solid;
 	border-radius: 4px;
 }
 
-#headerButtons .QPushButton:pressed {
+#buttons_frame .QPushButton:pressed {
 	background-color: var(--main_border);
 	border-style: solid;
 	border-radius: 4px;
 }
 
-/* ==> settingsTopBtn */
-.QPushButton#settingsTopBtn:pressed {
+/* ==> settings_btn */
+.QPushButton#settings_btn:pressed {
 	background-color: var(--main_accent_color);
 	border-style: solid;
 	border-radius: 4px;
@@ -942,98 +942,99 @@ HEADER */
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 LEFT MENU */
-#menuContainer {
+#menu_container {
 	background-color: var(--main_surface);
 }
 
-#mainMenuFrame {
+#main_menu_frame {
+	background-color: var(--main_surface);
 	border-top: 3px solid var(--main_border);
 }
 
 /* ==> Toggle Button */
-#toggleButton {
+#toggle_button {
 	background-color: var(--accent_color3);
 	border: none;
 	border-radius: 0;
 	text-align: left;
 }
 
-#toggleButton .QLabel {
+#toggle_button .QLabel {
 	color: var(--accent_color4);
 }
 
-#toggleButton:hover {
+#toggle_button:hover {
 	background-color: var(--main_border);
 }
 
-#toggleButton:hover .QLabel {
+#toggle_button:hover .QLabel {
 	color: var(--base_text_color);
 }
 
-#toggleButton:pressed {
+#toggle_button:pressed {
 	background-color: var(--main_accent_color);
 }
 
 /* ==> Menu Items */
-#topMenu QToolButton {
+#top_menu QToolButton {
 	border: none;
 	border-radius: 0;
 	background-color: transparent;
 }
 
-#topMenu QToolButton[class="inactive"] {
+#top_menu QToolButton[class="inactive"] {
 	background-color: transparent;
 }
 
-#topMenu QToolButton[class="active"] {
+#top_menu QToolButton[class="active"] {
 	background-color: transparent;
 	border-left: 3px solid var(--main_accent_color);
 }
 
-#topMenu QToolButton:hover {
+#top_menu QToolButton:hover {
 	background-color: var(--main_border);
 }
 
-#topMenu QToolButton:pressed {
+#top_menu QToolButton:pressed {
 	background-color: var(--main_accent_color);
 	color: var(--select_text_color);
 }
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 SETTINGS PANEL */
-/* #settingsScrollArea QScrollBar:vertical {
+/* #settings_scroll_area QScrollBar:vertical {
     background: transparent;
 } */
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 CONTENT */
-#contentBottom {
+#content_bottom_frame {
 	border-top: 3px solid var(--main_border);
 }
 
 /* ==> Settings Panel */
-#settingsPanel {
+#settings_panel {
 	background-color: var(--main_surface);
 }
 
-#settingsTopBorder {
+#settings_top_border {
 	background-color: var(--main_accent_color);
 }
 
-#contentSettings {
+#content_widget {
 	background-color: var(--main_surface);
 }
 
-#settingsScrollArea {
+#settings_scroll_area {
 	background-color: var(--main_surface);
 	border: none;
 }
 
-#settingsScrollArea QWidget {
+#settings_scroll_area QWidget {
 	background-color: var(--main_surface);
 }
 
-#contentSettings .QPushButton {
+#content_widget .QPushButton {
 	background-position: left center;
 	background-repeat: no-repeat;
 	border: none;
@@ -1043,22 +1044,22 @@ CONTENT */
 	padding-left: 44px;
 }
 
-#contentSettings .QPushButton:hover {
+#content_widget .QPushButton:hover {
 	background-color: var(--page_color);
 }
 
-#contentSettings .QPushButton:pressed {
+#content_widget .QPushButton:pressed {
 	background-color: var(--main_accent_color);
 	color: var(--select_text_color);
 }
 
-#themeToggleButton {
+#theme_selector {
 	background-color: var(--main_border);
 	border: 2px solid var(--accent_color1);
 	border-radius: 6px;
 }
 
-#themeToggleButton #selector {
+#theme_selector #selector {
 	background-color: var(--main_border);
 	border: 2px solid var(--main_accent_color);
 	border-radius: 4px;
@@ -1066,25 +1067,25 @@ CONTENT */
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 Theme Label */
-#themeLabel {
+#theme_label {
 	color: var(--base_text_color);
 	font: 10pt "Segoe UI";
 	font-weight: bold;
 }
 
-/* ==> pagesContainer */
-#pagesContainer QPushButton {
+/* ==> pages_container */
+#pages_container QPushButton {
 	border: 2px solid var(--accent_color1);
 	border-radius: 5px;
 	background-color: var(--accent_color1);
 }
 
-#pagesContainer QPushButton:hover {
+#pages_container QPushButton:hover {
 	background-color: var(--main_border);
 	border: 2px solid rgb(61, 70, 86);
 }
 
-#pagesContainer QPushButton:pressed {
+#pages_container QPushButton:pressed {
 	background-color: var(--accent_color3);
 	border: 2px solid rgb(43, 50, 61);
 }
@@ -1104,16 +1105,16 @@ Theme Label */
 }
 
 /* Keep credits + separator + translating visually compact as a left group. */
-#bottomBar #creditsLabel {
+#bottomBar #credits_label {
 	padding-right: 4px;
 }
 
-#bottomBar #translationSeparator {
+#bottomBar #trans_sep_label {
 	padding-left: 2px;
 	padding-right: 2px;
 }
 
-#bottomBar #translationIndicator {
+#bottomBar #trans_ind_label {
 	padding-left: 4px;
 	padding-right: 6px;
 }

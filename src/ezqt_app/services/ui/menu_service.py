@@ -24,7 +24,7 @@ class MenuService:
     @staticmethod
     def select_menu(window: MainWindowProtocol, widget: str) -> None:
         """Set active class on a menu button identified by its object name."""
-        for menu_widget in window.ui.menuContainer.topMenu.findChildren(QToolButton):
+        for menu_widget in window.ui.menu_container.top_menu.findChildren(QToolButton):
             if menu_widget.objectName() == widget and isinstance(
                 menu_widget, QToolButton
             ):
@@ -34,7 +34,7 @@ class MenuService:
     @staticmethod
     def deselect_menu(window: MainWindowProtocol, widget: str) -> None:
         """Set inactive class on all menu buttons except the selected one."""
-        for menu_widget in window.ui.menuContainer.topMenu.findChildren(QToolButton):
+        for menu_widget in window.ui.menu_container.top_menu.findChildren(QToolButton):
             if menu_widget.objectName() != widget and isinstance(
                 menu_widget, QToolButton
             ):

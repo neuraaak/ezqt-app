@@ -30,12 +30,12 @@ class WindowService:
         if not is_maximized:
             window.showMaximized()
             runtime_state_service.set_global_state(True)
-            window.ui.appMargins.setContentsMargins(0, 0, 0, 0)
-            window.ui.headerContainer.maximizeRestoreAppBtn.setToolTip("Restore")
-            window.ui.headerContainer.maximizeRestoreAppBtn.setIcon(
+            window.ui.app_margins_layout.setContentsMargins(0, 0, 0, 0)
+            window.ui.header_container.maximize_restore_btn.setToolTip("Restore")
+            window.ui.header_container.maximize_restore_btn.setIcon(
                 QIcon(":/icons/icons/icon_restore.png")
             )
-            window.ui.bottomBar.appSizeGrip.hide()
+            window.ui.bottom_bar.size_grip_spacer.hide()
             window.left_grip.hide()
             window.right_grip.hide()
             window.top_grip.hide()
@@ -45,12 +45,12 @@ class WindowService:
         runtime_state_service.set_global_state(False)
         window.showNormal()
         window.resize(window.width() + 1, window.height() + 1)
-        window.ui.appMargins.setContentsMargins(10, 10, 10, 10)
-        window.ui.headerContainer.maximizeRestoreAppBtn.setToolTip("Maximize")
-        window.ui.headerContainer.maximizeRestoreAppBtn.setIcon(
+        window.ui.app_margins_layout.setContentsMargins(10, 10, 10, 10)
+        window.ui.header_container.maximize_restore_btn.setToolTip("Maximize")
+        window.ui.header_container.maximize_restore_btn.setIcon(
             QIcon(":/icons/icons/icon_maximize.png")
         )
-        window.ui.bottomBar.appSizeGrip.show()
+        window.ui.bottom_bar.size_grip_spacer.show()
         window.left_grip.show()
         window.right_grip.show()
         window.top_grip.show()

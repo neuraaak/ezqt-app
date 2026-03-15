@@ -51,101 +51,100 @@ class Ui_MainWindow:
         settings_service = get_settings_service()
 
         # ////// SETUP MAIN STYLESHEET WIDGET
-        self.styleSheet = QWidget(MainWindow)
-        self.styleSheet.setObjectName("styleSheet")
+        self.style_sheet = QWidget(MainWindow)
+        self.style_sheet.setObjectName("style_sheet")
         if Fonts.SEGOE_UI_10_REG is not None:
-            self.styleSheet.setFont(Fonts.SEGOE_UI_10_REG)
+            self.style_sheet.setFont(Fonts.SEGOE_UI_10_REG)
 
         # ////// SETUP MAIN MARGINS
-        self.appMargins = QVBoxLayout(self.styleSheet)
-        self.appMargins.setSpacing(0)
-        self.appMargins.setObjectName("appMargins")
-        self.appMargins.setContentsMargins(10, 10, 10, 10)
+        self.app_margins_layout = QVBoxLayout(self.style_sheet)
+        self.app_margins_layout.setSpacing(0)
+        self.app_margins_layout.setObjectName("app_margins_layout")
+        self.app_margins_layout.setContentsMargins(10, 10, 10, 10)
 
         # ////// SETUP BACKGROUND APP
-        self.bgApp = QFrame(self.styleSheet)
-        self.bgApp.setObjectName("bgApp")
-        self.bgApp.setStyleSheet("")
-        self.bgApp.setFrameShape(QFrame.Shape.NoFrame)
-        self.bgApp.setFrameShadow(QFrame.Shadow.Raised)
-        self.appMargins.addWidget(self.bgApp)
+        self.bg_app_frame = QFrame(self.style_sheet)
+        self.bg_app_frame.setObjectName("bg_app_frame")
+        self.bg_app_frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.bg_app_frame.setFrameShadow(QFrame.Shadow.Raised)
+        self.app_margins_layout.addWidget(self.bg_app_frame)
 
         # ////// SETUP APP LAYOUT
-        self.appLayout = QVBoxLayout(self.bgApp)
-        self.appLayout.setSpacing(0)
-        self.appLayout.setObjectName("appLayout")
-        self.appLayout.setContentsMargins(0, 0, 0, 0)
+        self.app_layout = QVBoxLayout(self.bg_app_frame)
+        self.app_layout.setSpacing(0)
+        self.app_layout.setObjectName("app_layout")
+        self.app_layout.setContentsMargins(0, 0, 0, 0)
 
         # ////// SETUP HEADER
-        self.headerContainer = Header(parent=self.bgApp)
-        self.appLayout.addWidget(self.headerContainer)
+        self.header_container = Header(parent=self.bg_app_frame)
+        self.app_layout.addWidget(self.header_container)
 
         # ////// SETUP CONTENT BOTTOM (MIDDLE LAYER: MENU | CONTENT | SETTINGS)
-        self.contentBottom = QFrame(self.bgApp)
-        self.contentBottom.setObjectName("contentBottom")
-        self.contentBottom.setFrameShape(QFrame.Shape.NoFrame)
-        self.contentBottom.setFrameShadow(QFrame.Shadow.Raised)
-        self.appLayout.addWidget(self.contentBottom)
-
-        # Backward-compatibility aliases kept for existing consumers/custom code.
-        self.contentBox = self.contentBottom
+        self.content_bottom_frame = QFrame(self.bg_app_frame)
+        self.content_bottom_frame.setObjectName("content_bottom_frame")
+        self.content_bottom_frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.content_bottom_frame.setFrameShadow(QFrame.Shadow.Raised)
+        self.app_layout.addWidget(self.content_bottom_frame)
 
         # ////// SETUP CONTENT BOTTOM LAYOUT (HORIZONTAL)
-        self.HL_contentBottom = QHBoxLayout(self.contentBottom)
-        self.HL_contentBottom.setSpacing(0)
-        self.HL_contentBottom.setObjectName("HL_contentBottom")
-        self.HL_contentBottom.setContentsMargins(0, 0, 0, 0)
-
-        # Backward-compatibility alias kept for existing consumers/custom code.
-        self.HL_contentBox = self.HL_contentBottom
+        self.content_bottom_layout = QHBoxLayout(self.content_bottom_frame)
+        self.content_bottom_layout.setSpacing(0)
+        self.content_bottom_layout.setObjectName("content_bottom_layout")
+        self.content_bottom_layout.setContentsMargins(0, 0, 0, 0)
 
         # ////// SETUP MENU
-        self.menuContainer = Menu(
-            parent=self.contentBottom,
+        self.menu_container = Menu(
+            parent=self.content_bottom_frame,
             shrink_width=settings_service.gui.MENU_PANEL_SHRINKED_WIDTH,
             extended_width=settings_service.gui.MENU_PANEL_EXTENDED_WIDTH,
         )
-        self.HL_contentBottom.addWidget(self.menuContainer)
+        self.content_bottom_layout.addWidget(self.menu_container)
 
         # ////// SETUP CONTENT (CENTER)
-        self.content = QFrame(self.contentBottom)
-        self.content.setObjectName("content")
-        self.content.setFrameShape(QFrame.Shape.NoFrame)
-        self.content.setFrameShadow(QFrame.Shadow.Raised)
-        self.HL_contentBottom.addWidget(self.content, 1)
+        self.content_frame = QFrame(self.content_bottom_frame)
+        self.content_frame.setObjectName("content_frame")
+        self.content_frame.setFrameShape(QFrame.Shape.NoFrame)
+        self.content_frame.setFrameShadow(QFrame.Shadow.Raised)
+        self.content_bottom_layout.addWidget(self.content_frame, 1)
 
         # ////// SETUP CONTENT LAYOUT
-        self.HL_content = QHBoxLayout(self.content)
-        self.HL_content.setSpacing(0)
-        self.HL_content.setObjectName("HL_content")
-        self.HL_content.setContentsMargins(0, 0, 0, 0)
+        self.content_layout = QHBoxLayout(self.content_frame)
+        self.content_layout.setSpacing(0)
+        self.content_layout.setObjectName("content_layout")
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
 
-        # ////// SETUP PAGE CONTAINER
-        self.pagesContainer = PageContainer(self.content)
-        self.HL_content.addWidget(self.pagesContainer)
+        # ////// SETUP PAGES CONTAINER
+        self.pages_container = PageContainer(self.content_frame)
+        self.content_layout.addWidget(self.pages_container)
 
         # ////// SETUP SETTINGS PANEL (RIGHT)
-        self.settingsPanel = SettingsPanel(
-            parent=self.contentBottom,
+        self.settings_panel = SettingsPanel(
+            parent=self.content_bottom_frame,
             width=settings_service.gui.SETTINGS_PANEL_WIDTH,
         )
-        self.HL_contentBottom.addWidget(self.settingsPanel)
+        self.content_bottom_layout.addWidget(self.settings_panel)
 
         # ////// SETUP BOTTOM BAR (FULL WIDTH)
-        self.bottomBar = BottomBar(parent=self.bgApp)
-        self.appLayout.addWidget(self.bottomBar)
+        self.bottom_bar = BottomBar(parent=self.bg_app_frame)
+        self.app_layout.addWidget(self.bottom_bar)
 
         # ////// CONNECT TRANSLATION INDICATOR
         # Wire the TranslationManager signals to the BottomBar indicator so the
         # widget stays decoupled from the service (signal/slot, no direct reference).
         translation_manager = get_translation_manager()
         translation_manager.translation_started.connect(
-            self.bottomBar.show_translation_indicator
+            self.bottom_bar.show_translation_indicator
         )
         translation_manager.translation_finished.connect(
-            self.bottomBar.hide_translation_indicator
+            self.bottom_bar.hide_translation_indicator
         )
 
         # ////// FINAL SETUP
-        MainWindow.setCentralWidget(self.styleSheet)
+        MainWindow.setCentralWidget(self.style_sheet)
         QMetaObject.connectSlotsByName(MainWindow)
+
+
+# ///////////////////////////////////////////////////////////////
+# PUBLIC API
+# ///////////////////////////////////////////////////////////////
+__all__ = ["Ui_MainWindow"]

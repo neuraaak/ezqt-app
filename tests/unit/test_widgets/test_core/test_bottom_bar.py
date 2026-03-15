@@ -46,25 +46,25 @@ class TestBottomBarInit:
         self, qt_application
     ) -> None:
         bar = BottomBar()
-        assert hasattr(bar, "HL_bottomBar")
-        assert bar.HL_bottomBar is not None
+        assert hasattr(bar, "_layout")
+        assert bar._layout is not None
 
     def test_should_have_credits_label_when_instantiated(self, qt_application) -> None:
         bar = BottomBar()
-        assert hasattr(bar, "creditsLabel")
-        assert isinstance(bar.creditsLabel, QLabel)
+        assert hasattr(bar, "_credits_label")
+        assert isinstance(bar._credits_label, QLabel)
 
     def test_should_have_version_label_when_instantiated(self, qt_application) -> None:
         bar = BottomBar()
-        assert hasattr(bar, "version")
-        assert isinstance(bar.version, QLabel)
+        assert hasattr(bar, "_version_label")
+        assert isinstance(bar._version_label, QLabel)
 
     def test_should_have_size_grip_frame_when_instantiated(
         self, qt_application
     ) -> None:
         bar = BottomBar()
-        assert hasattr(bar, "appSizeGrip")
-        assert isinstance(bar.appSizeGrip, QFrame)
+        assert hasattr(bar, "size_grip_spacer")
+        assert isinstance(bar.size_grip_spacer, QFrame)
 
     def test_should_have_minimum_height_of_22_when_instantiated(
         self, qt_application
@@ -104,7 +104,7 @@ class TestBottomBarSetCredits:
         # Cursor must be pointing hand because email is present
         from PySide6.QtCore import Qt
 
-        assert bar.creditsLabel.cursor().shape() == Qt.CursorShape.PointingHandCursor
+        assert bar._credits_label.cursor().shape() == Qt.CursorShape.PointingHandCursor
 
     def test_should_not_raise_when_set_credits_is_called_with_name_only(
         self, qt_application
@@ -143,7 +143,7 @@ class TestBottomBarSetVersion:
         from PySide6.QtCore import Qt
 
         bar = BottomBar()
-        alignment = bar.version.alignment()
+        alignment = bar._version_label.alignment()
         assert (
             Qt.AlignmentFlag.AlignRight in alignment
             or Qt.AlignmentFlag.AlignTrailing in alignment
@@ -157,22 +157,22 @@ class TestBottomBarTranslationIndicator:
         self, qt_application
     ) -> None:
         bar = BottomBar()
-        assert hasattr(bar, "translationIndicator")
-        assert isinstance(bar.translationIndicator, QLabel)
+        assert hasattr(bar, "_trans_ind_label")
+        assert isinstance(bar._trans_ind_label, QLabel)
 
     def test_should_be_hidden_by_default_when_instantiated(
         self, qt_application
     ) -> None:
         # isHidden() reflects explicit setVisible(False) regardless of parent state.
         bar = BottomBar()
-        assert bar.translationIndicator.isHidden()
+        assert bar._trans_ind_label.isHidden()
 
     def test_should_become_visible_when_show_translation_indicator_is_called(
         self, qt_application
     ) -> None:
         bar = BottomBar()
         bar.show_translation_indicator()
-        assert not bar.translationIndicator.isHidden()
+        assert not bar._trans_ind_label.isHidden()
 
     def test_should_become_hidden_when_hide_translation_indicator_is_called(
         self, qt_application
@@ -180,13 +180,13 @@ class TestBottomBarTranslationIndicator:
         bar = BottomBar()
         bar.show_translation_indicator()
         bar.hide_translation_indicator()
-        assert bar.translationIndicator.isHidden()
+        assert bar._trans_ind_label.isHidden()
 
     def test_should_have_non_empty_text_in_indicator_when_instantiated(
         self, qt_application
     ) -> None:
         bar = BottomBar()
-        assert bar.translationIndicator.text() != ""
+        assert bar._trans_ind_label.text() != ""
 
     def test_should_refresh_indicator_text_when_retranslate_ui_is_called(
         self, qt_application
@@ -195,7 +195,7 @@ class TestBottomBarTranslationIndicator:
         bar.show_translation_indicator()
         # Simulate language change — text must remain non-empty.
         bar.retranslate_ui()
-        assert bar.translationIndicator.text() != ""
+        assert bar._trans_ind_label.text() != ""
 
     def test_should_preserve_indicator_visibility_when_retranslate_ui_is_called(
         self, qt_application
@@ -204,7 +204,7 @@ class TestBottomBarTranslationIndicator:
         bar.show_translation_indicator()
         bar.retranslate_ui()
         # retranslate_ui must not hide the indicator.
-        assert not bar.translationIndicator.isHidden()
+        assert not bar._trans_ind_label.isHidden()
 
     def test_should_connect_to_translation_manager_signals_when_wired(
         self, qt_application
@@ -219,7 +219,7 @@ class TestBottomBarTranslationIndicator:
         manager.translation_finished.connect(bar.hide_translation_indicator)
 
         manager._increment_pending()
-        assert not bar.translationIndicator.isHidden()
+        assert not bar._trans_ind_label.isHidden()
 
         manager._decrement_pending()
-        assert bar.translationIndicator.isHidden()
+        assert bar._trans_ind_label.isHidden()

@@ -50,13 +50,7 @@ class SettingsPanel(QFrame):
     # ///////////////////////////////////////////////////////////////
 
     def _settings_storage_prefix(self) -> list[str]:
-        """Return config keys (file name + nested path) used to persist setting values.
-
-        The first element is always ``"app"`` (the config file name). The remaining
-        elements are the dot-split path from ``settings_storage_root`` in app.config.yaml,
-        defaulting to ``["settings_panel"]``.  The full list is passed directly to
-        :meth:`AppService.stage_config_value` so that ``keys[0]`` is the file name.
-        """
+        """Return config keys (file name + nested path) used to persist setting values."""
         config_name = "app"
         try:
             from ...services.config import get_config_service
@@ -87,17 +81,17 @@ class SettingsPanel(QFrame):
     def _sync_theme_selector_with_settings(self) -> None:
         """Align theme selector UI with the currently active settings theme."""
         try:
-            if not hasattr(self, "themeToggleButton"):
+            if not hasattr(self, "_theme_selector"):
                 return
 
-            theme_toggle = self.themeToggleButton
+            theme_selector = self._theme_selector
             current_theme = get_settings_service().gui.THEME.lower()
             theme_id = 0 if current_theme == "light" else 1
 
-            if hasattr(theme_toggle, "initialize_selector"):
-                theme_toggle.initialize_selector(theme_id)
-            elif hasattr(theme_toggle, "value_id"):
-                theme_toggle.value_id = theme_id
+            if hasattr(theme_selector, "initialize_selector"):
+                theme_selector.initialize_selector(theme_id)
+            elif hasattr(theme_selector, "value_id"):
+                theme_selector.value_id = theme_id
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.theme_selector_sync_failed",
@@ -115,132 +109,112 @@ class SettingsPanel(QFrame):
         self._widgets: list[QWidget] = []
         self._settings: dict[str, Any] = {}
 
-        # ///////////////////////////////////////////////////////////////
         # Store configuration
         self._width = width
 
-        self.setObjectName("settingsPanel")
+        self.setObjectName("settings_panel")
         self.setMinimumSize(QSize(0, 0))
         self.setMaximumSize(QSize(0, 16777215))
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setFrameShadow(QFrame.Shadow.Raised)
-        # //////
-        self.VL_settingsPanel = QVBoxLayout(self)
-        self.VL_settingsPanel.setSpacing(0)
-        self.VL_settingsPanel.setObjectName("VL_settingsPanel")
-        self.VL_settingsPanel.setContentsMargins(0, 0, 0, 0)
 
-        # ///////////////////////////////////////////////////////////////
+        # ////// SETUP MAIN LAYOUT
+        self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setObjectName("settings_layout")
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.settingsTopBorder = QFrame(self)
-        self.settingsTopBorder.setObjectName("settingsTopBorder")
-        self.settingsTopBorder.setMaximumSize(QSize(16777215, 3))
-        self.settingsTopBorder.setFrameShape(QFrame.Shape.NoFrame)
-        self.settingsTopBorder.setFrameShadow(QFrame.Shadow.Raised)
-        #
-        self.VL_settingsPanel.addWidget(self.settingsTopBorder)
+        # ////// SETUP TOP BORDER
+        self._top_border = QFrame(self)
+        self._top_border.setObjectName("settings_top_border")
+        self._top_border.setMaximumSize(QSize(16777215, 3))
+        self._top_border.setFrameShape(QFrame.Shape.NoFrame)
+        self._top_border.setFrameShadow(QFrame.Shadow.Raised)
+        self._layout.addWidget(self._top_border)
 
-        # ///////////////////////////////////////////////////////////////
-
-        # Create QScrollArea for settings
-        self.settingsScrollArea = QScrollArea(self)
-        self.settingsScrollArea.setObjectName("settingsScrollArea")
-        self.settingsScrollArea.setWidgetResizable(True)
-        self.settingsScrollArea.setHorizontalScrollBarPolicy(
+        # ////// SETUP SCROLL AREA
+        self._scroll_area = QScrollArea(self)
+        self._scroll_area.setObjectName("settings_scroll_area")
+        self._scroll_area.setWidgetResizable(True)
+        self._scroll_area.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        self.settingsScrollArea.setVerticalScrollBarPolicy(
+        self._scroll_area.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAsNeeded
         )
-        self.settingsScrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.settingsScrollArea.setFrameShadow(QFrame.Shadow.Raised)
-        #
-        self.VL_settingsPanel.addWidget(self.settingsScrollArea)
+        self._scroll_area.setFrameShape(QFrame.Shape.NoFrame)
+        self._scroll_area.setFrameShadow(QFrame.Shadow.Raised)
+        self._layout.addWidget(self._scroll_area)
 
-        # ///////////////////////////////////////////////////////////////
-
-        # Container widget for all settings
-        self.contentSettings = QFrame()
-        self.contentSettings.setObjectName("contentSettings")
-        self.contentSettings.setFrameShape(QFrame.Shape.NoFrame)
-        self.contentSettings.setFrameShadow(QFrame.Shadow.Raised)
-        self.contentSettings.setSizePolicy(
+        # ////// SETUP CONTENT WIDGET
+        self._content_widget = QFrame()
+        self._content_widget.setObjectName("content_widget")
+        self._content_widget.setFrameShape(QFrame.Shape.NoFrame)
+        self._content_widget.setFrameShadow(QFrame.Shadow.Raised)
+        self._content_widget.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
         )
-        #
-        self.settingsScrollArea.setWidget(self.contentSettings)
-        # //////
-        self.VL_contentSettings = QVBoxLayout(self.contentSettings)
-        self.VL_contentSettings.setObjectName("VL_contentSettings")
-        self.VL_contentSettings.setSpacing(0)
-        self.VL_contentSettings.setContentsMargins(0, 0, 0, 0)
-        self.VL_contentSettings.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self._scroll_area.setWidget(self._content_widget)
 
-        # ///////////////////////////////////////////////////////////////
+        self._content_layout = QVBoxLayout(self._content_widget)
+        self._content_layout.setObjectName("content_layout")
+        self._content_layout.setSpacing(0)
+        self._content_layout.setContentsMargins(0, 0, 0, 0)
+        self._content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        self.themeSettingsContainer = QFrame(self.contentSettings)
-        self.themeSettingsContainer.setObjectName("themeSettingsContainer")
-        self.themeSettingsContainer.setFrameShape(QFrame.Shape.NoFrame)
-        self.themeSettingsContainer.setFrameShadow(QFrame.Shadow.Raised)
-        #
-        self.VL_contentSettings.addWidget(
-            self.themeSettingsContainer, 0, Qt.AlignmentFlag.AlignTop
+        # ////// SETUP THEME SECTION
+        self._theme_section_frame = QFrame(self._content_widget)
+        self._theme_section_frame.setObjectName("theme_section_frame")
+        self._theme_section_frame.setFrameShape(QFrame.Shape.NoFrame)
+        self._theme_section_frame.setFrameShadow(QFrame.Shadow.Raised)
+        self._content_layout.addWidget(
+            self._theme_section_frame, 0, Qt.AlignmentFlag.AlignTop
         )
-        # //////
-        self.VL_themeSettingsContainer = QVBoxLayout(self.themeSettingsContainer)
-        self.VL_themeSettingsContainer.setSpacing(8)
-        self.VL_themeSettingsContainer.setObjectName("VL_themeSettingsContainer")
-        self.VL_themeSettingsContainer.setContentsMargins(10, 10, 10, 10)
 
-        # ///////////////////////////////////////////////////////////////
+        self._theme_section_layout = QVBoxLayout(self._theme_section_frame)
+        self._theme_section_layout.setSpacing(8)
+        self._theme_section_layout.setObjectName("theme_section_layout")
+        self._theme_section_layout.setContentsMargins(10, 10, 10, 10)
 
         # Store the original label text for retranslation.
         self._theme_label_text: str = "Active Theme"
 
-        self.themeLabel = QLabel(
+        self._theme_label = QLabel(
             QCoreApplication.translate("EzQt_App", self._theme_label_text),
-            self.themeSettingsContainer,
+            self._theme_section_frame,
         )
-        self.themeLabel.setObjectName("themeLabel")
+        self._theme_label.setObjectName("theme_label")
         if Fonts.SEGOE_UI_10_SB is not None:
-            self.themeLabel.setFont(Fonts.SEGOE_UI_10_SB)
-        self.themeLabel.setAlignment(
+            self._theme_label.setFont(Fonts.SEGOE_UI_10_SB)
+        self._theme_label.setAlignment(
             Qt.AlignmentFlag.AlignLeading
             | Qt.AlignmentFlag.AlignLeft
             | Qt.AlignmentFlag.AlignVCenter
         )
-        #
-        self.VL_themeSettingsContainer.addWidget(self.themeLabel)
-
-        # ///////////////////////////////////////////////////////////////
+        self._theme_section_layout.addWidget(self._theme_label)
 
         # Create theme selector if OptionSelector is available
         try:
             from ezqt_widgets import OptionSelector
 
-            # Create theme selector with correct signature
-            # OptionSelector expects: items, default_id, min_width, min_height, orientation, animation_duration, parent
-            self.themeToggleButton = OptionSelector(
-                items=["Light", "Dark"],  # List of options
-                default_id=1,  # 0 = Light, 1 = Dark (Dark by default)
+            self._theme_selector = OptionSelector(
+                items=["Light", "Dark"],
+                default_id=1,
                 min_width=None,
                 min_height=None,
                 orientation="horizontal",
                 animation_duration=get_settings_service().gui.TIME_ANIMATION,
-                parent=self.themeSettingsContainer,
+                parent=self._theme_section_frame,
             )
-            self.themeToggleButton.setObjectName("themeToggleButton")
-            self.themeToggleButton.setSizePolicy(
+            self._theme_selector.setObjectName("theme_selector")
+            self._theme_selector.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
             )
-            self.themeToggleButton.setFixedHeight(40)
-            self._widgets.append(self.themeToggleButton)
+            self._theme_selector.setFixedHeight(40)
+            self._widgets.append(self._theme_selector)
 
-            # Connect theme selector change signal
             self._connect_theme_selector_signals()
-
-            # Add to layout
-            self.VL_themeSettingsContainer.addWidget(self.themeToggleButton)
+            self._theme_section_layout.addWidget(self._theme_selector)
 
         except ImportError:
             warn_tech(
@@ -248,12 +222,9 @@ class SettingsPanel(QFrame):
                 message="OptionSelector not available, theme toggle not created",
             )
 
-        # ///////////////////////////////////////////////////////////////
-        # Automatic loading from YAML if requested
         if load_from_yaml:
             self.load_settings_from_yaml()
 
-        # Connect setting changes
         self.settingChanged.connect(self._on_setting_changed)
 
     # ///////////////////////////////////////////////////////////////
@@ -265,14 +236,12 @@ class SettingsPanel(QFrame):
 
             import yaml
 
-            # Try to load the full app.config.yaml file directly
-            # Try multiple possible paths
             possible_paths = [
-                Path.cwd() / "bin" / "config" / "app.config.yaml",  # User project
+                Path.cwd() / "bin" / "config" / "app.config.yaml",
                 Path(__file__).parent.parent.parent
                 / "resources"
                 / "config"
-                / "app.config.yaml",  # Package
+                / "app.config.yaml",
             ]
 
             app_config = None
@@ -289,19 +258,14 @@ class SettingsPanel(QFrame):
                 )
                 return
 
-            # Extract settings_panel section
             settings_config = app_config.get("settings_panel", {})
 
-            # Create widgets for each setting
             for key, config in settings_config.items():
-                # Exclude theme as it's already manually managed by OptionSelector
                 if key == "theme":
                     continue
 
-                if config.get("enabled", True):  # Check if setting is enabled
+                if config.get("enabled", True):
                     widget = self.add_setting_from_config(key, config)
-
-                    # Use default value from config (which may have been updated)
                     default_value = config.get("default")
                     if default_value is not None and hasattr(widget, "set_value"):
                         widget.set_value(default_value)  # type: ignore[union-attr]
@@ -320,19 +284,16 @@ class SettingsPanel(QFrame):
         description = config.get("description", "")
         default_value = config.get("default")
 
-        # Create container for this setting (like themeSettingsContainer)
-        setting_container = QFrame(self.contentSettings)
-        setting_container.setObjectName(f"settingContainer_{key}")
+        setting_container = QFrame(self._content_widget)
+        setting_container.setObjectName(f"setting_container_{key}")
         setting_container.setFrameShape(QFrame.Shape.NoFrame)
         setting_container.setFrameShadow(QFrame.Shadow.Raised)
 
-        # Container layout with margins
         container_layout = QVBoxLayout(setting_container)
         container_layout.setSpacing(8)
-        container_layout.setObjectName(f"VL_settingContainer_{key}")
+        container_layout.setObjectName(f"setting_container_layout_{key}")
         container_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Create widget based on type
         if setting_type == "toggle":
             widget = self._create_toggle_widget(
                 label,
@@ -369,7 +330,7 @@ class SettingsPanel(QFrame):
                 bool(default_value) if default_value is not None else False,
                 key,
             )
-        else:  # text by default
+        else:
             widget = self._create_text_widget(
                 label,
                 description,
@@ -377,13 +338,8 @@ class SettingsPanel(QFrame):
                 key,
             )
 
-        # Add widget to container
         container_layout.addWidget(widget)
-
-        # Add container to main layout
-        self.VL_contentSettings.addWidget(setting_container)
-
-        # Store reference
+        self._content_layout.addWidget(setting_container)
         self._settings[key] = widget
 
         return widget
@@ -396,7 +352,7 @@ class SettingsPanel(QFrame):
 
         widget = SettingToggle(label, description, default)
         if key:
-            widget._key = key
+            widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
         return widget
 
@@ -413,7 +369,7 @@ class SettingsPanel(QFrame):
 
         widget = SettingSelect(label, description, options, default)
         if key:
-            widget._key = key
+            widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
         return widget
 
@@ -432,7 +388,7 @@ class SettingsPanel(QFrame):
 
         widget = SettingSlider(label, description, min_val, max_val, default, unit)
         if key:
-            widget._key = key
+            widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
         return widget
 
@@ -444,7 +400,7 @@ class SettingsPanel(QFrame):
 
         widget = SettingCheckbox(label, description, default)
         if key:
-            widget._key = key
+            widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
         return widget
 
@@ -456,12 +412,11 @@ class SettingsPanel(QFrame):
 
         widget = SettingText(label, description, default)
         if key:
-            widget._key = key
+            widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
         return widget
 
     # ///////////////////////////////////////////////////////////////
-    # Simplified methods for manual setting addition
 
     def add_toggle_setting(
         self,
@@ -475,7 +430,7 @@ class SettingsPanel(QFrame):
         from ...widgets.extended.setting_widgets import SettingToggle
 
         widget = SettingToggle(label, description, default)
-        widget._key = key  # Set the key
+        widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
 
         self._settings[key] = widget
@@ -495,7 +450,7 @@ class SettingsPanel(QFrame):
         from ...widgets.extended.setting_widgets import SettingSelect
 
         widget = SettingSelect(label, description, options, default)
-        widget._key = key  # Set the key
+        widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
 
         self._settings[key] = widget
@@ -517,7 +472,7 @@ class SettingsPanel(QFrame):
         from ...widgets.extended.setting_widgets import SettingSlider
 
         widget = SettingSlider(label, description, min_val, max_val, default, unit)
-        widget._key = key  # Set the key
+        widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
 
         self._settings[key] = widget
@@ -536,7 +491,7 @@ class SettingsPanel(QFrame):
         from ...widgets.extended.setting_widgets import SettingText
 
         widget = SettingText(label, description, default)
-        widget._key = key  # Set the key
+        widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
 
         self._settings[key] = widget
@@ -555,7 +510,7 @@ class SettingsPanel(QFrame):
         from ...widgets.extended.setting_widgets import SettingCheckbox
 
         widget = SettingCheckbox(label, description, default)
-        widget._key = key  # Set the key
+        widget.set_key(key)
         widget.valueChanged.connect(self._on_setting_changed)
 
         self._settings[key] = widget
@@ -564,19 +519,16 @@ class SettingsPanel(QFrame):
 
     def _on_setting_changed(self, key: str, value):
         """Called when a setting changes."""
-        # Protection against recursion
         if not hasattr(self, "_processing_setting_change"):
             self._processing_setting_change = False
 
         if self._processing_setting_change:
-            return  # Avoid recursion
+            return
 
         self._processing_setting_change = True
 
         try:
-            # Stage setting change; flushed to disk on application quit.
             try:
-                # Direct import to avoid circular import
                 from ...services.application.app_service import AppService
 
                 AppService.stage_config_value(
@@ -589,16 +541,13 @@ class SettingsPanel(QFrame):
                     error=e,
                 )
 
-            # Special handling for language changes
             if key == "language":
                 try:
                     translation_service = get_translation_service()
-                    # Check if language really changes
                     current_lang = translation_service.get_current_language_name()
                     if current_lang != str(value):
                         translation_service.change_language(str(value))
                         self._sync_theme_selector_with_settings()
-                        # Emit language change signal
                         self.languageChanged.emit()
                 except Exception as e:
                     warn_tech(
@@ -607,13 +556,11 @@ class SettingsPanel(QFrame):
                         error=e,
                     )
 
-            # Emit signal for application
             self.settingChanged.emit(key, value)
         finally:
             self._processing_setting_change = False
 
     # ///////////////////////////////////////////////////////////////
-    # Utility methods
 
     def get_setting_value(self, key: str) -> Any:
         """Get the value of a setting."""
@@ -631,8 +578,7 @@ class SettingsPanel(QFrame):
         return {key: widget.get_value() for key, widget in self._settings.items()}
 
     def save_all_settings_to_yaml(self) -> None:
-        """Stage all current setting values; flushed to disk on application quit."""
-        # Direct import to avoid circular import
+        """Stage all current setting values."""
         from ...services.application.app_service import AppService
 
         for key, widget in self._settings.items():
@@ -650,46 +596,21 @@ class SettingsPanel(QFrame):
 
     def retranslate_ui(self) -> None:
         """Apply current translations to all owned text labels."""
-        self.themeLabel.setText(
+        self._theme_label.setText(
             QCoreApplication.translate("EzQt_App", self._theme_label_text)
         )
-        # Retranslate each dynamically-created setting widget's label and description.
         for widget in self._settings.values():
-            label_attr = getattr(widget, "label", None)
-            original_label = getattr(widget, "_label", None)
-            if (
-                label_attr is not None
-                and original_label is not None
-                and hasattr(label_attr, "setText")
-            ):
-                label_attr.setText(
-                    QCoreApplication.translate("EzQt_App", original_label)
-                )
-            desc_attr = getattr(widget, "description_label", None)
-            original_desc = getattr(widget, "_description", None)
-            if (
-                desc_attr is not None
-                and original_desc
-                and hasattr(desc_attr, "setText")
-            ):
-                desc_attr.setText(QCoreApplication.translate("EzQt_App", original_desc))
-        # Retranslate theme selector option labels (Light / Dark).
+            if hasattr(widget, "retranslate_ui"):
+                widget.retranslate_ui()
         self.update_theme_selector_items()
 
     def changeEvent(self, event: QEvent) -> None:
-        """Handle Qt change events, triggering UI retranslation on language change.
-
-        Parameters
-        ----------
-        event : QEvent
-            The Qt change event.
-        """
+        """Handle Qt change events."""
         if event.type() == QEvent.Type.LanguageChange:
             self.retranslate_ui()
         super().changeEvent(event)
 
     # ///////////////////////////////////////////////////////////////
-    # Panel management methods
 
     def get_width(self) -> int:
         """Get panel width."""
@@ -699,10 +620,10 @@ class SettingsPanel(QFrame):
         """Set panel width."""
         self._width = width
 
-    def get_theme_toggle_button(self):
-        """Get the theme toggle button if available."""
-        if hasattr(self, "themeToggleButton"):
-            return self.themeToggleButton
+    def get_theme_selector(self):
+        """Get the theme selector if available."""
+        if hasattr(self, "_theme_selector"):
+            return self._theme_selector
         return None
 
     def update_all_theme_icons(self) -> None:
@@ -712,11 +633,9 @@ class SettingsPanel(QFrame):
             if callable(updater):
                 updater()
 
-        # Force refresh of settings panel style
         self.style().unpolish(self)
         self.style().polish(self)
 
-        # Also refresh all child widgets
         for child in self.findChildren(QWidget):
             child.style().unpolish(child)
             child.style().polish(child)
@@ -724,32 +643,24 @@ class SettingsPanel(QFrame):
     def _connect_theme_selector_signals(self) -> None:
         """Connect theme selector signals."""
         with contextlib.suppress(Exception):
-            if hasattr(self, "themeToggleButton"):
-                # Connect OptionSelector valueChanged signal
-                theme_button = self.themeToggleButton
-
-                if hasattr(theme_button, "valueChanged"):
-                    theme_button.valueChanged.connect(self._on_theme_selector_changed)
-                elif hasattr(theme_button, "clicked"):
-                    theme_button.clicked.connect(self._on_theme_selector_clicked)
+            if hasattr(self, "_theme_selector"):
+                theme_selector = self._theme_selector
+                if hasattr(theme_selector, "valueChanged"):
+                    theme_selector.valueChanged.connect(self._on_theme_selector_changed)
+                elif hasattr(theme_selector, "clicked"):
+                    theme_selector.clicked.connect(self._on_theme_selector_clicked)
 
     def _on_theme_selector_changed(self, value):
         """Called when theme selector value changes."""
         try:
-            # OptionSelector.value already returns "Light" or "Dark"
             english_value = value.lower()
-
-            # Stage theme change; flushed to disk on application quit.
             from ...services.application.app_service import AppService
 
             AppService.stage_config_value(
                 [*self._settings_storage_prefix(), "theme", "default"],
                 english_value,
             )
-
-            # Emit signal with English value
             self.settingChanged.emit("theme", english_value)
-
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.theme_selector_change_failed",
@@ -760,21 +671,15 @@ class SettingsPanel(QFrame):
     def _on_theme_selector_clicked(self):
         """Called when theme selector is clicked."""
         try:
-            if hasattr(self, "themeToggleButton"):
-                # Get text value directly
-                current_value = self.themeToggleButton.value.lower()
-
-                # Stage theme change; flushed to disk on application quit.
+            if hasattr(self, "_theme_selector"):
+                current_value = self._theme_selector.value.lower()
                 from ...services.application.app_service import AppService
 
                 AppService.stage_config_value(
                     [*self._settings_storage_prefix(), "theme", "default"],
                     current_value,
                 )
-
-                # Emit signal with English value
                 self.settingChanged.emit("theme", current_value)
-
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.theme_selector_click_failed",
@@ -785,22 +690,19 @@ class SettingsPanel(QFrame):
     def update_theme_selector_items(self) -> None:
         """Update theme selector items with translations."""
         with contextlib.suppress(Exception):
-            if hasattr(self, "themeToggleButton"):
+            if hasattr(self, "_theme_selector"):
                 from ...services.translation import tr
 
-                # Translate items for display
                 translated_items = [tr("Light"), tr("Dark")]
-
-                # Save current value (ID)
-                theme_button = self.themeToggleButton
+                theme_selector = self._theme_selector
                 current_id = (
-                    theme_button.value_id if hasattr(theme_button, "value_id") else 0
+                    theme_selector.value_id
+                    if hasattr(theme_selector, "value_id")
+                    else 0
                 )
-
-                # Update widget texts directly
-                if hasattr(theme_button, "_options"):
+                if hasattr(theme_selector, "_options"):
                     for i, (_, option_widget) in enumerate(
-                        theme_button._options.items()
+                        theme_selector._options.items()
                     ):
                         if i < len(translated_items):
                             if hasattr(option_widget, "label"):
@@ -809,49 +711,52 @@ class SettingsPanel(QFrame):
                                 )
                             elif hasattr(option_widget, "setText"):
                                 option_widget.text = translated_items[i].capitalize()
-
-                # Reapply current ID to maintain selection
-                if hasattr(theme_button, "value_id") and hasattr(
-                    theme_button, "_value_id"
+                if hasattr(theme_selector, "value_id") and hasattr(
+                    theme_selector, "_value_id"
                 ):
-                    theme_button._value_id = current_id
-                    # Force selector movement
-                    if current_id in theme_button._options:
-                        theme_button.move_selector(theme_button._options[current_id])
+                    theme_selector._value_id = current_id
+                    if current_id in theme_selector._options:
+                        theme_selector.move_selector(
+                            theme_selector._options[current_id]
+                        )
 
     def add_setting_widget(self, widget: QWidget) -> None:
         """Add a new setting widget to the settings panel."""
-        # Create container for setting (like themeSettingsContainer)
-        setting_container = QFrame(self.contentSettings)
-        setting_container.setObjectName(f"settingContainer_{widget.objectName()}")
+        setting_container = QFrame(self._content_widget)
+        setting_container.setObjectName(f"setting_container_{widget.objectName()}")
         setting_container.setFrameShape(QFrame.Shape.NoFrame)
         setting_container.setFrameShadow(QFrame.Shadow.Raised)
 
-        # Container layout with margins (like VL_themeSettingsContainer)
         container_layout = QVBoxLayout(setting_container)
         container_layout.setSpacing(8)
+        container_layout.setObjectName(
+            f"setting_container_layout_{widget.objectName()}"
+        )
         container_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Add widget to container
         container_layout.addWidget(widget)
-
-        # Add container to main layout
-        self.VL_contentSettings.addWidget(setting_container)
+        self._content_layout.addWidget(setting_container)
         self._widgets.append(widget)
 
     def add_setting_section(self, title: str = "") -> QFrame:
         """Add a new settings section with optional title."""
-        section = QFrame(self.contentSettings)
-        section.setObjectName(f"settingsSection_{title.replace(' ', '_')}")
+        section = QFrame(self._content_widget)
+        section.setObjectName(f"settings_section_{title.replace(' ', '_').lower()}")
         section.setFrameShape(QFrame.Shape.NoFrame)
         section.setFrameShadow(QFrame.Shadow.Raised)
 
         section_layout = QVBoxLayout(section)
         section_layout.setSpacing(8)
+        section_layout.setObjectName(
+            f"settings_section_layout_{title.replace(' ', '_').lower()}"
+        )
         section_layout.setContentsMargins(10, 10, 10, 10)
 
         if title:
             title_label = QLabel(title, section)
+            title_label.setObjectName(
+                f"settings_section_title_{title.replace(' ', '_').lower()}"
+            )
             if Fonts.SEGOE_UI_10_REG is not None:
                 title_label.setFont(Fonts.SEGOE_UI_10_REG)
             title_label.setAlignment(
@@ -861,31 +766,25 @@ class SettingsPanel(QFrame):
             )
             section_layout.addWidget(title_label)
 
-        self.VL_contentSettings.addWidget(section)
+        self._content_layout.addWidget(section)
         return section
 
     def scroll_to_top(self) -> None:
         """Scroll to top of settings panel."""
-        if hasattr(self, "settingsScrollArea"):
-            self.settingsScrollArea.verticalScrollBar().setValue(0)
+        if hasattr(self, "_scroll_area"):
+            self._scroll_area.verticalScrollBar().setValue(0)
 
     def scroll_to_bottom(self) -> None:
         """Scroll to bottom of settings panel."""
-        if hasattr(self, "settingsScrollArea"):
-            scrollbar = self.settingsScrollArea.verticalScrollBar()
+        if hasattr(self, "_scroll_area"):
+            scrollbar = self._scroll_area.verticalScrollBar()
             scrollbar.setValue(scrollbar.maximum())
 
     def scroll_to_widget(self, widget: QWidget) -> None:
-        """
-        Scroll to a specific widget in the settings panel.
-
-        Args:
-            widget: The widget to scroll to
-        """
-        if hasattr(self, "settingsScrollArea") and widget:
-            # Calculate widget position in scroll area
-            widget_pos = widget.mapTo(self.contentSettings, widget.rect().topLeft())
-            self.settingsScrollArea.verticalScrollBar().setValue(widget_pos.y())
+        """Scroll to a specific widget in the settings panel."""
+        if hasattr(self, "_scroll_area") and widget:
+            widget_pos = widget.mapTo(self._content_widget, widget.rect().topLeft())
+            self._scroll_area.verticalScrollBar().setValue(widget_pos.y())
 
 
 # ///////////////////////////////////////////////////////////////

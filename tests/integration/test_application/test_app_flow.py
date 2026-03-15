@@ -40,11 +40,11 @@ class MockEzQtApp:
 
         # Mock des propriétés spécifiques
         self.ui.pagesContainer.stackedWidget = MagicMock()
-        self.ui.settingsPanel.scrollArea = MagicMock()
-        self.ui.settingsPanel.scrollAreaWidgetContents = MagicMock()
+        self.ui.settingsPanel._scroll_area = MagicMock()
+        self.ui.settingsPanel._content_widget = MagicMock()
         self.ui.menuContainer.toggleButton = MagicMock()
         self.ui.menuContainer.menus = MagicMock()
-        self.ui.headerContainer.settingsTopBtn = MagicMock()
+        self.ui.headerContainer.settings_btn = MagicMock()
         self.ui.headerContainer.height = MagicMock(return_value=50)
 
         # État de la fenêtre
@@ -299,7 +299,7 @@ class TestAppFlow:
         assert header is not None
 
         # Vérifier les propriétés de l'en-tête
-        assert hasattr(header, "settingsTopBtn")
+        assert hasattr(header, "settings_btn")
         assert header.height() == 50  # Hauteur fixe
 
     @pytest.mark.integration
@@ -331,8 +331,8 @@ class TestAppFlow:
         assert settings_panel is not None
 
         # Vérifier les propriétés du panneau
-        assert hasattr(settings_panel, "scrollArea")
-        assert hasattr(settings_panel, "scrollAreaWidgetContents")
+        assert hasattr(settings_panel, "_scroll_area")
+        assert hasattr(settings_panel, "_content_widget")
 
     @pytest.mark.integration
     @pytest.mark.qt

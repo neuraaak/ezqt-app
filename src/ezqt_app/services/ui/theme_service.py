@@ -60,7 +60,7 @@ class ThemeService:
         main_style = ThemeService._load_theme_content(custom_theme_file)
         main_style = ThemeService._resolve_variables(main_style, colors)
 
-        window.ui.styleSheet.setStyleSheet(f"{main_style}\n")
+        window.ui.style_sheet.setStyleSheet(f"{main_style}\n")
 
     @staticmethod
     def _resolve_variables(stylesheet: str, colors: dict[str, str]) -> str:
