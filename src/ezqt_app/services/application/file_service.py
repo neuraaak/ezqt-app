@@ -183,8 +183,8 @@ class FileService:
                 created_paths.append(path)
 
         if created_paths:
-            self.printer.info(
-                f"[FileMaker] Generated assets directories: {len(created_paths)} directories"
+            self.printer.action(
+                f"[Initializer] Generated assets directories: {len(created_paths)} directories"
             )
             if verbose:
                 self.printer.list_items([d.name for d in created_paths])
@@ -212,7 +212,7 @@ class FileService:
         if not self._should_write(target_path):
             return target_path
         shutil.copy2(yaml_package, target_path)
-        self.printer.info("[FileMaker] Generated YAML config file.")
+        self.printer.action("[Initializer] Generated YAML config file.")
         return target_path
 
     def make_qss_from_package(self, theme_package: Path | None = None) -> bool:
@@ -247,7 +247,7 @@ class FileService:
                     if not self._should_write(target_file):
                         return True
                     shutil.copy2(theme_package, target_file)
-                    self.printer.info("[FileMaker] Generated QSS theme files.")
+                    self.printer.action("[Initializer] Generated QSS theme files.")
                     return True
                 except Exception as e:
                     self.printer.warning(
@@ -277,16 +277,16 @@ class FileService:
                         )
 
                 if copied_files:
-                    self.printer.info("[FileMaker] Generated QSS theme files.")
+                    self.printer.action("[Initializer] Generated QSS theme files.")
                     return True
 
                 existing = list(target_path.glob("*.qss"))
                 if existing:
-                    self.printer.info("[FileMaker] QSS theme files already exist.")
+                    self.printer.info("[Initializer] QSS theme files already exist.")
                     return True
 
                 self.printer.warning(
-                    "[FileMaker] No QSS theme files were copied successfully."
+                    "[Initializer] No QSS theme files were copied successfully."
                 )
                 return False
 
@@ -332,11 +332,11 @@ class FileService:
                     )
 
             if any(target_path.glob("*.ts")):
-                self.printer.info("[FileMaker] Generated translation files.")
+                self.printer.action("[Initializer] Generated translation files.")
                 return True
 
             self.printer.warning(
-                "[FileMaker] No translation files were copied successfully."
+                "[Initializer] No translation files were copied successfully."
             )
             return False
 
@@ -374,13 +374,13 @@ class FileService:
             f.write("\n".join(qrc_content))
 
         self._qrc_file = str(qrc_file_path)
-        self.printer.info("[FileMaker] Generated QRC file from bin folder content.")
+        self.printer.action("[Initializer] Generated QRC file from bin folder content.")
         return True
 
     def make_rc_py(self) -> None:
         """Compile the QRC file to a Python resource module via ``pyside6-rcc``."""
         if not self._qrc_file:
-            self.printer.warning("[FileMaker] No QRC file")
+            self.printer.warning("[Initializer] No QRC file")
             return
 
         _target_file = self._bin / "resources_rc.py"
@@ -423,7 +423,7 @@ class FileService:
         rc_py_path = self._bin / "resources_rc.py"
         if rc_py_path.exists():
             rc_py_path.unlink()
-            self.printer.info("[FileMaker] Purged resources_rc.py file.")
+            self.printer.warning("[Initializer] Purged resources_rc.py file.")
 
     def make_main_from_template(self, main_template: Path | None = None) -> None:
         """Copy the ``main.py`` project template into ``base_path``."""
@@ -439,7 +439,7 @@ class FileService:
             return
 
         shutil.copy2(main_template, main_file)
-        self.printer.info("[FileMaker] Generated main.py file.")
+        self.printer.action("[Initializer] Generated main.py file.")
 
     # -----------------------------------------------------------
     # Accessors

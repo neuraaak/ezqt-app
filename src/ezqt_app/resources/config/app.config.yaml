@@ -15,6 +15,7 @@ app:
 
   # GUI
   # //////
+  debug: false
   # Initial/fallback theme used on first launch or when settings_panel.theme.default
   # is absent. Once the user picks a theme, the persisted value in
   # settings_panel.theme.default takes precedence (see _get_setting_default in app.py).

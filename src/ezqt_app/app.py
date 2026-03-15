@@ -439,8 +439,9 @@ class EzQt_App(QMainWindow):
             # Collect strings from entire application
             stats = collect_and_compare_strings(self, recursive=True)
 
-            get_printer().info(
-                f"[EzQt_App] Automatic collection completed: {stats['new_strings']} new strings found"
+            get_printer().debug_msg(
+                "[TranslationService] Automatic collection completed: "
+                f"{stats['new_strings']} new strings found"
             )
 
         except Exception as e:

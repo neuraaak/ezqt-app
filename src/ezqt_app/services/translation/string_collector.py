@@ -103,7 +103,9 @@ class StringCollector:
                 f.write(f"# Total: {len(sorted_strings)} strings\n\n")
                 for s in sorted_strings:
                     f.write(f"{s}\n")
-            get_printer().info(f"✅ {len(strings)} pending strings saved")
+            get_printer().debug_msg(
+                f"[TranslationService] {len(strings)} pending strings saved"
+            )
         except Exception as e:
             warn_tech(
                 code="translation.collector.save_pending_failed",
@@ -153,9 +155,13 @@ class StringCollector:
                         line = line.strip()
                         if line and not line.startswith("#"):
                             processed.add(line)
-                get_printer().info(f"✅ {len(processed)} processed strings loaded")
+                get_printer().debug_msg(
+                    f"[TranslationService] {len(processed)} processed strings loaded"
+                )
             else:
-                get_printer().info("📝 No processed strings file found")
+                get_printer().debug_msg(
+                    "[TranslationService] No processed strings file found"
+                )
         except Exception as e:
             warn_tech(
                 code="translation.collector.load_processed_failed",
@@ -179,7 +185,9 @@ class StringCollector:
         try:
             with open(self.translation_tasks_file, "w", encoding="utf-8") as f:
                 json.dump(tasks, f, indent=2, ensure_ascii=False)
-            get_printer().info(f"✅ {len(tasks)} translation tasks generated")
+            get_printer().debug_msg(
+                f"[TranslationService] {len(tasks)} translation tasks generated"
+            )
         except Exception as e:
             warn_tech(
                 code="translation.collector.save_tasks_failed",
@@ -208,9 +216,9 @@ class StringCollector:
             "languages_detected": len({lang for lang, _ in language_detected}),
             "translation_tasks": len(tasks),
         }
-        get_printer().info("📊 Collection summary:")
+        get_printer().debug_msg("[TranslationService] Collection summary:")
         for key, val in stats.items():
-            get_printer().info(f"  - {key}: {val}")
+            get_printer().debug_msg(f"  - {key}: {val}")
         return stats
 
     def mark_strings_as_processed(self, strings: set[str] | None = None) -> None:
@@ -231,7 +239,9 @@ class StringCollector:
                 f.write(f"# Total: {len(sorted_strings)} strings\n\n")
                 for s in sorted_strings:
                     f.write(f"{s}\n")
-            get_printer().info(f"✅ {len(strings)} strings marked as processed")
+            get_printer().debug_msg(
+                f"[TranslationService] {len(strings)} strings marked as processed"
+            )
         except Exception as e:
             warn_user(
                 code="translation.collector.mark_processed_failed",
@@ -255,7 +265,7 @@ class StringCollector:
         self._collected_strings.clear()
         self._new_strings.clear()
         self._language_detected_strings.clear()
-        get_printer().info("Collector cache cleared")
+        get_printer().debug_msg("[TranslationService] Collector cache cleared")
 
 
 # ///////////////////////////////////////////////////////////////

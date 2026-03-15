@@ -69,6 +69,10 @@ class SettingsService(SettingsServiceProtocol):
         self.app.APP_WIDTH = width
         self.app.APP_HEIGHT = height
 
+    def set_debug_enabled(self, enabled: bool) -> None:
+        """Enable or disable debug console output."""
+        self.app.DEBUG = enabled
+
     def set_theme(self, theme: str) -> None:
         """Set active theme."""
         self.gui.THEME = theme.lower()
