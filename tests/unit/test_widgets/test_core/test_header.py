@@ -32,7 +32,7 @@ class TestHeader:
         header = Header()
 
         # Vérifier les propriétés de base
-        assert header.objectName() == "headerContainer"
+        assert header.objectName() == "header_container"
         assert header.height() == 50
         assert header.frameShape() == QFrame.NoFrame
         assert header.frameShadow() == QFrame.Shadow.Raised
@@ -47,7 +47,7 @@ class TestHeader:
         header = Header(app_name=app_name, description=description)
 
         # Vérifier les propriétés de base
-        assert header.objectName() == "headerContainer"
+        assert header.objectName() == "header_container"
         assert header.height() == 50
 
     def test_should_have_horizontal_layout_when_instantiated(self, qt_application):

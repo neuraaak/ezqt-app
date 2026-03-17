@@ -30,7 +30,7 @@ class TestBottomBarInit:
         self, qt_application
     ) -> None:
         bar = BottomBar()
-        assert bar.objectName() == "bottomBar"
+        assert bar.objectName() == "bottom_bar"
 
     def test_should_have_no_frame_shape_when_instantiated(self, qt_application) -> None:
         bar = BottomBar()

@@ -192,6 +192,31 @@ class EzQt_App(QMainWindow):
                 widget.style().unpolish(widget)
                 widget.style().polish(widget)
 
+    def refresh_theme(self) -> EzQt_App:
+        """Re-apply the theme stylesheet and polish all widgets.
+
+        Call this after adding custom widgets to the application to ensure
+        that QSS rules (especially ``#objectName`` selectors) are correctly
+        evaluated against the newly added widgets.
+
+        Returns:
+            self: Allows method chaining.
+
+        Example::
+
+            window = EzQt_App(theme_file_name="main_theme.qss").build()
+            window.show()
+            add_things_to_my_app(window, Icons)
+            window.refresh_theme()
+        """
+        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
+        app_instance = QApplication.instance()
+        if isinstance(app_instance, QApplication):
+            for widget in app_instance.allWidgets():
+                widget.style().unpolish(widget)
+                widget.style().polish(widget)
+        return self
+
     def set_app_icon(
         self, icon: str | QPixmap, y_shrink: int = 0, y_offset: int = 0
     ) -> None:

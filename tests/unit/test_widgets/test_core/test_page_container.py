@@ -70,7 +70,7 @@ class TestPageContainer:
 
         # Check stacked widget properties
         assert container._stacked_widget.objectName() == "pages_stacked_widget"
-        assert container._stacked_widget.styleSheet() == "background: transparent;"
+        assert container._stacked_widget.styleSheet() == ""
 
     def test_should_initialize_with_empty_pages_dict_when_instantiated(
         self, qt_application
@@ -231,11 +231,11 @@ class TestPageContainer:
     def test_should_have_transparent_background_when_stacked_widget_is_created(
         self, qt_application
     ):
-        """Test stacked widget style."""
+        """Test stacked widget style — transparency is now managed via QSS objectName."""
         container = PageContainer()
 
-        # Check stacked widget style
-        assert container.get_stacked_widget().styleSheet() == "background: transparent;"
+        # No inline stylesheet: transparency handled by #pages_stacked_widget in the QSS.
+        assert container.get_stacked_widget().styleSheet() == ""
 
     def test_should_have_no_frame_when_instantiated(self, qt_application):
         """Test page container frame properties."""

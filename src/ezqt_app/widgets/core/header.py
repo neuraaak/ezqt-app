@@ -76,7 +76,7 @@ class Header(QFrame):
         self._description: str = description
 
         # Widget properties
-        self.setObjectName("headerContainer")
+        self.setObjectName("header_container")
         self.setFixedHeight(50)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setFrameShadow(QFrame.Shadow.Raised)
@@ -149,7 +149,7 @@ class Header(QFrame):
         # App subtitle
         self._subtitle_label = QLabel(description, self._info_frame)
         self._subtitle_label.setObjectName("app_subtitle")
-        self._subtitle_label.setGeometry(QRect(65, 26, 240, 16))
+        self._subtitle_label.setGeometry(QRect(65, 26, 16777215, 16))
         self._subtitle_label.setMaximumSize(QSize(16777215, 16))
 
         if hasattr(Fonts, "SEGOE_UI_8_REG") and Fonts.SEGOE_UI_8_REG is not None:

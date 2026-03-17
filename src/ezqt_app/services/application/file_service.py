@@ -24,6 +24,11 @@ from ...domain.errors import (
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH
 
+# Root of the installed ezqt_app package — used to locate bundled resources.
+# Resolves correctly whether the package is installed (site-packages) or run
+# in-place from the src/ layout.
+_PKG_ROOT: Path = Path(__file__).parent.parent.parent
+
 
 # ///////////////////////////////////////////////////////////////
 # CLASSES
@@ -192,13 +197,7 @@ class FileService:
     def make_yaml_from_package(self, yaml_package: Path | None = None) -> Path | None:
         """Copy the package ``app.config.yaml`` into ``bin/config/``."""
         if yaml_package is None:
-            import pkg_resources  # type: ignore[import-untyped]
-
-            yaml_package = Path(
-                pkg_resources.resource_filename(
-                    "ezqt_app", "resources/config/app.config.yaml"
-                )
-            )
+            yaml_package = _PKG_ROOT / "resources" / "config" / "app.config.yaml"
 
         if not yaml_package.exists():
             raise MissingPackageResourceError(
@@ -218,11 +217,7 @@ class FileService:
     def make_qss_from_package(self, theme_package: Path | None = None) -> bool:
         """Copy QSS theme files from the package into ``bin/themes/``."""
         if theme_package is None:
-            import pkg_resources  # type: ignore[import-untyped]
-
-            theme_package = Path(
-                pkg_resources.resource_filename("ezqt_app", "resources/themes")
-            )
+            theme_package = _PKG_ROOT / "resources" / "themes"
 
         if not theme_package.exists():
             raise MissingPackageResourceError(
@@ -299,11 +294,7 @@ class FileService:
     ) -> bool:
         """Copy ``.ts`` translation files from the package into ``bin/translations/``."""
         if translations_package is None:
-            import pkg_resources  # type: ignore[import-untyped]
-
-            translations_package = Path(
-                pkg_resources.resource_filename("ezqt_app", "resources/translations")
-            )
+            translations_package = _PKG_ROOT / "resources" / "translations"
 
         if not translations_package.exists():
             raise MissingPackageResourceError(
@@ -428,7 +419,7 @@ class FileService:
     def make_main_from_template(self, main_template: Path | None = None) -> None:
         """Copy the ``main.py`` project template into ``base_path``."""
         if main_template is None:
-            main_template = APP_PATH / "resources" / "templates" / "main.py.template"
+            main_template = _PKG_ROOT / "resources" / "templates" / "main.py.template"
 
         if not main_template.exists():
             self.printer.warning(f"Main template not found at {main_template}")

@@ -57,7 +57,7 @@ class BottomBar(QFrame):
         self._version_text: str = ""
 
         # ////// SETUP WIDGET PROPERTIES
-        self.setObjectName("bottomBar")
+        self.setObjectName("bottom_bar")
         self.setMinimumSize(QSize(0, 22))
         self.setMaximumSize(QSize(16777215, 22))
         self.setFrameShape(QFrame.Shape.NoFrame)

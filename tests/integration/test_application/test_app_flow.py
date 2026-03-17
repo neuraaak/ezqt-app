@@ -33,19 +33,19 @@ class MockEzQtApp:
         self.ui = MagicMock()
 
         # Mock des composants UI
-        self.ui.menuContainer = MagicMock()
-        self.ui.headerContainer = MagicMock()
-        self.ui.pagesContainer = MagicMock()
-        self.ui.settingsPanel = MagicMock()
+        self.ui.menu_container = MagicMock()
+        self.ui.header_container = MagicMock()
+        self.ui.pages_container = MagicMock()
+        self.ui.settings_panel = MagicMock()
 
         # Mock des propriétés spécifiques
-        self.ui.pagesContainer.stackedWidget = MagicMock()
-        self.ui.settingsPanel._scroll_area = MagicMock()
-        self.ui.settingsPanel._content_widget = MagicMock()
-        self.ui.menuContainer.toggleButton = MagicMock()
-        self.ui.menuContainer.menus = MagicMock()
-        self.ui.headerContainer.settings_btn = MagicMock()
-        self.ui.headerContainer.height = MagicMock(return_value=50)
+        self.ui.pages_container.stackedWidget = MagicMock()
+        self.ui.settings_panel._scroll_area = MagicMock()
+        self.ui.settings_panel._content_widget = MagicMock()
+        self.ui.menu_container.toggle_button = MagicMock()
+        self.ui.menu_container.menus = MagicMock()
+        self.ui.header_container.settings_btn = MagicMock()
+        self.ui.header_container.height = MagicMock(return_value=50)
 
         # État de la fenêtre
         self._visible = False
@@ -216,10 +216,10 @@ class TestAppFlow:
         assert hasattr(app, "setWindowTitle")
 
         # Vérifier que l'interface utilisateur a été configurée
-        assert hasattr(app.ui, "menuContainer")
-        assert hasattr(app.ui, "headerContainer")
-        assert hasattr(app.ui, "pagesContainer")
-        assert hasattr(app.ui, "settingsPanel")
+        assert hasattr(app.ui, "menu_container")
+        assert hasattr(app.ui, "header_container")
+        assert hasattr(app.ui, "pages_container")
+        assert hasattr(app.ui, "settings_panel")
 
     @pytest.mark.integration
     @pytest.mark.qt
@@ -275,15 +275,15 @@ class TestAppFlow:
         app = create_app_with_fonts_mock()
 
         # Vérifier que le menu existe
-        menu = app.ui.menuContainer
+        menu = app.ui.menu_container
         assert menu is not None
 
         # Vérifier les propriétés du menu
-        assert hasattr(menu, "toggleButton")
+        assert hasattr(menu, "toggle_button")
         assert hasattr(menu, "menus")
 
         # Vérifier que le bouton de basculement existe
-        toggle_button = menu.toggleButton
+        toggle_button = menu.toggle_button
         assert toggle_button is not None
 
     @pytest.mark.integration
@@ -295,7 +295,7 @@ class TestAppFlow:
         app = create_app_with_fonts_mock()
 
         # Vérifier que l'en-tête existe
-        header = app.ui.headerContainer
+        header = app.ui.header_container
         assert header is not None
 
         # Vérifier les propriétés de l'en-tête
@@ -311,7 +311,7 @@ class TestAppFlow:
         app = create_app_with_fonts_mock()
 
         # Vérifier que le conteneur de pages existe
-        pages_container = app.ui.pagesContainer
+        pages_container = app.ui.pages_container
         assert pages_container is not None
 
         # Vérifier les propriétés du conteneur
@@ -327,7 +327,7 @@ class TestAppFlow:
         app = create_app_with_fonts_mock()
 
         # Vérifier que le panneau de paramètres existe
-        settings_panel = app.ui.settingsPanel
+        settings_panel = app.ui.settings_panel
         assert settings_panel is not None
 
         # Vérifier les propriétés du panneau
