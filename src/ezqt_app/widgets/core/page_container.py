@@ -51,7 +51,6 @@ class PageContainer(QFrame):
         # ////// SETUP STACKED WIDGET
         self._stacked_widget = QStackedWidget(self)
         self._stacked_widget.setObjectName("pages_stacked_widget")
-        self._stacked_widget.setStyleSheet("background: transparent;")
         self._layout.addWidget(self._stacked_widget)
 
     # ///////////////////////////////////////////////////////////////

@@ -196,6 +196,40 @@ Si un utilisateur doit importer un fichier profond (ex: `ezqt_app.services.confi
 
 - Utiliser les exceptions définies dans `domain/errors/`.
 - Interdiction des exceptions silencieuses (`except: pass`).
+- Préférer les exceptions spécifiques (`except SpecificError as e`).
+- `except Exception` est autorisé uniquement dans les cas suivants :
+  - Points d'entrée GUI (le framework Qt ne doit pas planter silencieusement)
+  - Points d'entrée CLI (conversion des exceptions en codes de sortie)
+  - Opérations sur fichiers avec modes d'échec multiples
+  - Appels à des APIs externes (requêtes HTTP, providers de traduction)
+- **Toujours logger avant de relancer ou de retourner** (`logger.error(...)`).
+
+---
+
+## Déviations aux standards génériques
+
+Cette section documente les choix pragmatiques qui s'écartent intentionnellement des standards génériques (`core/`). Ces déviations sont volontaires et adaptées au contexte d'un framework Qt.
+
+### Injection de dépendances — Service Locator simplifié
+
+> **Override** : `core/hexagonal-architecture-standards.instructions.md` interdit le Service Locator Pattern.
+> **Raison** : Pour un framework Qt sans IoC container lourd, le pattern retenu est plus pragmatique.
+
+Le projet utilise un **Service Locator simplifié via des getters** plutôt que l'injection constructeur systématique :
+
+```python
+# Pattern retenu dans ezqt_app
+from ezqt_app.services.settings import get_settings_service
+
+service = get_settings_service()  # retourne le singleton
+```
+
+**Règles d'application :**
+
+- Les getters (`get_*_service()`) sont les seuls points d'accès aux singletons de services.
+- Les `Protocol` du domaine (`domain/ports/`) restent les contrats officiels — le couplage est au port, pas à l'implémentation.
+- Dans les tests, les getters sont mockés ou remplacés par des fakes in-memory.
+- Ne pas accéder directement aux classes concrètes de `services/` depuis `widgets/` ou `cli/`.
 
 ---
 
