@@ -109,3 +109,58 @@ class TestThemeServiceResolveVariables:
 
         assert '--var("main_surface")' in result
         assert 'var("main_surface")' in result
+
+
+class TestThemeServiceGetAvailableThemes:
+    """Tests for ThemeService.get_available_themes."""
+
+    def test_should_return_list_of_tuples_when_palette_has_presets(
+        self, monkeypatch
+    ) -> None:
+        """Each preset × variant pair produces a (display, internal) tuple."""
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        fake_config = {
+            "palette": {
+                "blue-gray": {"dark": {}, "light": {}},
+                "github-dark": {"dark": {}},
+            }
+        }
+
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return fake_config
+
+        monkeypatch.setattr(
+            ts_module, "get_config_service", lambda: _FakeConfigService()
+        )
+
+        options = ThemeService.get_available_themes()
+
+        assert len(options) == 3
+        labels = [label for label, _ in options]
+        values = [val for _, val in options]
+        assert "Blue Gray - Dark" in labels
+        assert "Blue Gray - Light" in labels
+        assert "Github Dark - Dark" in labels
+        assert "blue-gray:dark" in values
+        assert "blue-gray:light" in values
+        assert "github-dark:dark" in values
+
+    def test_should_return_empty_list_when_palette_is_missing(
+        self, monkeypatch
+    ) -> None:
+        """No presets → empty options list."""
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return {}
+
+        monkeypatch.setattr(
+            ts_module, "get_config_service", lambda: _FakeConfigService()
+        )
+
+        options = ThemeService.get_available_themes()
+
+        assert options == []

@@ -275,3 +275,20 @@ class TestHeader:
         # Note: Le Header utilise H_EXPANDING_V_PREFERRED qui est Expanding
         size_policy = header.sizePolicy()
         assert size_policy.horizontalPolicy() == QSizePolicy.Policy.Expanding
+
+    def test_should_set_open_property_true_when_settings_panel_opens(
+        self, qt_application
+    ):
+        """set_settings_panel_open(True) stores True on settings_btn dynamic property."""
+        header = Header()
+        header.set_settings_panel_open(True)
+        assert header.settings_btn.property("open") is True
+
+    def test_should_set_open_property_false_when_settings_panel_closes(
+        self, qt_application
+    ):
+        """set_settings_panel_open(False) stores False on settings_btn dynamic property."""
+        header = Header()
+        header.set_settings_panel_open(True)
+        header.set_settings_panel_open(False)
+        assert header.settings_btn.property("open") is False

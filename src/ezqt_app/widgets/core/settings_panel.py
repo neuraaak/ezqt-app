@@ -11,11 +11,10 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import contextlib
 from typing import Any
 
 # Third-party imports
-from PySide6.QtCore import QCoreApplication, QEvent, QSize, Qt, Signal
+from PySide6.QtCore import QEvent, QSize, Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
     QLabel,
@@ -85,13 +84,12 @@ class SettingsPanel(QFrame):
                 return
 
             theme_selector = self._theme_selector
-            current_theme = get_settings_service().gui.THEME.lower()
-            theme_id = 0 if current_theme == "light" else 1
+            gui = get_settings_service().gui
+            current_internal = f"{gui.THEME_PRESET}:{gui.THEME}"
+            current_display = self._theme_value_to_display.get(current_internal, "")
 
-            if hasattr(theme_selector, "initialize_selector"):
-                theme_selector.initialize_selector(theme_id)
-            elif hasattr(theme_selector, "value_id"):
-                theme_selector.value_id = theme_id
+            if current_display and hasattr(theme_selector, "set_value"):
+                theme_selector.set_value(current_display)
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.theme_selector_sync_failed",
@@ -176,51 +174,39 @@ class SettingsPanel(QFrame):
         self._theme_section_layout.setObjectName("theme_section_layout")
         self._theme_section_layout.setContentsMargins(10, 10, 10, 10)
 
-        # Store the original label text for retranslation.
-        self._theme_label_text: str = "Active Theme"
+        # Build theme options from palette (display label → internal value mapping).
+        from ...services.ui.theme_service import ThemeService
 
-        self._theme_label = QLabel(
-            QCoreApplication.translate("EzQt_App", self._theme_label_text),
-            self._theme_section_frame,
+        _theme_options_data = ThemeService.get_available_themes()
+        self._theme_options_map: dict[str, str] = dict(_theme_options_data)
+        self._theme_value_to_display: dict[str, str] = {
+            v: d for d, v in _theme_options_data
+        }
+
+        _gui = get_settings_service().gui
+        _current_internal = f"{_gui.THEME_PRESET}:{_gui.THEME}"
+        _current_display = self._theme_value_to_display.get(
+            _current_internal,
+            _theme_options_data[0][0] if _theme_options_data else "",
         )
-        self._theme_label.setObjectName("theme_label")
-        if Fonts.SEGOE_UI_10_SB is not None:
-            self._theme_label.setFont(Fonts.SEGOE_UI_10_SB)
-        self._theme_label.setAlignment(
-            Qt.AlignmentFlag.AlignLeading
-            | Qt.AlignmentFlag.AlignLeft
-            | Qt.AlignmentFlag.AlignVCenter
+
+        from ...widgets.extended.setting_widgets import SettingSelect
+
+        self._theme_selector = SettingSelect(
+            label="Active Theme",
+            description="",
+            options=[d for d, _ in _theme_options_data],
+            default=_current_display,
         )
-        self._theme_section_layout.addWidget(self._theme_label)
-
-        # Create theme selector if OptionSelector is available
-        try:
-            from ezqt_widgets import OptionSelector
-
-            self._theme_selector = OptionSelector(
-                items=["Light", "Dark"],
-                default_id=1,
-                min_width=None,
-                min_height=None,
-                orientation="horizontal",
-                animation_duration=get_settings_service().gui.TIME_ANIMATION,
-                parent=self._theme_section_frame,
-            )
-            self._theme_selector.setObjectName("theme_selector")
-            self._theme_selector.setSizePolicy(
-                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
-            )
-            self._theme_selector.setFixedHeight(40)
-            self._widgets.append(self._theme_selector)
-
-            self._connect_theme_selector_signals()
-            self._theme_section_layout.addWidget(self._theme_selector)
-
-        except ImportError:
-            warn_tech(
-                code="widgets.settings_panel.option_selector_unavailable",
-                message="OptionSelector not available, theme toggle not created",
-            )
+        self._theme_selector.setObjectName("theme_selector")
+        self._theme_selector.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+        self._widgets.append(self._theme_selector)
+        self._theme_selector.valueChanged.connect(
+            lambda _key, display_val: self._on_theme_selector_changed(display_val)
+        )
+        self._theme_section_layout.addWidget(self._theme_selector)
 
         if load_from_yaml:
             self.load_settings_from_yaml()
@@ -596,13 +582,13 @@ class SettingsPanel(QFrame):
 
     def retranslate_ui(self) -> None:
         """Apply current translations to all owned text labels."""
-        self._theme_label.setText(
-            QCoreApplication.translate("EzQt_App", self._theme_label_text)
-        )
+        if hasattr(self, "_theme_selector") and hasattr(
+            self._theme_selector, "retranslate_ui"
+        ):
+            self._theme_selector.retranslate_ui()
         for widget in self._settings.values():
             if hasattr(widget, "retranslate_ui"):
                 widget.retranslate_ui()
-        self.update_theme_selector_items()
 
     def changeEvent(self, event: QEvent) -> None:
         """Handle Qt change events."""
@@ -640,85 +626,30 @@ class SettingsPanel(QFrame):
             child.style().unpolish(child)
             child.style().polish(child)
 
-    def _connect_theme_selector_signals(self) -> None:
-        """Connect theme selector signals."""
-        with contextlib.suppress(Exception):
-            if hasattr(self, "_theme_selector"):
-                theme_selector = self._theme_selector
-                if hasattr(theme_selector, "valueChanged"):
-                    theme_selector.valueChanged.connect(self._on_theme_selector_changed)
-                elif hasattr(theme_selector, "clicked"):
-                    theme_selector.clicked.connect(self._on_theme_selector_clicked)
+    def _on_theme_selector_changed(self, display_value: str) -> None:
+        """Called when the theme selector value changes.
 
-    def _on_theme_selector_changed(self, value):
-        """Called when theme selector value changes."""
+        ``display_value`` is the human-readable label emitted by the select
+        widget (e.g. ``"Blue Gray - Dark"``).  It is converted to the internal
+        ``"preset:variant"`` format before being persisted and broadcast.
+        """
         try:
-            english_value = value.lower()
+            internal_value = self._theme_options_map.get(display_value, display_value)
             from ...services.application.app_service import AppService
+            from ...services.settings import get_settings_service
 
+            get_settings_service().set_theme(internal_value)
             AppService.stage_config_value(
                 [*self._settings_storage_prefix(), "theme", "default"],
-                english_value,
+                internal_value,
             )
-            self.settingChanged.emit("theme", english_value)
+            self.settingChanged.emit("theme", internal_value)
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.theme_selector_change_failed",
                 message="Could not handle theme selector change",
                 error=e,
             )
-
-    def _on_theme_selector_clicked(self):
-        """Called when theme selector is clicked."""
-        try:
-            if hasattr(self, "_theme_selector"):
-                current_value = self._theme_selector.value.lower()
-                from ...services.application.app_service import AppService
-
-                AppService.stage_config_value(
-                    [*self._settings_storage_prefix(), "theme", "default"],
-                    current_value,
-                )
-                self.settingChanged.emit("theme", current_value)
-        except Exception as e:
-            warn_tech(
-                code="widgets.settings_panel.theme_selector_click_failed",
-                message="Could not handle theme selector click",
-                error=e,
-            )
-
-    def update_theme_selector_items(self) -> None:
-        """Update theme selector items with translations."""
-        with contextlib.suppress(Exception):
-            if hasattr(self, "_theme_selector"):
-                from ...services.translation import tr
-
-                translated_items = [tr("Light"), tr("Dark")]
-                theme_selector = self._theme_selector
-                current_id = (
-                    theme_selector.value_id
-                    if hasattr(theme_selector, "value_id")
-                    else 0
-                )
-                if hasattr(theme_selector, "_options"):
-                    for i, (_, option_widget) in enumerate(
-                        theme_selector._options.items()
-                    ):
-                        if i < len(translated_items):
-                            if hasattr(option_widget, "label"):
-                                option_widget.label.setText(
-                                    translated_items[i].capitalize()
-                                )
-                            elif hasattr(option_widget, "setText"):
-                                option_widget.text = translated_items[i].capitalize()
-                if hasattr(theme_selector, "value_id") and hasattr(
-                    theme_selector, "_value_id"
-                ):
-                    theme_selector._value_id = current_id
-                    if current_id in theme_selector._options:
-                        theme_selector.move_selector(
-                            theme_selector._options[current_id]
-                        )
 
     def add_setting_widget(self, widget: QWidget) -> None:
         """Add a new setting widget to the settings panel."""

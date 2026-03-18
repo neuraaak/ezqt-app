@@ -15,7 +15,7 @@ from unittest.mock import MagicMock
 
 # Third-party imports
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFrame, QLabel, QScrollArea, QSizePolicy, QWidget
+from PySide6.QtWidgets import QFrame, QScrollArea, QSizePolicy, QWidget
 
 import ezqt_app.services.config as config_module
 
@@ -70,14 +70,16 @@ class TestSettingsPanel:
         assert panel._content_widget.frameShape() == QFrame.NoFrame
         assert panel._content_layout.spacing() == 0
 
-    def test_should_have_theme_container_and_label_when_instantiated(
+    def test_should_have_theme_container_and_select_when_instantiated(
         self, qt_application
     ):
         panel = SettingsPanel()
         assert panel._theme_section_frame.objectName() == "theme_section_frame"
-        assert panel._theme_label.objectName() == "theme_label"
-        assert isinstance(panel._theme_label, QLabel)
-        assert panel._theme_label_text == "Active Theme"
+        assert hasattr(panel, "_theme_selector")
+        assert panel._theme_selector.objectName() == "theme_selector"
+        # Bidirectional maps are always initialised (may be empty if config absent)
+        assert isinstance(panel._theme_options_map, dict)
+        assert isinstance(panel._theme_value_to_display, dict)
 
     def test_should_have_correct_theme_layout_properties_when_instantiated(
         self, qt_application

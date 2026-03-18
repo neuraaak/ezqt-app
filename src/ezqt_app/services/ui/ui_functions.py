@@ -83,9 +83,9 @@ class UIFunctions:
     # ///////////////////////////////////////////////////////////////
     # THEME MANAGEMENT
 
-    def theme(self, customThemeFile: str | None = None) -> None:
+    def theme(self) -> None:
         """Load and apply theme to interface."""
-        ThemeService.apply_theme(self._w(), customThemeFile)
+        ThemeService.apply_theme(self._w())
 
     # ///////////////////////////////////////////////////////////////
     # UI DEFINITIONS

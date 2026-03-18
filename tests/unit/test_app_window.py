@@ -164,17 +164,10 @@ class TestEzQtAppInstantiation:
         instance = _make_instance(qt_application)
         assert isinstance(instance, QMainWindow)
 
-    def test_should_have_none_theme_file_when_instantiated_without_theme(
+    def test_should_emit_deprecation_when_theme_file_name_is_given(
         self, qt_application
     ) -> None:
-        """Verify default theme file name is None."""
-        instance = _make_instance(qt_application)
-        assert instance._theme_file_name is None
-
-    def test_should_store_custom_theme_file_when_theme_filename_is_given(
-        self, qt_application
-    ) -> None:
-        """Verify custom theme file name is stored."""
+        """Passing theme_file_name emits a deprecation warning."""
 
         def fake_setupUi(_self_ui: object, window: EzQt_App, **_kwargs: object) -> None:
             window.ui = MagicMock()
@@ -190,10 +183,15 @@ class TestEzQtAppInstantiation:
             patch(_PATCHES["theme_svc"]),
             patch(_PATCHES["ui_def"]),
             patch(_PATCHES["setupUi"], new=fake_setupUi),
+            patch("ezqt_app.app.warn_tech") as mock_warn,
         ):
-            instance = EzQt_App(theme_file_name="custom.qss")
+            EzQt_App(theme_file_name="custom.qss")
 
-        assert instance._theme_file_name == "custom.qss"
+        mock_warn.assert_called_once()
+        call_kwargs = mock_warn.call_args
+        assert "theme_file_name" in call_kwargs.kwargs.get(
+            "code", call_kwargs.args[0] if call_kwargs.args else ""
+        )
 
 
 class TestEzQtAppMethods:
@@ -230,30 +228,22 @@ class TestEzQtAppMethods:
         mock_resize.assert_called_once_with(instance)
 
     def test_should_apply_theme_when_update_ui_is_called(self, qt_application) -> None:
-        """Verify update_ui behavior."""
+        """Verify update_ui calls ThemeService.apply_theme with the window."""
         instance = _make_instance(qt_application)
-        instance.ui.settings_panel.get_theme_selector.return_value = None
+        instance.ui.settings_panel.get_theme_selector = MagicMock(return_value=None)
 
         with patch("ezqt_app.app.ThemeService.apply_theme") as mock_theme:
             instance.update_ui()
 
-        mock_theme.assert_called_once_with(instance, instance._theme_file_name)
+        mock_theme.assert_called_once_with(instance)
 
-    def test_should_use_settings_service_theme_when_toggle_has_no_value(
+    def test_should_delegate_to_update_ui_when_set_app_theme_is_called(
         self, qt_application
     ) -> None:
-        """Verify set_app_theme fallback behavior."""
+        """set_app_theme() delegates to update_ui(); theme is already set by the selector."""
         instance = _make_instance(qt_application)
-        mock_settings = MagicMock()
-        mock_settings.gui.THEME = "light"
-        toggle = MagicMock(spec=[])  # no value_id, no value attributes
-        instance.ui.settings_panel.get_theme_selector.return_value = toggle
 
-        with (
-            patch("ezqt_app.app.get_settings_service", return_value=mock_settings),
-            patch("ezqt_app.app.AppService.write_yaml_config"),
-            patch.object(instance, "update_ui"),
-        ):
+        with patch.object(instance, "update_ui") as mock_update:
             instance.set_app_theme()
 
-        mock_settings.set_theme.assert_called_once_with("light")
+        mock_update.assert_called_once()

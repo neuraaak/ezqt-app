@@ -347,31 +347,24 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_should_apply_theme_file_when_theme_is_given(
-        self, qt_application, tmp_path
+    def test_should_emit_deprecation_when_theme_file_name_is_passed(
+        self, qt_application
     ):
-        """Test du chargement de thème."""
-        # Créer un fichier de thème temporaire
-        theme_file = tmp_path / "test_theme.qss"
-        theme_content = """
-        QMainWindow {
-            background-color: #1e1e1e;
-            color: #ffffff;
-        }
-        """
-        theme_file.write_text(theme_content)
+        """Passing theme_file_name triggers a deprecation warning (param is ignored)."""
+        from unittest.mock import patch
 
-        # Créer l'application avec le thème et configuration temporaire
-        temp_yaml = create_temp_app_config()
-        try:
-            app = MockEzQtApp(themeFileName=str(theme_file))
+        from ezqt_app.app import EzQt_App
 
-            # Vérifier que le thème a été chargé
-            assert app is not None
-            assert app._themeFileName == str(theme_file)
-        finally:
-            if temp_yaml.exists():
-                temp_yaml.unlink()
+        with (
+            patch("ezqt_app.app.AppService.load_fonts_resources"),
+            patch("ezqt_app.app.AppService.load_app_settings"),
+            patch("ezqt_app.app.get_config_service"),
+            patch("ezqt_app.app.warn_tech") as mock_warn,
+        ):
+            EzQt_App(theme_file_name="custom.qss")
+
+        mock_warn.assert_called_once()
+        assert "theme_file_name" in mock_warn.call_args.kwargs.get("code", "")
 
     @pytest.mark.integration
     @pytest.mark.qt

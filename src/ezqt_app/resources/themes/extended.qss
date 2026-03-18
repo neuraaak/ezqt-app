@@ -1,0 +1,483 @@
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+
+SET APP STYLESHEET - EXTENDED STYLES
+Custom EzQt widgets, extended widgets, and setting widgets.
+
+///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+/** EXTENDED WIDGETS */
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+/* ==> MenuButton Widget */
+QToolButton[type="MenuButton"] {
+	border: none;
+	border-radius: 0;
+	background-color: transparent;
+	/* text-align removed - MenuButton handles its own alignment */
+}
+
+QToolButton[type="MenuButton"]:hover {
+	background-color: var(--surface_base);
+}
+
+QToolButton[type="MenuButton"]:pressed {
+	background-color: var(--accent_brand);
+	color: var(--text_on_accent);
+}
+
+
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+/** EZQT WIDGETS */
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+IndicatorLabel */
+IndicatorLabel {
+	background-color: rgb(86, 86, 86);
+	border: 2px solid rgb(66, 66, 66);
+	border-radius: 6px 6px 6px 6px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+HoverLabel */
+HoverLabel {
+	background-color: rgb(86, 86, 86);
+	border: 2px solid rgb(66, 66, 66);
+	border-radius: 6px 6px 6px 6px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+ClickableTagLabel */
+ClickableTagLabel[status="unselected"] {
+	background-color: rgb(72, 72, 72);
+	border: 1px solid rgb(112, 112, 112);
+	border-radius: 4px 4px 4px 4px;
+}
+
+ClickableTagLabel[status="selected"] {
+	border: none;
+	color: rgb(255, 255, 255);
+}
+
+ClickableTagLabel QLabel {
+	background-color: rgb(50, 50, 50);
+	border: 1px solid rgb(50, 50, 50);
+	border-radius: 4px 4px 4px 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SearchInput */
+SearchInput {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 5px;
+	selection-color: var(--text_on_accent);
+	selection-background-color: var(--accent_brand);
+}
+
+SearchInput:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+SearchInput:focus {
+	border: 2px solid var(--text_secondary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+AutoCompleteInput */
+AutoCompleteInput {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 5px;
+	selection-color: var(--text_on_accent);
+	selection-background-color: var(--accent_brand);
+}
+
+AutoCompleteInput:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+AutoCompleteInput:focus {
+	border: 2px solid var(--text_secondary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+PasswordInput */
+PasswordInput {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 4px 4px 4px 4px;
+	padding: 2px;
+}
+
+PasswordInput QLineEdit {
+	background-color: var(--surface_base);
+	border-radius: 5px;
+	border: 2px solid var(--border_subtle);
+	padding-left: 10px;
+	selection-color: var(--text_on_accent);
+	selection-background-color: var(--accent_brand);
+}
+
+PasswordInput QLineEdit:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+PasswordInput QLineEdit:focus {
+	border: 2px solid var(--text_secondary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+TabReplaceTextEdit */
+TabReplaceTextEdit {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 5px;
+	padding: 10px;
+	selection-color: var(--text_on_accent);
+	selection-background-color: var(--accent_brand);
+}
+
+TabReplaceTextEdit QScrollBar:vertical {
+	width: 8px;
+}
+
+TabReplaceTextEdit QScrollBar:horizontal {
+	height: 8px;
+}
+
+TabReplaceTextEdit:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+TabReplaceTextEdit:focus {
+	border: 2px solid var(--text_secondary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+IconButton */
+IconButton {
+	background-color: var(--surface_overlay);
+	border-radius: 5px;
+	border: 2px solid var(--surface_overlay);
+}
+
+IconButton:hover {
+	background-color: var(--surface_floating);
+	border: 2px solid var(--surface_floating);
+}
+
+IconButton:pressed {
+	background-color: var(--surface_sunken);
+	border: 2px solid var(--border_subtle);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+LoaderButton */
+LoaderButton {
+	background-color: var(--surface_overlay);
+	border-radius: 5px;
+	border: 2px solid var(--surface_overlay);
+}
+
+LoaderButton:hover {
+	background-color: var(--surface_floating);
+	border: 2px solid var(--surface_floating);
+}
+
+LoaderButton:pressed {
+	background-color: var(--surface_sunken);
+	border: 2px solid var(--border_subtle);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+DateButton */
+DateButton {
+	background-color: var(--surface_overlay);
+	border-radius: 5px;
+	border: 2px solid var(--surface_overlay);
+}
+
+DateButton:hover {
+	background-color: var(--surface_floating);
+	border: 2px solid var(--surface_floating);
+}
+
+DateButton:pressed {
+	background-color: var(--surface_sunken);
+	border: 2px solid var(--border_subtle);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+DraggableList */
+DraggableList {
+	background-color: var(--surface_sunken);
+	border: 2px solid var(--border_subtle);
+	border-radius: 6px;
+	padding: 8px;
+	color: var(--text_primary);
+}
+
+DraggableList QScrollArea {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 6px;
+	padding: 4px 0px 4px 4px;
+}
+
+DraggableList QScrollArea QWidget {
+	background-color: transparent;
+	border: none;
+}
+
+[type="DraggableItem"] {
+	background-color: var(--surface_base);
+	border: 1px solid var(--surface_overlay);
+	border-radius: 6px 6px 6px 6px;
+}
+
+[type="DraggableItem"]:hover {
+	background-color: var(--surface_overlay);
+	border: 2px solid var(--text_secondary);
+}
+
+[type="DraggableItem"][dragging="true"] {
+	background-color: var(--text_secondary);
+	color: var(--text_on_accent);
+}
+
+[type="DraggableItem"] QLabel {
+	background-color: transparent;
+	border: none;
+	color: var(--text_primary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+OptionSelector */
+OptionSelector {
+	background-color: var(--surface_overlay);
+	border-radius: 4px;
+}
+
+OptionSelector [type="OptionSelector_Selector"] {
+	background-color: var(--surface_overlay);
+	border: 2px solid var(--accent_brand);
+	border-radius: 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+ToggleIcon */
+ToggleIcon {
+	background-color: transparent;
+	border: none;
+	border-radius: 4px 4px 4px 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+ToggleSwitch */
+ToggleSwitch {
+	background-color: var(--surface_overlay);
+	border: 2px solid var(--border_subtle);
+	border-radius: 12px;
+}
+
+ToggleSwitch:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+/** SETTING WIDGETS */
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+BaseSettingWidget */
+BaseSettingWidget {
+	background-color: transparent;
+	border: none;
+}
+
+BaseSettingWidget QLabel {
+	color: var(--text_primary);
+	font: 10pt "Segoe UI";
+	font-weight: bold;
+}
+
+BaseSettingWidget QLabel[objectName="setting_description"] {
+	color: var(--text_secondary);
+	font: 8pt "Segoe UI";
+	margin-top: 2px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SettingToggle */
+SettingToggle {
+	background-color: transparent;
+	border: none;
+}
+
+SettingToggle ToggleSwitch {
+	background-color: transparent;
+	border: none;
+}
+
+SettingCheckbox ToggleSwitch {
+	background-color: transparent;
+	border: none;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SettingSelect */
+SettingSelect {
+	background-color: transparent;
+	border: none;
+}
+
+SettingSelect QComboBox {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 4px;
+	padding: 4px 8px;
+	color: var(--text_primary);
+	font: 9pt "Segoe UI";
+}
+
+SettingSelect QComboBox:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+SettingSelect QComboBox:focus {
+	border: 2px solid var(--accent_brand);
+}
+
+SettingSelect QComboBox::drop-down {
+	border: none;
+	width: 20px;
+}
+
+SettingSelect QComboBox::down-arrow {
+	image: url(:/icons/icons/cil-arrow-bottom.png);
+	width: 12px;
+	height: 12px;
+	background: none;
+}
+
+SettingSelect QComboBox QAbstractItemView {
+	color: var(--text_primary);
+	background-color: var(--surface_floating);
+	padding: 8px;
+	selection-background-color: var(--surface_overlay);
+	border: 1px solid var(--border_subtle);
+	border-radius: 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SettingSlider */
+SettingSlider {
+	background-color: transparent;
+	border: none;
+}
+
+SettingSlider QSlider {
+	background-color: transparent;
+	border: none;
+}
+
+SettingSlider QSlider::groove:horizontal {
+	background-color: var(--surface_overlay);
+	border-radius: 2px;
+	height: 4px;
+}
+
+SettingSlider QSlider::handle:horizontal {
+	background-color: var(--accent_brand);
+	border: none;
+	border-radius: 6px;
+	width: 12px;
+	height: 12px;
+	margin: -4px 0;
+}
+
+SettingSlider QSlider::handle:horizontal:hover {
+	background-color: var(--accent_brand);
+}
+
+SettingSlider QLabel[objectName="setting_value_label"] {
+	color: var(--accent_brand);
+	font: 9pt "Segoe UI";
+	font-weight: bold;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SettingText */
+SettingText {
+	background-color: transparent;
+	border: none;
+}
+
+SettingText QLineEdit {
+	background-color: var(--surface_base);
+	border: 2px solid var(--border_subtle);
+	border-radius: 4px;
+	padding: 6px 8px;
+	color: var(--text_primary);
+	font: 9pt "Segoe UI";
+}
+
+SettingText QLineEdit:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+SettingText QLineEdit:focus {
+	border: 2px solid var(--accent_brand);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SettingCheckbox */
+SettingCheckbox {
+	background-color: transparent;
+	border: none;
+}
+
+SettingCheckbox QCheckBox {
+	background-color: var(--surface_raised);
+	border: 2px solid var(--surface_overlay);
+	border-radius: 3px;
+	width: 16px;
+	height: 16px;
+}
+
+SettingCheckbox QCheckBox:checked {
+	background-color: var(--accent_brand);
+	border: 2px solid var(--accent_brand);
+	image: url(:/icons/icons/cil-check-alt.png);
+}
+
+SettingCheckbox QCheckBox:hover {
+	border: 2px solid var(--text_secondary);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+Setting Containers */
+QFrame[objectName^="setting_container_"] {
+	/* background-color: transparent; */
+	background-color: var(--surface_sunken);;
+	border: none;
+}
+
+#theme_section_frame {
+	background-color: transparent;
+	border: none;
+}
+
+#settings_layout {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+}
+
+#content_layout {
+	background-color: var(--surface_raised);
+}
