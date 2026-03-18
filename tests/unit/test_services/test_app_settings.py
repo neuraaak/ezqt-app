@@ -42,8 +42,9 @@ class TestSettings:
     def test_should_have_correct_gui_settings_when_service_is_retrieved(self):
         """Test GUI settings."""
         settings = self._settings()
-        # Check default theme
+        # Check default theme variant and preset
         assert settings.gui.THEME == "dark"
+        assert settings.gui.THEME_PRESET == "blue-gray"
 
         # Check menu settings
         assert settings.gui.MENU_PANEL_SHRINKED_WIDTH == 60
@@ -109,6 +110,36 @@ class TestSettings:
         assert isinstance(settings.app.NAME, str)
         assert isinstance(settings.app.DESCRIPTION, str)
         assert isinstance(settings.gui.THEME, str)
+        assert isinstance(settings.gui.THEME_PRESET, str)
+
+    def test_should_parse_preset_and_variant_when_combined_theme_is_set(self):
+        """set_theme() with 'preset:variant' format updates both fields."""
+        settings = self._settings()
+        original_preset = settings.gui.THEME_PRESET
+        original_variant = settings.gui.THEME
+
+        settings.set_theme("github-dark:light")
+
+        assert settings.gui.THEME_PRESET == "github-dark"
+        assert settings.gui.THEME == "light"
+
+        # Restore
+        settings.gui.THEME_PRESET = original_preset
+        settings.gui.THEME = original_variant
+
+    def test_should_only_update_variant_when_bare_theme_is_set(self):
+        """set_theme() with a bare variant keeps the current preset."""
+        settings = self._settings()
+        original_preset = settings.gui.THEME_PRESET
+        original_variant = settings.gui.THEME
+
+        settings.set_theme("light")
+
+        assert original_preset == settings.gui.THEME_PRESET
+        assert settings.gui.THEME == "light"
+
+        # Restore
+        settings.gui.THEME = original_variant
 
     def test_should_have_app_and_gui_attributes_when_settings_service_is_queried(self):
         """Test general service structure."""

@@ -1,0 +1,242 @@
+<style>
+  .wrap {
+    padding: 1rem 0;
+    display: flex;
+    gap: 16px;
+  }
+  .theme-col {
+    flex: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(128, 128, 128, 0.15);
+  }
+  .theme-header {
+    padding: 10px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 14px;
+  }
+  .dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .swatch-label {
+    font-size: 12px;
+    flex: 1;
+  }
+  .swatch-val {
+    font-size: 11px;
+    font-family: monospace;
+    opacity: 0.65;
+  }
+  .divrow {
+    height: 1px;
+    margin: 4px 14px;
+    opacity: 0.12;
+    background: currentColor;
+  }
+  .dark-col {
+    background: #0d1117;
+    color: #e6edf3;
+  }
+  .dark-col .theme-header {
+    background: #010409;
+    color: #8b949e;
+  }
+  .light-col {
+    background: #f6f8fa;
+    color: #1f2328;
+  }
+  .light-col .theme-header {
+    background: #d0d7de;
+    color: #656d76;
+  }
+</style>
+<div class="wrap">
+  <!-- DARK -->
+  <div class="theme-col dark-col">
+    <div class="theme-header">High Contrast — Dark</div>
+
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(1, 4, 9); border: 1px solid #222"
+      ></div>
+      <div class="swatch-label">surface_sunken</div>
+      <div class="swatch-val">#010409</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(13, 17, 23)"></div>
+      <div class="swatch-label">surface_base</div>
+      <div class="swatch-val">#0d1117</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(22, 27, 34)"></div>
+      <div class="swatch-label">surface_raised</div>
+      <div class="swatch-val">#161b22</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(33, 38, 45)"></div>
+      <div class="swatch-label">surface_overlay</div>
+      <div class="swatch-val">#21262d</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(48, 54, 61)"></div>
+      <div class="swatch-label">surface_floating</div>
+      <div class="swatch-val">#30363d</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(48, 54, 61)"></div>
+      <div class="swatch-label">border_subtle</div>
+      <div class="swatch-val">#30363d</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #58a6ff"></div>
+      <div class="swatch-label">accent_brand</div>
+      <div class="swatch-val">#58a6ff</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(230, 237, 243)"></div>
+      <div class="swatch-label">text_primary</div>
+      <div class="swatch-val">#e6edf3</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(139, 148, 158)"></div>
+      <div class="swatch-label">text_secondary</div>
+      <div class="swatch-val">#8b949e</div>
+    </div>
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(13, 17, 23); border: 1px solid #444"
+      ></div>
+      <div class="swatch-label">text_on_accent</div>
+      <div class="swatch-val">#0d1117</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #3fb950"></div>
+      <div class="swatch-label">semantic_success</div>
+      <div class="swatch-val">#3fb950</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #d29922"></div>
+      <div class="swatch-label">semantic_warning</div>
+      <div class="swatch-val">#d29922</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #f85149"></div>
+      <div class="swatch-label">semantic_error</div>
+      <div class="swatch-val">#f85149</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #58a6ff"></div>
+      <div class="swatch-label">semantic_info</div>
+      <div class="swatch-val">#58a6ff</div>
+    </div>
+  </div>
+
+  <!-- LIGHT -->
+  <div class="theme-col light-col">
+    <div class="theme-header">High Contrast — Light</div>
+
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(208, 215, 222)"></div>
+      <div class="swatch-label">surface_sunken</div>
+      <div class="swatch-val">#d0d7de</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(246, 248, 250)"></div>
+      <div class="swatch-label">surface_base</div>
+      <div class="swatch-val">#f6f8fa</div>
+    </div>
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(255, 255, 255); border: 1px solid #d0d7de"
+      ></div>
+      <div class="swatch-label">surface_raised</div>
+      <div class="swatch-val">#ffffff</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(234, 238, 242)"></div>
+      <div class="swatch-label">surface_overlay</div>
+      <div class="swatch-val">#eaeff2</div>
+    </div>
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(255, 255, 255); border: 1px solid #d0d7de"
+      ></div>
+      <div class="swatch-label">surface_floating</div>
+      <div class="swatch-val">#ffffff</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(208, 215, 222)"></div>
+      <div class="swatch-label">border_subtle</div>
+      <div class="swatch-val">#d0d7de</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #0969da"></div>
+      <div class="swatch-label">accent_brand</div>
+      <div class="swatch-val">#0969da</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(31, 35, 40); border: 1px solid #bbc"
+      ></div>
+      <div class="swatch-label">text_primary</div>
+      <div class="swatch-val">#1f2328</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: rgb(101, 109, 118)"></div>
+      <div class="swatch-label">text_secondary</div>
+      <div class="swatch-val">#656d76</div>
+    </div>
+    <div class="swatch-row">
+      <div
+        class="dot"
+        style="background: rgb(255, 255, 255); border: 1px solid #bbc"
+      ></div>
+      <div class="swatch-label">text_on_accent</div>
+      <div class="swatch-val">#ffffff</div>
+    </div>
+    <div class="divrow"></div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #1a7f37"></div>
+      <div class="swatch-label">semantic_success</div>
+      <div class="swatch-val">#1a7f37</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #9a6700"></div>
+      <div class="swatch-label">semantic_warning</div>
+      <div class="swatch-val">#9a6700</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #cf222e"></div>
+      <div class="swatch-label">semantic_error</div>
+      <div class="swatch-val">#cf222e</div>
+    </div>
+    <div class="swatch-row">
+      <div class="dot" style="background: #0969da"></div>
+      <div class="swatch-label">semantic_info</div>
+      <div class="swatch-val">#0969da</div>
+    </div>
+  </div>
+</div>

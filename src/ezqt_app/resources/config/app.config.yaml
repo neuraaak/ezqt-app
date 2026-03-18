@@ -44,13 +44,14 @@ app:
 settings_panel:
   # Settings automatically generated from this configuration
   theme:
-    type: "toggle"
+    type: "select"
     label: "Active Theme"
-    options: ["Light", "Dark"]
+    # options are derived dynamically from theme.config.yaml palette — do not set here
+    # Stored as "preset:variant" (e.g. "blue_gray:dark").
     # Persisted theme chosen by the user. Overrides app.theme (the initial fallback).
     # Written by AppService.stage_config_value on every theme change and flushed to
     # disk on application quit.
-    default: "dark"
+    default: "blue-gray:dark"
     description: "Choose the application theme"
     enabled: true
 

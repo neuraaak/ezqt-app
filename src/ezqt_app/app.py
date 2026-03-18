@@ -77,7 +77,9 @@ class EzQt_App(QMainWindow):
         Initialize the EzQt_App application.
 
         Args:
-            theme_file_name: Name of the theme file to use (default: None).
+            theme_file_name: Deprecated — no longer used.  All ``.qss`` files
+                placed under ``bin/themes/`` are now loaded automatically.
+                Passing a value emits a deprecation warning.
             logs_dir: Custom logs directory overriding config/default path.
             log_file_name: Custom log file name overriding config/default naming.
             **kwargs: Backward compatibility for legacy arguments (e.g., themeFileName).
@@ -86,7 +88,16 @@ class EzQt_App(QMainWindow):
         self._has_menu: bool = True
         self._has_settings_panel: bool = True
         self._ui_initialized: bool = False
-        self._theme_file_name: str | None = theme_file_name
+
+        # Deprecation: theme_file_name is no longer used
+        if theme_file_name is not None:
+            warn_tech(
+                code="app.deprecated_arg.theme_file_name",
+                message=(
+                    "Argument 'theme_file_name' is deprecated and has no effect. "
+                    "Place your .qss files in bin/themes/ — they are loaded automatically."
+                ),
+            )
 
         # Handle backward compatibility
         if "themeFileName" in kwargs:
@@ -94,8 +105,7 @@ class EzQt_App(QMainWindow):
                 code="app.legacy_arg",
                 message="Argument 'themeFileName' is deprecated. Use 'theme_file_name' instead.",
             )
-            theme_file_name = kwargs.pop("themeFileName")
-            self._theme_file_name = theme_file_name
+            kwargs.pop("themeFileName")
 
         # Load resources and settings
         AppService.load_fonts_resources()
@@ -155,29 +165,19 @@ class EzQt_App(QMainWindow):
         super().showEvent(event)
 
     def set_app_theme(self) -> None:
-        """Update and apply the application theme based on current settings."""
-        self.build()
-        settings_service = get_settings_service()
-        theme_toggle = self.ui.settings_panel.get_theme_selector()
-        if theme_toggle:
-            if hasattr(theme_toggle, "value_id"):
-                theme_id = theme_toggle.value_id
-                theme = "light" if theme_id == 0 else "dark"
-            elif hasattr(theme_toggle, "value"):
-                theme = theme_toggle.value.lower()
-            else:
-                theme = settings_service.gui.THEME
+        """Update and apply the application theme based on current settings.
 
-            settings_service.set_theme(theme)
-            AppService.stage_config_value(
-                ["app", "settings_panel", "theme", "default"], theme
-            )
-            self.update_ui()
+        The theme was already persisted and applied to ``SettingsService`` by
+        ``_on_theme_selector_changed`` before this slot fires.  We only need to
+        trigger a full UI refresh here.
+        """
+        self.build()
+        self.update_ui()
 
     def update_ui(self) -> None:
         """Force a full UI refresh including themes, icons, and styles."""
         self.build()
-        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
+        ThemeService.apply_theme(self._as_window())
         ez_app = EzApplication.instance()
         if isinstance(ez_app, EzApplication):
             ez_app.themeChanged.emit()
@@ -197,19 +197,24 @@ class EzQt_App(QMainWindow):
 
         Call this after adding custom widgets to the application to ensure
         that QSS rules (especially ``#objectName`` selectors) are correctly
-        evaluated against the newly added widgets.
+        evaluated against the newly added widgets.  Also refreshes all
+        ``ThemeIcon`` instances so that icons added after ``build()`` (e.g.
+        via ``add_menu()``) are correctly coloured for the current theme.
 
         Returns:
             self: Allows method chaining.
 
         Example::
 
-            window = EzQt_App(theme_file_name="main_theme.qss").build()
+            window = EzQt_App().build()
             window.show()
             add_things_to_my_app(window, Icons)
             window.refresh_theme()
         """
-        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
+        ThemeService.apply_theme(self._as_window())
+        self.ui.header_container.update_all_theme_icons()
+        self.ui.menu_container.update_all_theme_icons()
+        self.ui.settings_panel.update_all_theme_icons()
         app_instance = QApplication.instance()
         if isinstance(app_instance, QApplication):
             for widget in app_instance.allWidgets():
@@ -522,14 +527,20 @@ class EzQt_App(QMainWindow):
             _theme = "dark"
 
         settings_service.set_theme(_theme)
-        ThemeService.apply_theme(self._as_window(), self._theme_file_name)
+        ThemeService.apply_theme(self._as_window())
 
         # Theme selector initialization
         theme_toggle = self.ui.settings_panel.get_theme_selector()
-        if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
+        if theme_toggle and hasattr(theme_toggle, "set_value"):
             try:
-                theme_id = 0 if _theme == "light" else 1
-                theme_toggle.initialize_selector(theme_id)
+                gui = settings_service.gui
+                internal = f"{gui.THEME_PRESET}:{gui.THEME}"
+                value_to_display = getattr(
+                    self.ui.settings_panel, "_theme_value_to_display", {}
+                )
+                display = value_to_display.get(internal, "")
+                if display:
+                    theme_toggle.set_value(display)
             except Exception as e:
                 warn_tech(
                     code="app.theme.initialize_selector_failed",
@@ -539,11 +550,8 @@ class EzQt_App(QMainWindow):
         self.ui.header_container.update_all_theme_icons()
         self.ui.menu_container.update_all_theme_icons()
 
-        if theme_toggle:
-            if hasattr(theme_toggle, "valueChanged"):
-                theme_toggle.valueChanged.connect(self.set_app_theme)
-            elif hasattr(theme_toggle, "clicked"):
-                theme_toggle.clicked.connect(self.set_app_theme)
+        if theme_toggle and hasattr(theme_toggle, "valueChanged"):
+            theme_toggle.valueChanged.connect(self.set_app_theme)
 
         # String collection for translation
         try:

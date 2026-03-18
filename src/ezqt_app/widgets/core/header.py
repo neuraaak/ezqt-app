@@ -356,6 +356,23 @@ class Header(QFrame):
         self._logo_label.setPixmap(pixmap_logo)
         offsetY(y_offset, y_shrink)
 
+    def set_settings_panel_open(self, is_open: bool) -> None:
+        """
+        Update the ``open`` dynamic property on the settings button.
+
+        The property is used by QSS to apply an accent background when the
+        settings panel is visible.  Calling this method forces Qt to
+        re-evaluate the style rules for the button immediately.
+
+        Args:
+            is_open: ``True`` when the settings panel is opening,
+                ``False`` when it is closing.
+        """
+        self.settings_btn.setProperty("open", is_open)
+        self.settings_btn.style().unpolish(self.settings_btn)
+        self.settings_btn.style().polish(self.settings_btn)
+        self.settings_btn.update()
+
     def update_all_theme_icons(self) -> None:
         """Update all button icons according to current theme."""
         current_theme = get_settings_service().gui.THEME

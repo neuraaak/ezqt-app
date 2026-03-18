@@ -54,7 +54,10 @@ class PanelService:
         width = window.ui.settings_panel.width()
         max_extend = settings_service.gui.SETTINGS_PANEL_WIDTH
         standard = 0
-        width_extended = max_extend if width == 0 else standard
+        is_opening = width == 0
+        width_extended = max_extend if is_opening else standard
+
+        window.ui.header_container.set_settings_panel_open(is_opening)
 
         window.settings_animation = QPropertyAnimation(
             window.ui.settings_panel,  # type: ignore[arg-type]
@@ -66,15 +69,20 @@ class PanelService:
         window.settings_animation.setEasingCurve(QEasingCurve.Type.InOutQuart)
         window.settings_animation.start()
 
-        current_theme = settings_service.gui.THEME
         theme_toggle = window.ui.settings_panel.get_theme_selector()
-        if theme_toggle and hasattr(theme_toggle, "initialize_selector"):
+        if theme_toggle and hasattr(theme_toggle, "set_value"):
             try:
-                theme_id = 0 if current_theme.lower() == "light" else 1
-                theme_toggle.initialize_selector(theme_id)
+                gui = settings_service.gui
+                internal = f"{gui.THEME_PRESET}:{gui.THEME}"
+                value_to_display = getattr(
+                    window.ui.settings_panel, "_theme_value_to_display", {}
+                )
+                display = value_to_display.get(internal, "")
+                if display:
+                    theme_toggle.set_value(display)
             except Exception as error:
                 warn_tech(
-                    code="ui.panel.theme_toggle_selector_init_failed",
-                    message="Theme toggle selector initialization failed",
+                    code="ui.panel.theme_selector_sync_failed",
+                    message="Theme selector sync failed on panel open",
                     error=error,
                 )

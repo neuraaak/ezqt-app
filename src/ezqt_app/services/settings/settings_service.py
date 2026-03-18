@@ -74,8 +74,19 @@ class SettingsService(SettingsServiceProtocol):
         self.app.DEBUG = enabled
 
     def set_theme(self, theme: str) -> None:
-        """Set active theme."""
-        self.gui.THEME = theme.lower()
+        """Set active theme.
+
+        Accepts either a ``'preset:variant'`` string (e.g. ``'blue_gray:dark'``)
+        or a bare variant (e.g. ``'dark'``, ``'light'``) for backward compat.
+        A bare variant keeps the current ``THEME_PRESET`` unchanged.
+        """
+        value = theme.lower().strip()
+        if ":" in value:
+            preset, _, variant = value.partition(":")
+            self.gui.THEME_PRESET = preset.strip()
+            self.gui.THEME = variant.strip()
+        else:
+            self.gui.THEME = value
 
     def set_menu_widths(self, shrinked: int, extended: int) -> None:
         """Set menu panel widths."""

@@ -34,6 +34,7 @@ class AppSettingsModel:
 class GuiSettingsModel:
     """Mutable GUI settings values."""
 
+    THEME_PRESET: str = "blue-gray"
     THEME: str = "dark"
     MENU_PANEL_SHRINKED_WIDTH: int = 60
     MENU_PANEL_EXTENDED_WIDTH: int = 240

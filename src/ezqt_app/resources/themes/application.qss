@@ -1,0 +1,264 @@
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+
+SET APP STYLESHEET - APPLICATION STYLES
+EzQt_App structural widgets — header, menu, settings panel, pages, bottom bar.
+
+///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+/** APPLICATION RELATED */
+/** ///////////////////////////////////////////////////////////////////////////////////////////////// */
+
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+Bg App */
+#bg_app_frame {
+	background-color: var(--surface_base);
+	/* background-color: var(--surface_raised); */
+	border: 1px solid var(--border_subtle);
+	border-radius: 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+HEADER */
+#header_container {
+	background-color: var(--surface_raised);
+}
+
+#app_logo {
+	background-color: transparent;
+	background-position: centered;
+	background-repeat: no-repeat;
+}
+
+#app_title {
+	font: 63 12pt "Segoe UI Semibold";
+}
+
+#app_subtitle {
+	font: 8pt "Segoe UI";
+	color: var(--accent_brand);
+}
+
+/* ==> Top Buttons */
+#buttons_frame .QPushButton {
+	background-color: var(--transparent);
+	border: none;
+	border-radius: 5px;
+}
+
+#buttons_frame .QPushButton:hover {
+	background-color: var(--surface_base);
+	border-style: solid;
+	border-radius: 4px;
+}
+
+#buttons_frame .QPushButton:pressed {
+	background-color: var(--surface_sunken);
+	border-style: solid;
+	border-radius: 4px;
+}
+
+/* ==> settings_btn */
+.QPushButton#settings_btn:pressed {
+	background-color: var(--accent_brand);
+	border-style: solid;
+	border-radius: 4px;
+}
+
+/* ==> settings_btn [open] — panel visible */
+.QPushButton#settings_btn[open="true"],
+.QPushButton#settings_btn[open="true"]:hover {
+	background-color: var(--accent_brand);
+	border-style: solid;
+	border-radius: 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+LEFT MENU */
+#menu_container {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+}
+
+#main_menu_frame {
+	background-color: var(--surface_sunken);
+	border-top: 1px solid var(--border_subtle);
+}
+
+/* ==> Toggle Button */
+#toggle_button {
+	background-color: transparent;
+	border: none;
+	border-radius: 0;
+	text-align: left;
+}
+
+#toggle_button .QLabel {
+	color: var(--text_secondary);
+}
+
+#toggle_button:hover {
+	background-color: var(--surface_base);
+}
+
+#toggle_button:hover .QLabel {
+	color: var(--text_primary);
+}
+
+#toggle_button:pressed {
+	background-color: var(--accent_brand);
+}
+
+/* ==> Menu Items */
+#top_menu QToolButton {
+	border: none;
+	border-radius: 0;
+	background-color: transparent;
+}
+
+#top_menu QToolButton[class="inactive"] {
+	background-color: transparent;
+}
+
+#top_menu QToolButton[class="active"] {
+	background-color: transparent;
+	border-left: 3px solid var(--accent_brand);
+}
+
+#top_menu QToolButton:hover {
+	background-color: var(--surface_base);
+}
+
+#top_menu QToolButton:pressed {
+	background-color: var(--accent_brand);
+	color: var(--text_on_accent);
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+SETTINGS PANEL */
+/* #settings_scroll_area QScrollBar:vertical {
+    background: transparent;
+} */
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+CONTENT */
+#content_bottom_frame {
+	border-top: 1px solid var(--border_subtle);
+}
+
+/* ==> Settings Panel */
+#settings_panel {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+}
+
+#settings_top_border {
+	background-color: var(--accent_brand);
+}
+
+#content_widget {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+}
+
+#settings_scroll_area {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+	border: none;
+}
+
+#settings_scroll_area QWidget {
+	/* background-color: var(--surface_raised); */
+	background-color: var(--surface_sunken);
+}
+
+#content_widget .QPushButton {
+	background-position: left center;
+	background-repeat: no-repeat;
+	border: none;
+	border-left: 22px solid transparent;
+	background-color: transparent;
+	text-align: left;
+	padding-left: 44px;
+}
+
+#content_widget .QPushButton:hover {
+	background-color: var(--surface_sunken);
+}
+
+#content_widget .QPushButton:pressed {
+	background-color: var(--accent_brand);
+	color: var(--text_on_accent);
+}
+
+#theme_selector {
+	background-color: var(--surface_overlay);
+	border: 2px solid var(--border_subtle);
+	border-radius: 6px;
+}
+
+#theme_selector #selector {
+	background-color: var(--surface_overlay);
+	border: 2px solid var(--accent_brand);
+	border-radius: 4px;
+}
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+Theme Label */
+#theme_label {
+	color: var(--text_primary);
+	font: 10pt "Segoe UI";
+	font-weight: bold;
+}
+
+/* ==> pages_stacked_widget */
+#pages_stacked_widget {
+	background: transparent;
+}
+
+/* ==> pages_container */
+#pages_container QPushButton {
+	border: 2px solid var(--surface_overlay);
+	border-radius: 5px;
+	background-color: var(--surface_overlay);
+}
+
+#pages_container QPushButton:hover {
+	background-color: var(--surface_floating);
+	border: 2px solid var(--surface_floating);
+}
+
+#pages_container QPushButton:pressed {
+	background-color: var(--surface_sunken);
+	border: 2px solid var(--border_subtle);
+}
+
+/* ==> Bottom Bar */
+#bottom_bar {
+	border-top: 1px solid var(--border_subtle);
+	background-color: var(--surface_raised);
+}
+
+#bottom_bar QLabel {
+	font-size: 11px;
+	color: var(--text_secondary);
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 2px;
+}
+
+/* Keep credits + separator + translating visually compact as a left group. */
+#bottom_bar #credits_label {
+	padding-right: 4px;
+}
+
+#bottom_bar #trans_sep_label {
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+#bottom_bar #trans_ind_label {
+	padding-left: 4px;
+	padding-right: 6px;
+}

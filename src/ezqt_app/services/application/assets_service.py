@@ -72,7 +72,7 @@ class AssetsService:
             maker.make_yaml_from_package(yaml_package)
 
         if mk_theme:
-            theme_package = get_package_resource("resources/themes/main_theme.qss")
+            theme_package = get_package_resource("resources/themes")
             maker.make_qss_from_package(theme_package)
 
         if mk_translations:
