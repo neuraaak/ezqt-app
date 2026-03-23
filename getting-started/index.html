@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -693,6 +693,17 @@
     <span class="md-ellipsis">
       
         Toggle Theme in App
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-pages-and-refresh-theme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add Pages and Refresh Theme
       
     </span>
   </a>
@@ -1584,6 +1595,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#add-pages-and-refresh-theme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add Pages and Refresh Theme
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#add-pages-to-app-shell" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1807,7 +1829,7 @@
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">init</span><span class="p">()</span>
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">app</span> <span class="o">=</span> <span class="n">EzApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">(</span><span class="n">theme_file_name</span><span class="o">=</span><span class="s2">&quot;main_theme.qss&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec</span><span class="p">())</span>
 </span></code></pre></div>
@@ -1832,31 +1854,72 @@
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">window</span><span class="o">.</span><span class="n">enable_auto_translation</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">window</span><span class="o">.</span><span class="n">set_app_theme</span><span class="p">()</span>
 </span></code></pre></div>
-<h3 id="add-pages-to-app-shell">Add Pages to App Shell<a class="headerlink" href="#add-pages-to-app-shell" title="Anchor link to this section">&para;</a></h3>
+<h3 id="add-pages-and-refresh-theme">Add Pages and Refresh Theme<a class="headerlink" href="#add-pages-and-refresh-theme" title="Anchor link to this section">&para;</a></h3>
+<p>When you add widgets after <code>build()</code>, call <code>refresh_theme()</code> so that QSS rules
+targeting <code>#objectName</code> selectors are evaluated against the new widgets:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">home_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Home&quot;</span><span class="p">,</span> <span class="s2">&quot;home&quot;</span><span class="p">)</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">settings_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Settings&quot;</span><span class="p">,</span> <span class="s2">&quot;settings&quot;</span><span class="p">)</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">home_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Home&quot;</span><span class="p">,</span> <span class="s2">&quot;home&quot;</span><span class="p">)</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">settings_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Settings&quot;</span><span class="p">,</span> <span class="s2">&quot;settings&quot;</span><span class="p">)</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="n">window</span><span class="o">.</span><span class="n">refresh_theme</span><span class="p">()</span>
+</span></code></pre></div>
+<h3 id="add-pages-to-app-shell">Add Pages to App Shell<a class="headerlink" href="#add-pages-to-app-shell" title="Anchor link to this section">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">home_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Home&quot;</span><span class="p">,</span> <span class="s2">&quot;home&quot;</span><span class="p">)</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">settings_page</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">add_menu</span><span class="p">(</span><span class="s2">&quot;Settings&quot;</span><span class="p">,</span> <span class="s2">&quot;settings&quot;</span><span class="p">)</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </span></code></pre></div>
 <hr />
 <h2 id="qss-and-theming">QSS and Theming<a class="headerlink" href="#qss-and-theming" title="Anchor link to this section">&para;</a></h2>
-<p>EzQt App uses a QSS-based theming workflow. Theme files are loaded at runtime:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">(</span><span class="n">theme_file_name</span><span class="o">=</span><span class="s2">&quot;main_theme.qss&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<p>EzQt App uses a QSS-based theming workflow. All <code>.qss</code> files placed under
+<code>bin/themes/</code> in your bootstrapped project are loaded automatically at runtime —
+no explicit file name is required:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">window</span> <span class="o">=</span> <span class="n">EzQt_App</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 </span></code></pre></div>
-<p>Theme files live in <code>bin/themes/</code> in your bootstrapped project. See the
-<a href="https://neuraaak.github.io/ezqt-app/guides/style-guide/">QSS Style Guide</a> for conventions and per-component examples.</p>
+<p>The theme directory ships with three files loaded in alphabetical order:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bin/themes/application.qss</code></td>
+<td>Application-level styles</td>
+</tr>
+<tr>
+<td><code>bin/themes/extended.qss</code></td>
+<td>EzQt extended widgets</td>
+</tr>
+<tr>
+<td><code>bin/themes/global.qss</code></td>
+<td>Standard Qt widgets</td>
+</tr>
+</tbody>
+</table>
+<p>The active theme preset is stored in settings as <code>THEME_PRESET</code> and <code>THEME</code>
+(format: <code>"preset:variant"</code>, e.g. <code>"blue-gray:dark"</code>). Available presets are
+read dynamically from <code>theme.config.yaml</code> via <code>ThemeService.get_available_themes()</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Deprecated argument</p>
+</div>
+<p>Passing <code>theme_file_name</code> to <code>EzQt_App()</code> still compiles but emits a
+deprecation warning and has no effect. Remove it from your code.</p>
+<p>See the <a href="https://neuraaak.github.io/ezqt-app/guides/style-guide/">QSS Style Guide</a> for conventions and per-component examples.</p>
 <hr />
 <h2 id="run-tests">Run Tests<a class="headerlink" href="#run-tests" title="Anchor link to this section">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>unit
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>integration
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>robustness
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--coverage
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>unit
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>integration
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--type<span class="w"> </span>robustness
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>python<span class="w"> </span>tests/run_tests.py<span class="w"> </span>--coverage
 </span></code></pre></div>
 <p><code>tests/run_tests.py</code> streams pytest output in real time.</p>
 <h3 id="cli-alternative">CLI Alternative<a class="headerlink" href="#cli-alternative" title="Anchor link to this section">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--unit
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--integration
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--unit
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--integration
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>ezqt<span class="w"> </span><span class="nb">test</span><span class="w"> </span>--coverage
 </span></code></pre></div>
 <hr />
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Anchor link to this section">&para;</a></h2>
@@ -1873,34 +1936,34 @@
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Anchor link to this section">&para;</a></h2>
 <h3 id="import-error">Import Error<a class="headerlink" href="#import-error" title="Anchor link to this section">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Make sure you&#39;re importing from &#39;ezqt_app&#39;, not &#39;ezqt-app&#39;</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ezqt_app</span><span class="w"> </span><span class="kn">import</span> <span class="n">EzApplication</span>  <span class="c1"># Correct</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Make sure you&#39;re importing from &#39;ezqt_app&#39;, not &#39;ezqt-app&#39;</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ezqt_app</span><span class="w"> </span><span class="kn">import</span> <span class="n">EzApplication</span>  <span class="c1"># Correct</span>
 </span></code></pre></div>
 <h3 id="pyside6-installation-issues">PySide6 Installation Issues<a class="headerlink" href="#pyside6-installation-issues" title="Anchor link to this section">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Upgrade pip first</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Then install PySide6</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>pip<span class="w"> </span>install<span class="w"> </span>PySide6&gt;<span class="o">=</span><span class="m">6</span>.7.3
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># Or install with wheel file (corporate environments)</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>pip<span class="w"> </span>install<span class="w"> </span>path/to/PySide6-6.7.3-cp310-cp310-win_amd64.whl
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Upgrade pip first</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># Then install PySide6</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>pip<span class="w"> </span>install<span class="w"> </span>PySide6&gt;<span class="o">=</span><span class="m">6</span>.7.3
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="c1"># Or install with wheel file (corporate environments)</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>pip<span class="w"> </span>install<span class="w"> </span>path/to/PySide6-6.7.3-cp310-cp310-win_amd64.whl
 </span></code></pre></div>
 <h3 id="missing-config-or-assets-after-init">Missing Config or Assets After <code>init</code><a class="headerlink" href="#missing-config-or-assets-after-init" title="Anchor link to this section">&para;</a></h3>
 <p>If config files or assets are missing after bootstrap:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Re-run init (use --force to overwrite existing files)</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>ezqt<span class="w"> </span>init<span class="w"> </span>--force<span class="w"> </span>--verbose
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Re-run init (use --force to overwrite existing files)</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>ezqt<span class="w"> </span>init<span class="w"> </span>--force<span class="w"> </span>--verbose
 </span></code></pre></div>
 <h3 id="cli-command-not-found">CLI Command Not Found<a class="headerlink" href="#cli-command-not-found" title="Anchor link to this section">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Reinstall in editable mode</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Verify the entry point is available</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>ezqt<span class="w"> </span>--version
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Reinstall in editable mode</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[dev]&quot;</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># Verify the entry point is available</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>ezqt<span class="w"> </span>--version
 </span></code></pre></div>
 <h3 id="qt-import-errors">Qt Import Errors<a class="headerlink" href="#qt-import-errors" title="Anchor link to this section">&para;</a></h3>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># Verify PySide6 is available</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import PySide6; print(PySide6.__version__)&quot;</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Verify PySide6 is available</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import PySide6; print(PySide6.__version__)&quot;</span>
 </span></code></pre></div>
 <hr />
 <h2 id="need-help">Need Help?<a class="headerlink" href="#need-help" title="Anchor link to this section">&para;</a></h2>
