@@ -13,9 +13,11 @@ from __future__ import annotations
 # Standard library imports
 from pathlib import Path
 
+# Third-party imports
+from ezpl import Ezpl
+
 # Local imports
 from ...domain.results import InitResult
-from ...utils.logger import get_logger
 from ..application.app_service import AppService
 from ..application.file_service import FileService
 from .contracts.options import InitOptions, OverwritePolicy
@@ -26,7 +28,7 @@ from .startup_config import StartupConfig
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
-_logger = get_logger()
+_logger = Ezpl().get_logger()
 
 
 class Initializer:

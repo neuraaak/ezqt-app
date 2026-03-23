@@ -16,7 +16,6 @@ from pathlib import Path
 
 # Third-party imports
 import click
-from colorama import Fore, Style
 
 # Local imports
 from ezqt_app.services.bootstrap import OverwritePolicy
@@ -78,7 +77,7 @@ def init(force, verbose, no_main):
         )
 
         if not summary.get("success", False):
-            click.echo(f"{Fore.RED}Initialization failed{Style.RESET_ALL}")
+            click.echo(click.style("Initialization failed", fg="red"))
             sys.exit(1)
 
         click.echo("Project initialization completed!")
@@ -99,7 +98,7 @@ def init(force, verbose, no_main):
             "Project initialization command failed",
             error=e,
         )
-        click.echo(f"{Fore.RED}Error during initialization: {e}{Style.RESET_ALL}")
+        click.echo(click.style(f"Error during initialization: {e}", fg="red"))
         if verbose:
             import traceback
 
@@ -109,7 +108,7 @@ def init(force, verbose, no_main):
 
 @cli.command()
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-def convert(verbose):  # noqa: ARG001
+def convert(verbose: bool) -> None:  # noqa: ARG001
     """Convert translation files.
 
     Convert .ts files to .qm format for Qt applications.
@@ -123,9 +122,7 @@ def convert(verbose):  # noqa: ARG001
             "cli.convert.module_missing",
             "Translation conversion module import failed",
         )
-        click.echo(
-            f"{Fore.RED}Translation conversion module not found{Style.RESET_ALL}"
-        )
+        click.echo(click.style("Translation conversion module not found", fg="red"))
         sys.exit(1)
     except Exception as e:
         warn_tech(
@@ -133,7 +130,7 @@ def convert(verbose):  # noqa: ARG001
             "Translation conversion command failed",
             error=e,
         )
-        click.echo(f"{Fore.RED}Error during conversion: {e}{Style.RESET_ALL}")
+        click.echo(click.style(f"Error during conversion: {e}", fg="red"))
         sys.exit(1)
 
 
@@ -156,9 +153,7 @@ def mkqm(verbose):
             "cli.mkqm.module_missing",
             "Translation conversion module import failed",
         )
-        click.echo(
-            f"{Fore.RED}Translation conversion module not found{Style.RESET_ALL}"
-        )
+        click.echo(click.style("Translation conversion module not found", fg="red"))
         sys.exit(1)
     except Exception as e:
         warn_tech(
@@ -166,7 +161,7 @@ def mkqm(verbose):
             "Translation conversion alias command failed",
             error=e,
         )
-        click.echo(f"{Fore.RED}Error during conversion: {e}{Style.RESET_ALL}")
+        click.echo(click.style(f"Error during conversion: {e}", fg="red"))
         sys.exit(1)
 
 
@@ -211,11 +206,14 @@ def test(unit, integration, coverage, verbose):
         click.echo("Tests completed successfully!")
 
     except subprocess.CalledProcessError as e:
-        click.echo(f"{Fore.RED}Tests failed: {e}{Style.RESET_ALL}")
+        click.echo(click.style(f"Tests failed: {e}", fg="red"))
         sys.exit(1)
     except FileNotFoundError:
         click.echo(
-            f"{Fore.RED}Test runner not found. Make sure you're in the project root.{Style.RESET_ALL}"
+            click.style(
+                "Test runner not found. Make sure you're in the project root.",
+                fg="red",
+            )
         )
         sys.exit(1)
 
@@ -245,9 +243,7 @@ def docs(serve, port):
                 ) as httpd:
                     httpd.serve_forever()
             else:
-                click.echo(
-                    f"{Fore.RED}Documentation directory not found{Style.RESET_ALL}"
-                )
+                click.echo(click.style("Documentation directory not found", fg="red"))
 
         except KeyboardInterrupt:
             click.echo("\nDocumentation server stopped")
@@ -257,7 +253,7 @@ def docs(serve, port):
                 "Documentation local server failed",
                 error=e,
             )
-            click.echo(f"{Fore.RED}Error serving documentation: {e}{Style.RESET_ALL}")
+            click.echo(click.style(f"Error serving documentation: {e}", fg="red"))
     else:
         click.echo("Documentation options:")
         click.echo("  --serve, -s     Serve documentation locally")
@@ -287,18 +283,18 @@ def info():
             click.echo("PySide6: Not installed")
 
         try:
-            import yaml  # noqa: F401
+            import yaml
 
-            click.echo("PyYaml: Available")
+            click.echo(f"PyYaml: {yaml.__version__}")
         except ImportError:
             click.echo("PyYaml: Not installed")
 
         try:
-            import colorama  # noqa: F401
+            import ezpl  # noqa: F401
 
-            click.echo("Colorama: Available")
+            click.echo(f"ezplog: {ezpl.__version__}")
         except ImportError:
-            click.echo("Colorama: Not installed")
+            click.echo("ezplog: Not installed")
 
         runner = ProjectRunner()
         try:
@@ -310,9 +306,7 @@ def info():
         click.echo("=" * 40)
 
     except ImportError:
-        click.echo(
-            f"{Fore.RED}EzQt_App not found in current environment{Style.RESET_ALL}"
-        )
+        click.echo(click.style("EzQt_App not found in current environment", fg="red"))
 
 
 @cli.command()
@@ -334,7 +328,7 @@ def create(template, name, verbose):
         if success:
             click.echo("Project template created successfully!")
         else:
-            click.echo(f"{Fore.RED}Failed to create project template{Style.RESET_ALL}")
+            click.echo(click.style("Failed to create project template", fg="red"))
             sys.exit(1)
     except Exception as e:
         warn_tech(
@@ -342,7 +336,7 @@ def create(template, name, verbose):
             "Project template creation command failed",
             error=e,
         )
-        click.echo(f"{Fore.RED}Error creating template: {e}{Style.RESET_ALL}")
+        click.echo(click.style(f"Error creating template: {e}", fg="red"))
         sys.exit(1)
 
 

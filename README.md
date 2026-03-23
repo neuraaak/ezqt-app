@@ -1,17 +1,18 @@
-# 🚀 EzQt App
+# EzQt-App
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
-[![Platform](https://img.shields.io/badge/OS-Independent-lightgray.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
-[![Version](https://img.shields.io/badge/Version-5.4.0-orange.svg?style=for-the-badge)](https://pypi.org/project/ezqt-app/)
-[![PyPI](https://img.shields.io/badge/PyPI-ezqt--app-green.svg?style=for-the-badge&logo=pypi)](https://pypi.org/project/ezqt-app/)
-[![Docs](https://img.shields.io/badge/Docs-Online-blue.svg?style=for-the-badge&logo=readthedocs)](https://neuraaak.github.io/ezqt-app/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Beta-yellow.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
-[![Tests](https://img.shields.io/badge/Tests-426%2B%20passing-success.svg?style=for-the-badge)](https://github.com/neuraaak/ezqt-app)
+[![PyPI version](https://img.shields.io/pypi/v/ezqt-app?style=flat&logo=pypi&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ezqt-app?style=flat&logo=python&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![PyPI status](https://img.shields.io/pypi/status/ezqt-app?style=flat&logo=pypi&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat&logo=github&logoColor=white)](https://github.com/neuraaak/ezqt-app/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/neuraaak/ezqt-app/publish-pypi.yml?style=flat&label=publish&logo=githubactions&logoColor=white)](https://github.com/neuraaak/ezqt-app/actions/workflows/publish-pypi.yml)
+[![Docs](https://img.shields.io/badge/docs-Github%20Pages-blue?style=flat&logo=materialformkdocs&logoColor=white)](https://neuraaak.github.io/ezqt-app/)
+[![uv](https://img.shields.io/badge/package%20manager-uv-DE5FE9?style=flat&logo=uv&logoColor=white)](https://github.com/astral-sh/uv)
+[![linter](https://img.shields.io/badge/linter-ruff-orange?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![type checker](https://img.shields.io/badge/type%20checker-ty-orange?style=flat&logo=astral&logoColor=white)](https://github.com/astral-sh/ty)
 
-![EzQt Widgets Logo](docs/assets/logo-min.png)
+![Logo](docs/assets/logo-min.png)
 
-**EzQt App** is a lightweight Python framework based on **PySide6** to quickly build modern desktop applications, with integrated resource, theme, translation, and reusable component management. Built on a hexagonal architecture for clean separation of concerns.
+**EzQt-App** is a lightweight Python framework based on **PySide6** to quickly build modern desktop applications, with integrated resource, theme, translation, and reusable component management. Built on a hexagonal architecture for clean separation of concerns.
 
 ## 📦 Installation
 
@@ -76,7 +77,7 @@ Full documentation is available online: **[neuraaak.github.io/ezqt-app](https://
 
 ## 🏗️ Architecture
 
-EzQt App follows a **hexagonal architecture** with three main layers:
+EzQt-App follows a **hexagonal architecture** with three main layers:
 
 ```text
 src/ezqt_app/
@@ -256,4 +257,4 @@ MIT License – See [LICENSE](LICENSE) file for details.
 
 ---
 
-**EzQt App** – Modern PySide6 application framework with hexagonal architecture. 🚀
+**EzQt-App** – Modern PySide6 application framework with hexagonal architecture. 🚀

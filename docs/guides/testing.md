@@ -289,7 +289,7 @@ tests/
 **File:** `integration/test_application/test_app_flow.py` – 12 tests
 
 - Application initialization (`EzApplication` + `EzQt_App`)
-- App with custom theme file
+- App initialization with theme preset settings
 - Window properties (title, geometry, flags)
 - Menu functionality (addMenu, page switching)
 - Header functionality (signals, buttons)
