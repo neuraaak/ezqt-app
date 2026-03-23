@@ -75,7 +75,7 @@ from ezqt_app import EzApplication, EzQt_App, init
 
 init()
 app = EzApplication(sys.argv)
-window = EzQt_App(theme_file_name="main_theme.qss").build()
+window = EzQt_App().build()
 window.show()
 sys.exit(app.exec())
 ```
@@ -117,6 +117,19 @@ window.enable_auto_translation(False)
 window.set_app_theme()
 ```
 
+### Add Pages and Refresh Theme
+
+When you add widgets after `build()`, call `refresh_theme()` so that QSS rules
+targeting `#objectName` selectors are evaluated against the new widgets:
+
+```python
+window = EzQt_App().build()
+window.show()
+home_page = window.add_menu("Home", "home")
+settings_page = window.add_menu("Settings", "settings")
+window.refresh_theme()
+```
+
 ### Add Pages to App Shell
 
 ```python
@@ -130,14 +143,31 @@ window.show()
 
 ## QSS and Theming
 
-EzQt App uses a QSS-based theming workflow. Theme files are loaded at runtime:
+EzQt App uses a QSS-based theming workflow. All `.qss` files placed under
+`bin/themes/` in your bootstrapped project are loaded automatically at runtime —
+no explicit file name is required:
 
 ```python
-window = EzQt_App(theme_file_name="main_theme.qss").build()
+window = EzQt_App().build()
 ```
 
-Theme files live in `bin/themes/` in your bootstrapped project. See the
-[QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/) for conventions and per-component examples.
+The theme directory ships with three files loaded in alphabetical order:
+
+| File                         | Scope                    |
+| ---------------------------- | ------------------------ |
+| `bin/themes/application.qss` | Application-level styles |
+| `bin/themes/extended.qss`    | EzQt extended widgets    |
+| `bin/themes/global.qss`      | Standard Qt widgets      |
+
+The active theme preset is stored in settings as `THEME_PRESET` and `THEME`
+(format: `"preset:variant"`, e.g. `"blue-gray:dark"`). Available presets are
+read dynamically from `theme.config.yaml` via `ThemeService.get_available_themes()`.
+
+!!! warning "Deprecated argument"
+Passing `theme_file_name` to `EzQt_App()` still compiles but emits a
+deprecation warning and has no effect. Remove it from your code.
+
+See the [QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/) for conventions and per-component examples.
 
 ---
 

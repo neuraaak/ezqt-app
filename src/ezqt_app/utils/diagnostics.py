@@ -10,8 +10,10 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Third-party imports
+from ezpl import Ezpl
+
 # Local imports
-from .logger import get_logger
 from .printer import get_printer
 
 
@@ -27,7 +29,9 @@ def _format_log_message(code: str, message: str, error: Exception | None = None)
 
 def warn_tech(code: str, message: str, error: Exception | None = None) -> None:
     """Log a technical warning (logger only, no console output)."""
-    get_logger().warning(_format_log_message(code=code, message=message, error=error))
+    Ezpl().get_logger().warning(
+        _format_log_message(code=code, message=message, error=error)
+    )
 
 
 def warn_user(
@@ -43,7 +47,7 @@ def warn_user(
     Console output should stay concise and readable for end users,
     while logs keep technical details and stable error codes.
     """
-    get_logger().warning(
+    Ezpl().get_logger().warning(
         _format_log_message(
             code=code,
             message=log_message or user_message,

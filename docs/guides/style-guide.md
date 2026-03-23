@@ -12,9 +12,22 @@ This document defines practical QSS style conventions for EzQt App components.
 
 ## Where Styles Come From
 
-- Theme files in runtime project: `bin/themes/*.qss`
-- Resource defaults in package resources
-- Runtime application through `ThemeService`
+All `.qss` files found in `bin/themes/` are loaded automatically at application
+startup in alphabetical order. The directory ships with three files:
+
+| File                         | Scope                                                       |
+| ---------------------------- | ----------------------------------------------------------- |
+| `bin/themes/application.qss` | Application-level styles (window chrome, layout containers) |
+| `bin/themes/extended.qss`    | EzQt extended widgets (`OptionSelector`, `ThemeIcon`, etc.) |
+| `bin/themes/global.qss`      | Standard Qt widgets (`QPushButton`, `QLineEdit`, etc.)      |
+
+To add project-specific styles, place an additional `.qss` file in the same
+directory. It will be picked up automatically on the next run.
+
+Additional sources:
+
+- Resource defaults bundled in the package
+- Runtime application orchestrated by `ThemeService`
 
 ---
 
@@ -71,6 +84,23 @@ QLineEdit:focus {
 [type="OptionSelector_Selector"] {
   background: #3b82f6;
   border-radius: 6px;
+}
+```
+
+### Settings Button Open State
+
+The settings button in the header receives a dynamic `open` property whose
+value is `"true"` when the settings panel is visible and `"false"` when it is
+hidden. Use this to give the button a distinct active appearance:
+
+```css
+QPushButton#settings_btn[open="true"] {
+  background: var(--accent_brand);
+  border-color: var(--accent_brand);
+}
+
+QPushButton#settings_btn[open="false"] {
+  background: transparent;
 }
 ```
 

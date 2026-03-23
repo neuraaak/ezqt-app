@@ -1,131 +1,83 @@
 #!/bin/bash
-# Pre-commit hook for automatic code formatting
-# Automatically formats code before allowing commits
+# Pre-commit hook — lint, format, and version badge sync
+# Runs automatically before each commit via: git config core.hooksPath .hooks
 
 # Get project root (parent of .hooks directory)
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
-# Prefer project venv if present
-PYTHON_BIN=""
-if [ -x "$PROJECT_ROOT/.venv/Scripts/python.exe" ]; then
-    PYTHON_BIN="$PROJECT_ROOT/.venv/Scripts/python.exe"
-elif [ -x "$PROJECT_ROOT/.venv/bin/python" ]; then
-    PYTHON_BIN="$PROJECT_ROOT/.venv/bin/python"
-else
-    PYTHON_BIN="python"
-fi
+echo "Running pre-commit checks..."
 
-echo "🔍 Running pre-commit formatting..."
-
-# Check if Python is available
-if ! command -v "$PYTHON_BIN" &>/dev/null; then
-    echo "❌ Error: Python not found (venv or PATH)"
+# Check if uv is available
+if ! command -v uv &>/dev/null; then
+    echo "Error: uv not found in PATH. Install uv or add it to PATH."
     exit 1
 fi
 
-# Track overall success
 overall_success=true
 
-# Use the lint.py script for formatting (fixes issues automatically)
+# -------------------------------------------------------
+# STEP 1 — Lint and format via lint.py (with auto-fix)
+# -------------------------------------------------------
 if [ -f ".scripts/dev/lint.py" ]; then
-    echo "🔧 Running code quality checks and fixes..."
-    if "$PYTHON_BIN" .scripts/dev/lint.py; then
-        echo "✅ Code formatting completed"
+    echo "Running code quality checks and fixes..."
+    if uv run .scripts/dev/lint.py --fix; then
+        echo "Code formatting completed"
     else
-        echo "❌ Code formatting failed"
+        echo "Code formatting failed"
         overall_success=false
     fi
 else
-    echo "⚠️  Warning: .scripts/dev/lint.py not found, using fallback tools..."
+    echo "Warning: .scripts/dev/lint.py not found, falling back to direct ruff calls..."
 
-    # Fallback to direct tool calls if lint.py is not available
-    # Function to check if a tool is available
-    check_tool() {
-        local tool="$1"
-        local command="$2"
-        if ! command -v "$command" &>/dev/null; then
-            echo "⚠️  Warning: $tool not found, skipping..."
-            return 1
-        fi
-        return 0
-    }
-
-    # Function to run a formatting tool
-    run_formatter() {
-        local tool="$1"
-        local command="$2"
-        echo "🔧 Running $tool..."
-        if eval "$command"; then
-            echo "✅ $tool completed"
-            return 0
-        else
-            echo "❌ $tool failed"
-            return 1
-        fi
-    }
-
-    # Track overall success
-    overall_success=true
-
-    # Run Black (code formatting) - format automatically
-    if check_tool "Black" "black"; then
-        if ! run_formatter "Black" "black ."; then
-            overall_success=false
-        fi
+    if uv run ruff format src/ezplog; then
+        echo "ruff format completed"
+    else
+        echo "ruff format failed"
+        overall_success=false
     fi
 
-    # Run isort (import sorting) - format automatically
-    if check_tool "isort" "isort"; then
-        if ! run_formatter "isort" "isort ."; then
-            overall_success=false
-        fi
-    fi
-
-    # Run Ruff format (code formatting) - format automatically
-    if check_tool "Ruff" "ruff"; then
-        if ! run_formatter "Ruff format" "ruff format ."; then
-            overall_success=false
-        fi
-    fi
-
-    if [ "$overall_success" != true ]; then
-        echo "❌ Pre-commit formatting failed!"
+    if uv run ruff check --fix src/ezplog; then
+        echo "ruff check completed"
+    else
+        echo "ruff check failed"
         overall_success=false
     fi
 fi
 
-# Update README version badge from your project's __init__.py before staging
+# -------------------------------------------------------
+# STEP 2 — Sync version.py from pyproject.toml
+# -------------------------------------------------------
 if [ -f ".scripts/dev/update_version.py" ]; then
-    echo "🔄 Updating README version badge..."
-    if "$PYTHON_BIN" .scripts/dev/update_version.py; then
-        echo "✅ README badge updated"
+    echo "Syncing version.py..."
+    if uv run .scripts/dev/update_version.py; then
+        echo "version.py updated"
     else
-        echo "⚠️  Warning: Failed to update README badge (non-blocking)"
+        echo "Warning: Failed to sync version.py (non-blocking)"
     fi
 fi
 
-# Add all reformatted files (and updated README) to staging area
+# -------------------------------------------------------
+# STEP 3 — Re-stage modified tracked files
+# -------------------------------------------------------
 if [ "$overall_success" = true ]; then
-    echo "📝 Adding reformatted files to staging area..."
-    if git add .; then
-        echo "✅ Files added to staging area"
+    echo "Re-staging modified files..."
+    if git add -u; then
+        echo "Files staged"
     else
-        echo "❌ Failed to add files to staging area"
+        echo "Failed to stage files"
         overall_success=false
     fi
 fi
 
-# Final result
+# -------------------------------------------------------
+# RESULT
+# -------------------------------------------------------
 if [ "$overall_success" = true ]; then
-    echo "✅ Pre-commit formatting completed!"
-    echo "💡 Code has been automatically formatted and staged for commit."
+    echo "Pre-commit checks passed."
     exit 0
 else
-    echo "❌ Pre-commit formatting failed!"
-    echo ""
-    echo "💡 Please fix the issues above and try again."
-    echo "💡 You can run formatting manually:"
-    echo "   python .scripts/dev/lint.py"
+    echo "Pre-commit checks failed. Fix the issues above and retry."
+    echo "Run manually: uv run .scripts/dev/lint.py --fix"
     exit 1
 fi

@@ -1,11 +1,18 @@
-# Welcome to EzQt App Documentation
+# EzQt-App
 
-[![PyPI](https://img.shields.io/badge/PyPI-ezqt--app-orange.svg)](https://pypi.org/project/ezqt-app/)
-[![PyPI version](https://img.shields.io/pypi/v/ezqt-app)](https://pypi.org/project/ezqt-app/)
-[![Python versions](https://img.shields.io/pypi/pyversions/ezqt-app)](https://pypi.org/project/ezqt-app/)
-[![License](https://img.shields.io/pypi/l/ezqt-app)](https://github.com/neuraaak/ezqt-app/blob/main/LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/ezqt-app?style=flat&logo=pypi&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![Python versions](https://img.shields.io/pypi/pyversions/ezqt-app?style=flat&logo=python&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![PyPI status](https://img.shields.io/pypi/status/ezqt-app?style=flat&logo=pypi&logoColor=white)](https://pypi.org/project/ezqt-app/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat&logo=github&logoColor=white)](https://github.com/neuraaak/ezqt-app/blob/main/LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/neuraaak/ezqt-app/publish-pypi.yml?style=flat&label=publish&logo=githubactions&logoColor=white)](https://github.com/neuraaak/ezqt-app/actions/workflows/publish-pypi.yml)
+[![Docs](https://img.shields.io/badge/docs-Github%20Pages-blue?style=flat&logo=materialformkdocs&logoColor=white)](https://neuraaak.github.io/ezqt-app/)
+[![uv](https://img.shields.io/badge/package%20manager-uv-DE5FE9?style=flat&logo=uv&logoColor=white)](https://github.com/astral-sh/uv)
+[![linter](https://img.shields.io/badge/linter-ruff-orange?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
+[![type checker](https://img.shields.io/badge/type%20checker-ty-orange?style=flat&logo=astral&logoColor=white)](https://github.com/astral-sh/ty)
 
-**EzQt App** is a PySide6 framework to bootstrap and structure desktop applications with a ready-to-use shell, configuration workflow, translation support, and reusable UI components.
+![Ezpl Logo](https://raw.githubusercontent.com/neuraaak/ezqt-app/refs/heads/main/docs/assets/logo-min.png)
+
+**EzQt-App** is a PySide6 framework to bootstrap and structure desktop applications with a ready-to-use shell, configuration workflow, translation support, and reusable UI components.
 
 ## ✨ Key Features
 
@@ -56,7 +63,7 @@ sys.exit(app.exec())
 
 ## 🎯 Main Components
 
-EzQt App is organized around architectural modules:
+EzQt-App is organized around architectural modules:
 
 ### Domain Module
 
@@ -118,4 +125,4 @@ MIT License – See [LICENSE](https://github.com/neuraaak/ezqt-app/blob/main/LIC
 
 ---
 
-**EzQt App** - Structured, practical PySide6 app framework with a complete bootstrap workflow.
+**EzQt-App** - Structured, practical PySide6 app framework with a complete bootstrap workflow.
