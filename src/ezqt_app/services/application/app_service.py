@@ -285,21 +285,11 @@ class AppService:
     # ------------------------------------------------
 
     @staticmethod
-    def load_app_settings(
-        logs_dir_override: str | Path | None = None,
-        log_file_name_override: str | None = None,
-    ) -> dict[str, Any]:
+    def load_app_settings() -> dict[str, Any]:
         """
-        Load app settings and configure logger.
-
-        Args:
-            logs_dir_override: Optional custom logs directory.
-            log_file_name_override: Optional custom log file name.
+        Load app settings from YAML and apply to SettingsService.
 
         Returns:
             dict: Loaded settings.
         """
-        return SettingsLoader.load_app_settings(
-            logs_dir_override=logs_dir_override,
-            log_file_name_override=log_file_name_override,
-        )
+        return SettingsLoader.load_app_settings()

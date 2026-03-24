@@ -1,67 +1,65 @@
-# Git Hooks Usage
+# Git Hooks
 
-This directory contains Git hooks used by your project.
+Pre-commit checks are managed by the **[pre-commit](https://pre-commit.com/)** library
+via `.pre-commit-config.yaml` at the project root.
 
-## Available Hooks
-
-### `pre-commit`
-
-- **Purpose**: Code quality and formatting before each commit
-- **Behavior**:
-  - Runs **Black**, **isort**, and **Ruff format** on the entire repository
-  - Automatically stages reformatted files with `git add .`
-  - Fails the commit if one of the tools fails
-
-> Note: This is a **native Git hook** in `.hooks/`, independent from the Python `pre-commit` tool configured by `make setup-hooks`.
-
-### `post-commit`
-
-- **Purpose**: Automated tagging and local build after a successful commit
-- **Behavior**:
-  - Reads the version from `pyproject.toml` (or `setup.py` as fallback)
-  - Creates or updates a lightweight tag `v<version>` on `HEAD`
-  - Creates or updates a major “latest” tag `v<major>-latest`
-  - Builds the local package with:
-
-    ```bash
-    python .scripts/build/build_package.py build
-    ```
-
-  - Pushes the tags to `origin` (forced update)
-
-### Configuration
-
-To activate these hooks at Git level, run:
+## Setup (run once per clone)
 
 ```bash
-git config core.hooksPath .hooks
+# 1. Disable the legacy .hooks/ mechanism if previously enabled
+git config --unset core.hooksPath
+
+# 2. Install the pre-commit library (already in dev deps)
+uv sync                # ensures the project venv is up to date
+uv run pre-commit install
 ```
 
-This tells Git to use the `.hooks/` directory instead of `.git/hooks/`.
+`pre-commit install` writes `.git/hooks/pre-commit` and `.git/hooks/pre-push`
+automatically — no manual `git config` required.
 
-### Development
+## What runs on each commit
 
-#### Adding a new hook
+Defined in `.pre-commit-config.yaml`, mirroring `.scripts/dev/lint.py`:
 
-1. Create the file in `.hooks/` (e.g. `.hooks/pre-push`)
-2. Make it executable: `chmod +x .hooks/pre-push`
-3. Document the new hook in this file
+| Step         | Tool                | Action                                                     |
+| ------------ | ------------------- | ---------------------------------------------------------- |
+| File hygiene | pre-commit-hooks    | trailing whitespace, YAML/TOML validity, merge conflicts…  |
+| 1            | `ruff-format`       | auto-format code                                           |
+| 2            | `ruff check`        | lint with auto-fix (`--exit-non-zero-on-fix`)              |
+| 3            | `ty check`          | type checking                                              |
+| 4            | `lint-imports`      | layer dependency contracts                                 |
+| 5            | `update_version.py` | sync `version.py` ← `pyproject.toml` (on pyproject change) |
 
-#### Manual testing
+## Workflow when a hook modifies files
 
-You can test a hook manually from the project root:
+When ruff or `sync-version` modifies files, pre-commit **aborts the commit**
+so you can review the changes:
 
 ```bash
-# Test pre-commit
-.hooks/pre-commit
+# review what was auto-fixed
+git diff
 
-# Test post-commit
-.hooks/post-commit
+# re-stage and recommit
+git add -u
+git commit
 ```
 
-### Future Extensions
+## Run manually
 
-- `pre-push`: Run tests or linters before pushing
-- `commit-msg`: Validate commit messages (format, IDs, etc.)
-- `post-merge`: Actions after merges (e.g. migrations, regeneration)
-- `pre-rebase`: Checks before rebasing
+```bash
+# all files
+pre-commit run --all-files
+
+# specific hook
+pre-commit run ruff --all-files
+pre-commit run ty --all-files
+
+# skip hooks for a one-off commit (use sparingly)
+git commit --no-verify
+```
+
+## Update hook versions
+
+```bash
+pre-commit autoupdate
+```

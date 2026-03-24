@@ -11,48 +11,16 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-import re
 from pathlib import Path
-from typing import Any
 
 # Third-party imports
 import yaml
-from ezpl import Ezpl
 
 from ...utils.printer import get_printer, set_global_debug
 
 # Local imports
 from ..config.config_service import get_config_service
 from ..settings import get_settings_service
-
-# ///////////////////////////////////////////////////////////////
-# HELPERS
-# ///////////////////////////////////////////////////////////////
-_DEFAULT_USER_DIR = Path.home() / ".ezqt"
-_DEFAULT_LOGS_DIR = _DEFAULT_USER_DIR / "logs"
-
-
-def _build_log_file_path(
-    app_name: str | None = None,
-    logs_dir: str | Path | None = None,
-    log_file_name: str | None = None,
-) -> Path:
-    """Build the absolute log file path from app identity and optional overrides."""
-    resolved_logs_dir = (
-        Path(logs_dir).expanduser() if logs_dir is not None else _DEFAULT_LOGS_DIR
-    )
-    if log_file_name and log_file_name.strip():
-        file_name = log_file_name.strip()
-    else:
-        stem = re.sub(
-            r"[^a-zA-Z0-9._-]+", "_", (app_name or "ezqt_app").strip().lower()
-        )
-        stem = stem.strip("._-") or "ezqt_app"
-        file_name = f"{stem}.log"
-    file_path = resolved_logs_dir / file_name
-    if file_path.suffix == "":
-        file_path = file_path.with_suffix(".log")
-    return file_path.resolve()
 
 
 # ///////////////////////////////////////////////////////////////
@@ -72,8 +40,6 @@ class SettingsLoader:
     @staticmethod
     def load_app_settings(
         yaml_file: Path | None = None,
-        logs_dir_override: str | Path | None = None,
-        log_file_name_override: str | None = None,
     ) -> dict:
         """Load application settings from YAML and apply to SettingsService.
 
@@ -96,29 +62,6 @@ class SettingsLoader:
                 app_data = data.get("app", {})
 
         settings_service = get_settings_service()
-        app_name = str(app_data.get("name", "ezqt_app"))
-        logging_cfg: dict[str, Any] = (
-            app_data.get("logging", {})
-            if isinstance(app_data.get("logging", {}), dict)
-            else {}
-        )
-
-        config_logs_dir = app_data.get("logs_dir") or logging_cfg.get("dir")
-        config_log_file_name = app_data.get("log_file_name") or logging_cfg.get(
-            "file_name"
-        )
-
-        resolved_log_file = _build_log_file_path(
-            app_name=app_name,
-            logs_dir=logs_dir_override or config_logs_dir,
-            log_file_name=log_file_name_override or config_log_file_name,
-        )
-        resolved_log_file.parent.mkdir(parents=True, exist_ok=True)
-        if Ezpl.is_initialized():
-            Ezpl().set_log_file(resolved_log_file)
-        else:
-            Ezpl(log_file=resolved_log_file)
-
         debug_enabled = bool(app_data.get("debug", False))
 
         # App identity
