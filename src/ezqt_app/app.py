@@ -69,8 +69,6 @@ class EzQt_App(QMainWindow):
     def __init__(
         self,
         theme_file_name: str | None = None,
-        logs_dir: str | Path | None = None,
-        log_file_name: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -80,8 +78,6 @@ class EzQt_App(QMainWindow):
             theme_file_name: Deprecated — no longer used.  All ``.qss`` files
                 placed under ``bin/themes/`` are now loaded automatically.
                 Passing a value emits a deprecation warning.
-            logs_dir: Custom logs directory overriding config/default path.
-            log_file_name: Custom log file name overriding config/default naming.
             **kwargs: Backward compatibility for legacy arguments (e.g., themeFileName).
         """
         QMainWindow.__init__(self)
@@ -109,10 +105,7 @@ class EzQt_App(QMainWindow):
 
         # Load resources and settings
         AppService.load_fonts_resources()
-        AppService.load_app_settings(
-            logs_dir_override=logs_dir,
-            log_file_name_override=log_file_name,
-        )
+        AppService.load_app_settings()
 
         self._config_service = get_config_service()
 

@@ -1,147 +1,95 @@
 # ///////////////////////////////////////////////////////////////
-# 🔧 PRE-COMMIT CONFIGURATION FOR EZQT APP
+# PRE-COMMIT CONFIGURATION
 # ///////////////////////////////////////////////////////////////
-# Installation: pip install pre-commit && pre-commit install
-# Run manually: pre-commit run --all-files
+# Mirrors the quality checks in .scripts/dev/lint.py (in order):
+#   1. ruff format     — auto-format code
+#   2. ruff check      — lint with auto-fix
+#   3. ty check        — type checking
+#   4. lint-imports    — layer dependency contracts
+#   5. update_version  — sync version.py ← pyproject.toml
 #
-# This configuration runs automatically on `git commit` and ensures:
-# - Code formatting consistency (Black, isort, Ruff)
-# - Import organization (isort)
-# - Code quality and linting (Ruff)
-# - General file hygiene (trailing whitespace, YAML/TOML validation, etc.)
-# - Security scanning (Bandit)
+# Setup (run once per clone):
+#   git config --unset core.hooksPath   # disable legacy .hooks/ mechanism
+#   pip install pre-commit              # or: uv add --dev pre-commit
+#   pre-commit install
 #
-# Note: The .hooks/pre-commit script executes .scripts/dev/lint.py
-# which runs these tools in a specific order:
-#   1. Ruff Format (🎨) - Format code
-#   2. Black (⚫)        - Format code
-#   3. isort (📦)        - Sort imports
-#   4. Ruff Check (🔍)   - Lint code
+# Run manually on all files:
+#   pre-commit run --all-files
+#
+# Notes:
+#   - Steps 3–5 use language: system and delegate to uv so they always
+#     run inside the project venv (requires: uv sync).
+#   - ruff config is read from pyproject.toml [tool.ruff].
+#   - When ruff or sync-version modifies files, pre-commit aborts the
+#     commit; stage the changes (git add -u) and recommit.
+
+default_language_version:
+  python: python3.11
 
 repos:
   # ///////////////////////////////////////////////////////////////
-  # 🧹 FILE HYGIENE CHECKS
-  # General pre-commit hooks for file validation and cleanup
+  # FILE HYGIENE
   # ///////////////////////////////////////////////////////////////
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
-      # Remove trailing whitespace
       - id: trailing-whitespace
         exclude: '\.md$'
-      # Fix end-of-file markers
       - id: end-of-file-fixer
-      # Validate YAML syntax
       - id: check-yaml
-      # Validate TOML syntax
       - id: check-toml
-      # Detect merge conflict markers
       - id: check-merge-conflict
-      # Prevent large files from being committed
       - id: check-added-large-files
         args: ["--maxkb=1000"]
-      # Detect debug statements (debugger calls)
       - id: debug-statements
-      # Check for case conflicts in filenames
-      - id: check-case-conflict
-      # Check docstring is first in module
-      - id: check-docstring-first
-      # Validate JSON syntax
-      - id: check-json
-      # Check for broken symlinks
-      - id: check-symlinks
-      # Detect private keys
-      - id: detect-private-key
-      # Ensure test files follow naming convention
-      - id: name-tests-test
-      # Sort requirements.txt files
-      - id: requirements-txt-fixer
 
   # ///////////////////////////////////////////////////////////////
-  # 🎨 CODE FORMATTING & LINTING TOOLS
-  # Auto-formatting, import sorting, and style checking
-  # ===
-  # Execution order matters - formatted first, then linted:
-  # 1. Ruff Format (must run before Black/isort for consistency)
-  # 2. Black (88 char line length, Python 3.10+)
-  # 3. isort (Black-compatible profile, 88 char line length)
-  # 4. Ruff Check (comprehensive linting with auto-fix)
+  # RUFF — format then lint  (steps 1 & 2 of lint.py)
+  # Config is read from pyproject.toml [tool.ruff]
   # ///////////////////////////////////////////////////////////////
-
-  # Ruff: All-in-one linter with comprehensive rule sets (format)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
+    rev: v0.9.0
     hooks:
+      # Step 1 — format
       - id: ruff-format
         name: "Ruff Format"
-        args: [--line-length=88]
 
-  # Black: Code formatter (88 char line length, Python 3.10+)
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
-    hooks:
-      - id: black
-        name: "Black Formatter"
-        language_version: python3
-        args: [--line-length=88, --target-version=py310]
-
-  # isort: Import sorting (Black-compatible profile)
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: "isort - Sort Imports"
-        args: [--profile=black, --line-length=88]
-
-  # Ruff: All-in-one linter with comprehensive rule sets (check)
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.4
-    hooks:
+      # Step 2 — lint with auto-fix
+      # --exit-non-zero-on-fix: abort commit so dev can review & re-stage
       - id: ruff
         name: "Ruff Check"
-        args: [check, --fix, --line-length=88, --exit-non-zero-on-fix]
+        args: [--fix, --exit-non-zero-on-fix]
 
   # ///////////////////////////////////////////////////////////////
-  # 🔐 SECURITY TOOLS
-  # Code security scanning and vulnerability detection
+  # LOCAL HOOKS — ty, import-linter, version sync  (steps 3–5)
+  # language: system  →  executed via the project venv through uv
+  # Prerequisite: uv sync (editable install required for import-linter)
   # ///////////////////////////////////////////////////////////////
-
-  # Bandit: Security linter for identifying common security issues
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+  - repo: local
     hooks:
-      - id: bandit
-        name: "Bandit - Security Check"
-        args: [-r, ., -f, json]
-        exclude: "tests/.*|examples/.*|docs/.*"
+      # Step 3 — type check
+      - id: ty
+        name: "Ty — type check"
+        language: system
+        entry: uv run ty check --output-format=concise
+        types: [python]
+        pass_filenames: false
 
-  # ///////////////////////////////////////////////////////////////
-  # ✅ TYPE CHECKING TOOLS (OPTIONAL)
-  # Static type analysis with detailed reporting (disabled by default)
-  # Uncomment to enable: can be slow on large codebases
-  # ///////////////////////////////////////////////////////////////
+      # Step 4 — layer dependency contracts
+      # Relies on editable install so that ezqt_app is importable
+      # without an explicit PYTHONPATH override.
+      - id: import-linter
+        name: "Import Linter — layer contracts"
+        language: system
+        entry: uv run lint-imports
+        pass_filenames: false
+        always_run: true
 
-  # Mypy: Comprehensive type checking with detailed reporting
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.12.0
-  #   hooks:
-  #     - id: mypy
-  #       name: "Mypy - Type Checking"
-  #       additional_dependencies: [types-all]
-  #       args: [--ignore-missing-imports]
-
-  # ///////////////////////////////////////////////////////////////
-  # 🧪 TESTING TOOLS (OPTIONAL)
-  # Test execution with coverage (disabled by default)
-  # Uncomment to enable: can be heavy on commit
-  # ///////////////////////////////////////////////////////////////
-
-  # Pytest: Test runner with unit tests
-  # - repo: local
-  #   hooks:
-  #     - id: pytest-unit
-  #       name: "Pytest - Unit Tests"
-  #       entry: python -m pytest tests/unit --tb=short
-  #       language: system
-  #       pass_filenames: false
-  #       always_run: true
+      # Step 5 — keep version.py in sync with pyproject.toml
+      # Only triggered when pyproject.toml is staged.
+      - id: sync-version
+        name: "Sync version.py ← pyproject.toml"
+        language: system
+        entry: uv run python .scripts/dev/update_version.py
+        files: ^pyproject\.toml$
+        pass_filenames: false
