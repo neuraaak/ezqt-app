@@ -614,7 +614,14 @@ class SettingsPanel(QFrame):
 
     def update_all_theme_icons(self) -> None:
         """Update theme icons for all widgets that support it."""
+        current_theme = get_settings_service().gui.THEME
         for widget in self._widgets:
+            # New pattern: widgets exposing setTheme(theme) directly
+            setter = getattr(widget, "setTheme", None)
+            if callable(setter):
+                setter(current_theme)
+                continue
+            # Legacy pattern: widgets exposing update_theme_icon()
             updater = getattr(widget, "update_theme_icon", None)
             if callable(updater):
                 updater()

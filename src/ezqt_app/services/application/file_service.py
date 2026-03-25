@@ -62,7 +62,6 @@ class FileService:
     ) -> None:
         self.base_path: Path = base_path or APP_PATH
         self._bin: Path = bin_path or (self.base_path / "bin")
-        self._modules: Path = self.base_path / "modules"
         self._qrc_file: str = ""
         self._resources_module_file: str = ""
         self._overwrite_policy = overwrite_policy.lower().strip()
@@ -178,7 +177,6 @@ class FileService:
             self._bin / "themes",
             self._bin / "config",
             self._bin / "translations",
-            self._modules,
         ]
 
         created_paths = []
@@ -388,12 +386,12 @@ class FileService:
         except subprocess.CalledProcessError as e:
             stderr_text = (
                 e.stderr.decode("utf-8", errors="replace")
-                if isinstance(e.stderr, (bytes, bytearray))
+                if isinstance(e.stderr, bytes | bytearray)
                 else str(e.stderr or "")
             )
             stdout_text = (
                 e.stdout.decode("utf-8", errors="replace")
-                if isinstance(e.stdout, (bytes, bytearray))
+                if isinstance(e.stdout, bytes | bytearray)
                 else str(e.stdout or "")
             )
             raise ResourceCompilationError(
@@ -439,10 +437,6 @@ class FileService:
     def get_bin_path(self) -> Path:
         """Return the ``bin/`` directory path."""
         return self._bin
-
-    def get_modules_path(self) -> Path:
-        """Return the ``modules/`` directory path."""
-        return self._modules
 
     def get_qrc_file(self) -> str:
         """Return the generated QRC file path."""

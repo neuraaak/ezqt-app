@@ -69,7 +69,7 @@ class InitializationSequence:
         )
         self.add_step(
             name="Create Directories",
-            description="Create necessary directories for assets, config, and modules",
+            description="Create necessary directories for assets and config",
             function=lambda: FileService(
                 base_path=options.project_root,
                 bin_path=options.bin_path,
