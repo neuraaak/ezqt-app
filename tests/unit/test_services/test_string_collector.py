@@ -38,12 +38,6 @@ class TestStringCollectorInit:
         collector = StringCollector(user_dir=tmp_path / "collector")
         assert collector.cache_dir.exists()
 
-    def test_should_create_logs_dir_when_instantiated_with_user_dir(
-        self, tmp_path: Path
-    ) -> None:
-        collector = StringCollector(user_dir=tmp_path / "collector")
-        assert collector.logs_dir.exists()
-
     def test_should_use_home_ezqt_as_default_user_dir_when_instantiated(self) -> None:
         collector = StringCollector()
         assert collector.user_dir == Path.home() / ".ezqt"

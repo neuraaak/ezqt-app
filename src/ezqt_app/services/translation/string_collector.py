@@ -38,11 +38,9 @@ class StringCollector:
 
         self.translations_dir = self.user_dir / "translations"
         self.cache_dir = self.user_dir / "cache"
-        self.logs_dir = self.user_dir / "logs"
 
         self.translations_dir.mkdir(exist_ok=True)
         self.cache_dir.mkdir(exist_ok=True)
-        self.logs_dir.mkdir(exist_ok=True)
 
         self.pending_file = self.translations_dir / "pending_strings.txt"
         self.processed_file = self.translations_dir / "processed_strings.txt"

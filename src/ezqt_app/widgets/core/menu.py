@@ -241,7 +241,7 @@ class Menu(QFrame):
         current_theme = get_settings_service().gui.THEME
         for i, btn in enumerate(self._buttons):
             icon = self._icons[i]
-            setter = getattr(icon, "set_theme", None)
+            setter = getattr(icon, "setTheme", None)
             if callable(setter):
                 setter(current_theme)
             updater = getattr(btn, "update_theme_icon", None)
