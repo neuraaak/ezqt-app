@@ -415,10 +415,11 @@ wheels = [
 
 [[package]]
 name = "ezqt-app"
-version = "5.5.0"
+version = "5.5.1"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
+    { name = "colorama" },
     { name = "ezplog" },
     { name = "ezqt-widgets" },
     { name = "langdetect" },
@@ -471,6 +472,7 @@ requires-dist = [
     { name = "bandit", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "build", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "click", specifier = ">=8.2.1" },
+    { name = "colorama", specifier = "==0.4.6" },
     { name = "ezplog", specifier = ">=1.5.0" },
     { name = "ezqt-widgets", specifier = ">=2.0.0" },
     { name = "git-cliff", marker = "extra == 'docs'", specifier = ">=2.7.0" },
