@@ -197,7 +197,7 @@ jobs:
 
   trigger-deploy-docs:
     name: Trigger Deploy Docs
-    needs: auto-tag
+    needs: [auto-tag, trigger-publish]
     if: needs.auto-tag.outputs.new_tag == 'true'
     uses: ./.github/workflows/docs.yml
     secrets: inherit
