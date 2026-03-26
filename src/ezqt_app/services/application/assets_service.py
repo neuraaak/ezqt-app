@@ -42,7 +42,11 @@ class AssetsService:
         )
         maker.make_assets_binaries()
         res = maker.make_qrc()
-        maker.make_rc_py() if res else maker.purge_rc_py()
+        if res:
+            maker.make_rc_py()
+            maker.make_app_icons_py()
+        else:
+            maker.purge_rc_py()
 
     @staticmethod
     def make_required_files(

@@ -38,6 +38,14 @@ class InitializationSequence:
         self.steps: list[InitStep] = []
         self.current_step: InitStep | None = None
         self.printer = get_printer(self.options.verbose)
+
+        # Register the resolved bin path early so all runtime services
+        # (themes, fonts, config, translations) use the correct directory.
+        if self.options.bin_path is not None:
+            from ...utils.runtime_paths import set_bin_path
+
+            set_bin_path(self.options.bin_path)
+
         self._setup_steps()
 
     # ------------------------------------------------------------------
@@ -109,6 +117,19 @@ class InitializationSequence:
                 else None
             ),
             required=True,
+        )
+        self.add_step(
+            name="Load Resources",
+            description="Register compiled Qt resources (bin/resources_rc.py)",
+            function=lambda: (
+                __import__(
+                    "ezqt_app.shared.resources",
+                    fromlist=["load_runtime_rc"],
+                ).load_runtime_rc()
+                if options.build_resources
+                else None
+            ),
+            required=False,
         )
 
     # ------------------------------------------------------------------

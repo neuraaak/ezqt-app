@@ -14,7 +14,7 @@ from __future__ import annotations
 from PySide6.QtGui import QFontDatabase
 
 from ...utils.printer import get_printer
-from ...utils.runtime_paths import APP_PATH
+from ...utils.runtime_paths import get_bin_path
 
 # Local imports
 from ..config.config_service import get_package_resource
@@ -41,7 +41,7 @@ class ResourceService:
             fonts = get_package_resource("resources/fonts")
             source = "Package"
         else:
-            fonts = APP_PATH / "bin" / "fonts"
+            fonts = get_bin_path() / "fonts"
             source = "Application"
 
         if not fonts.exists():

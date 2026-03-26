@@ -12,12 +12,14 @@ EzQt App focuses on project bootstrap and app-shell composition. Examples below 
 
 ## Available Example Scenarios
 
-| Scenario          | Description                            | Related API                    |
-| ----------------- | -------------------------------------- | ------------------------------ |
-| Bootstrap project | Generate app/config/theme/translations | `ezqt init`, `init(...)`       |
-| Start app shell   | Create and show `EzQt_App` window      | `EzApplication`, `EzQt_App`    |
-| Manage language   | Switch language and register UI text   | translation helpers            |
-| Theme workflow    | Apply and switch theme at runtime      | `ThemeService`, settings panel |
+| Scenario             | Description                             | Related API                    |
+| -------------------- | --------------------------------------- | ------------------------------ |
+| Bootstrap project    | Generate app/config/theme/translations  | `ezqt init`, `init(...)`       |
+| Custom bin path      | Generate assets in a custom directory   | `init(bin_path=...)`           |
+| Access app resources | Use `AppIcons`/`AppImages` after `init` | `shared.resources`             |
+| Start app shell      | Create and show `EzQt_App` window       | `EzApplication`, `EzQt_App`    |
+| Manage language      | Switch language and register UI text    | translation helpers            |
+| Theme workflow       | Apply and switch theme at runtime       | `ThemeService`, settings panel |
 
 ---
 
@@ -67,8 +69,37 @@ from ezqt_app import init
 summary = init(mk_theme=True, verbose=True)
 print(summary)
 
-# Skip main.py generation
-summary = init(no_main=True)
+# Place generated assets under binaries/ instead of the default bin/
+summary = init(bin_path="binaries")
+```
+
+### Access App Icons and Images After Bootstrap
+
+`AppIcons` and `AppImages` are populated by `init()` from the generated
+`bin/app_icons.py` and `bin/app_images.py` files. Always import them after
+`init()` has run:
+
+```python
+from ezqt_app import init
+from ezqt_app.shared.resources import AppIcons, AppImages
+
+init()  # generates bin/app_icons.py and bin/app_images.py
+
+# Access Qt resource paths
+icon_path = AppIcons.cil_home        # ":/icons/cil-home.png"
+logo_path = AppImages.logo_placeholder  # ":/images/logo-placeholder.jpg"
+```
+
+!!! warning "Import order matters"
+Importing `AppIcons` or `AppImages` at module top-level **before** `init()` runs
+captures `None` and the variable is never updated. Always call `init()` first, or
+access the symbols through the module:
+
+```python
+    from ezqt_app.shared import resources
+
+    init()
+    icon_path = resources.AppIcons.cil_home  # always resolves to the live value
 ```
 
 ### Add Pages to the App Shell
@@ -120,7 +151,8 @@ window.show()
 
 ### Apply a Custom Theme
 
-Load a custom QSS theme file at startup:
+All `.qss` files placed under `bin/themes/` are loaded automatically — no
+file name needs to be passed explicitly:
 
 ```python
 import sys
@@ -128,10 +160,14 @@ from ezqt_app import EzApplication, EzQt_App, init
 
 init()
 app = EzApplication(sys.argv)
-window = EzQt_App(theme_file_name="my_custom_theme.qss")
+window = EzQt_App()  # themes loaded from bin/themes/ automatically
 window.show()
 sys.exit(app.exec())
 ```
+
+!!! warning "Deprecated argument"
+`EzQt_App(theme_file_name=...)` still compiles but emits a deprecation
+warning and has no effect. Remove it from your code.
 
 ### Access Config Service
 
@@ -160,7 +196,7 @@ class MyApp:
     def __init__(self):
         init(mk_theme=True, verbose=False)
         self.app = EzApplication(sys.argv)
-        self.window = EzQt_App(theme_file_name="main_theme.qss")
+        self.window = EzQt_App()  # theme_file_name removed — deprecated
 
         # Register pages
         self.window.add_menu("Dashboard", "dashboard")

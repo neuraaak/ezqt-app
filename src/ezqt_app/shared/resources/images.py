@@ -22,4 +22,4 @@ class Images:
     used in the application.
     """
 
-    logo_placeholder: str = ":/images/images/logo-placeholder.jpg"
+    logo_placeholder: str = ":/images/logo-placeholder.jpg"

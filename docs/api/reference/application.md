@@ -22,6 +22,12 @@ Application orchestration components: main window, app services, and bootstrap f
 
 ---
 
+## InitOptions
+
+::: ezqt_app.services.bootstrap.contracts.options.InitOptions
+
+---
+
 ## InitializationSequence
 
 ::: ezqt_app.services.bootstrap.sequence.InitializationSequence

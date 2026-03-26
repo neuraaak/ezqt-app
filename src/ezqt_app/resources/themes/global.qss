@@ -273,7 +273,7 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
 	background: 3px solid var(--surface_overlay);
 	border: 3px solid var(--surface_overlay);
-	background-image: url(:/icons/icons/cil-check-alt.png);
+	background-image: url(:/icons/cil-check-alt.png);
 }
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -318,7 +318,7 @@ QComboBox::drop-down {
 	border-left-style: solid;
 	border-top-right-radius: 3px;
 	border-bottom-right-radius: 3px;
-	background-image: url(:/icons/icons/cil-arrow-bottom.png);
+	background-image: url(:/icons/cil-arrow-bottom.png);
 	background-position: center;
 	background-repeat: no-reperat;
 }
