@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="z_e580e96e2f470d5f_ui_functions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.5">coverage.py v7.13.5</a>,
-            created at 2026-03-23 23:36 +0000
+            created at 2026-03-26 00:23 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -97,7 +97,7 @@
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="com"># Local imports</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="op">...</span><span class="nam">domain</span><span class="op">.</span><span class="nam">ports</span><span class="op">.</span><span class="nam">main_window</span> <span class="key">import</span> <span class="nam">MainWindowProtocol</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="op">...</span><span class="nam">utils</span><span class="op">.</span><span class="nam">runtime_paths</span> <span class="key">import</span> <span class="nam">APP_PATH</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="op">...</span><span class="nam">utils</span><span class="op">.</span><span class="nam">runtime_paths</span> <span class="key">import</span> <span class="nam">get_bin_path</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="op">.</span><span class="nam">config</span> <span class="key">import</span> <span class="nam">get_config_service</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="op">.</span><span class="nam">settings</span> <span class="key">import</span> <span class="nam">get_settings_service</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -221,7 +221,7 @@
     <p class="pln"><span class="n"><a id="t137" href="#t137">137</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t138" href="#t138">138</a></span><span class="t">        <span class="nam">_EXCLUDED</span> <span class="op">=</span> <span class="op">{</span><span class="str">"qtstrap.qss"</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t139" href="#t139">139</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t">        <span class="nam">local_themes_dir</span> <span class="op">=</span> <span class="nam">APP_PATH</span> <span class="op">/</span> <span class="str">"bin"</span> <span class="op">/</span> <span class="str">"themes"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t">        <span class="nam">local_themes_dir</span> <span class="op">=</span> <span class="nam">get_bin_path</span><span class="op">(</span><span class="op">)</span> <span class="op">/</span> <span class="str">"themes"</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t">        <span class="nam">local_files</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">            <span class="nam">sorted</span><span class="op">(</span><span class="nam">f</span> <span class="key">for</span> <span class="nam">f</span> <span class="key">in</span> <span class="nam">local_themes_dir</span><span class="op">.</span><span class="nam">glob</span><span class="op">(</span><span class="str">"*.qss"</span><span class="op">)</span> <span class="key">if</span> <span class="nam">f</span><span class="op">.</span><span class="nam">name</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">_EXCLUDED</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis mis2 show_mis"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t">            <span class="key">if</span> <span class="nam">local_themes_dir</span><span class="op">.</span><span class="nam">is_dir</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -257,7 +257,7 @@
             <a class="nav" href="z_e580e96e2f470d5f_ui_functions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.13.5">coverage.py v7.13.5</a>,
-            created at 2026-03-23 23:36 +0000
+            created at 2026-03-26 00:23 +0000
         </p>
     </div>
 </footer>
