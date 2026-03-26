@@ -23,7 +23,7 @@ from ...domain.models.translation import DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES
 from ...services.config import get_config_service
 from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
-from ...utils.runtime_paths import APP_PATH
+from ...utils.runtime_paths import get_bin_path
 from .auto_translator import get_auto_translator
 
 
@@ -208,10 +208,8 @@ class TranslationManager(QObject):
                 / "translations"
             )
         else:
-            project_path = Path.cwd()
             possible_paths = [
-                project_path / "bin" / "translations",
-                APP_PATH / "bin" / "translations",
+                get_bin_path() / "translations",
                 Path(__file__).parent.parent.parent / "resources" / "translations",
             ]
             try:
@@ -229,7 +227,7 @@ class TranslationManager(QObject):
                 (p for p in possible_paths if p.exists()), None
             )
             if self.translations_dir is None:
-                self.translations_dir = project_path / "bin" / "translations"
+                self.translations_dir = get_bin_path() / "translations"
                 self.translations_dir.mkdir(parents=True, exist_ok=True)
 
     def _get_package_translations_dir(self) -> Path:

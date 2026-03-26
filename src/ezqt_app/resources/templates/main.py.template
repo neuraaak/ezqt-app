@@ -26,15 +26,19 @@ from ezqt_app import EzApplication, EzQt_App, init
 # ///////////////////////////////////////////////////////////////
 
 
-def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
+def add_things_to_my_app(window: EzQt_App) -> None:
     """Add user-defined widgets and pages to the application.
 
     Args:
         window: The main application window instance.
-        icons: The resource collection for icons.
     """
+    # Import resources after init() so AppIcons/AppImages are populated.
+    # Icons  — built-in package icons (always available).
+    # AppIcons — auto-generated from bin/icons/ after the first init().
+    from ezqt_app.shared.resources import AppIcons, Icons  # noqa: F401
+
     # add_menu() returns the page container QWidget.
-    homepage = window.add_menu("Homepage", icons.cil_home)
+    homepage = window.add_menu("Homepage", Icons.cil_home)
 
     # Populate the page like any regular Qt widget.
     home_layout = QVBoxLayout(homepage)
@@ -48,24 +52,24 @@ def add_things_to_my_app(window: EzQt_App, icons: type) -> None:
 
 if __name__ == "__main__":
     # Generates/refreshes runtime assets (bin/, resources_rc, etc.) when needed.
+    # Pass bin_path to use a custom directory instead of the default bin/.
     init()
 
-    # Local imports for resources (ensure init() ran first)
-    from ezqt_app.shared.resources import Icons, Images
+    # Import resources after init() — AppImages/AppIcons are populated only after init().
+    from ezqt_app.shared.resources import AppImages, Images  # noqa: F401
 
     # EzApplication automatically handles UTF-8 and High DPI configuration.
     app = EzApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
 
-    # Initialize window with the new snake_case parameters.
-    # CRITICAL: build() must be called before using UI manipulation methods like set_app_icon.
-    window = EzQt_App(theme_file_name="main_theme.qss").build()
-    
-    # Now that the UI is built, we can configure its components.
+    # CRITICAL: build() must be called before using UI manipulation methods.
+    window = EzQt_App().build()
+
+    # Use Images (built-in) or AppImages (user-compiled) for the app icon.
     window.set_app_icon(Images.logo_placeholder, y_shrink=0)
     window.show()
 
     # Add custom content to the window.
-    add_things_to_my_app(window, Icons)
+    add_things_to_my_app(window)
 
     sys.exit(app.exec())

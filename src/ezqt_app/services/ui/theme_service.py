@@ -13,7 +13,7 @@ from pathlib import Path
 
 # Local imports
 from ...domain.ports.main_window import MainWindowProtocol
-from ...utils.runtime_paths import APP_PATH
+from ...utils.runtime_paths import get_bin_path
 from ..config import get_config_service
 from ..settings import get_settings_service
 
@@ -137,7 +137,7 @@ class ThemeService:
         """
         _EXCLUDED = {"qtstrap.qss"}
 
-        local_themes_dir = APP_PATH / "bin" / "themes"
+        local_themes_dir = get_bin_path() / "themes"
         local_files = (
             sorted(f for f in local_themes_dir.glob("*.qss") if f.name not in _EXCLUDED)
             if local_themes_dir.is_dir()

@@ -65,6 +65,17 @@ summary = init(mk_theme=True, verbose=True)
 print(summary)
 ```
 
+Use `bin_path` to place generated assets in a directory other than the default `bin/`:
+
+```python
+from ezqt_app import init
+
+# Assets will be generated under <project_root>/binaries/ instead of bin/
+init(bin_path="binaries")
+```
+
+The path is resolved relative to `project_root` (defaults to `Path.cwd()`).
+
 ---
 
 ## Run a Basic App
@@ -227,6 +238,29 @@ pip install PySide6>=6.7.3
 # Or install with wheel file (corporate environments)
 pip install path/to/PySide6-6.7.3-cp310-cp310-win_amd64.whl
 ```
+
+### `pyside6-rcc` Not Found
+
+If `pyside6-rcc` is missing from your environment, `init()` raises a
+`ResourceCompilationError` instead of silently skipping QRC compilation:
+
+```python
+ezqt_app.domain.errors.ResourceCompilationError: pyside6-rcc not found
+```
+
+**Solution** — ensure PySide6 tools are installed and on `PATH`:
+
+```bash
+pip install PySide6
+# or, in a virtual environment, verify the executable is available:
+python -m PySide6.scripts.pyside6_tool rcc --version
+```
+
+If you are in a corporate environment installing from wheel files, make sure
+the PySide6 tools wheel (`PySide6_Essentials` or `PySide6_Addons`) is also
+installed alongside the main package.
+
+---
 
 ### Missing Config or Assets After `init`
 

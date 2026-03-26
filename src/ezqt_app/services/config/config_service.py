@@ -24,7 +24,7 @@ import yaml
 from ...domain.ports.config_service import ConfigServiceProtocol
 from ...utils.diagnostics import warn_user
 from ...utils.printer import get_printer
-from ...utils.runtime_paths import APP_PATH
+from ...utils.runtime_paths import APP_PATH, get_bin_path
 
 
 # ///////////////////////////////////////////////////////////////
@@ -47,6 +47,9 @@ class ConfigService(ConfigServiceProtocol):
         self._project_root = (
             project_root if isinstance(project_root, Path) else Path(project_root)
         )
+        from ...utils.runtime_paths import _sync_bin_path_from_root
+
+        _sync_bin_path_from_root(self._project_root / "bin")
 
     def load_config(
         self, config_name: str, force_reload: bool = False
@@ -139,17 +142,12 @@ class ConfigService(ConfigServiceProtocol):
             ``True`` if the write succeeded.
         """
         config_file: Path
-        if self._project_root:
-            config_dir = self._project_root / "bin" / "config"
-            config_dir.mkdir(parents=True, exist_ok=True)
-            config_file = config_dir / f"{config_name}.config.yaml"
-        elif config_name in self._config_files:
+        if config_name in self._config_files:
             # Keep writes consistent with the file originally loaded.
             config_file = self._config_files[config_name]
             config_file.parent.mkdir(parents=True, exist_ok=True)
         else:
-            # Last-resort fallback for runtime usage without explicit bootstrap.
-            config_dir = Path.cwd() / "bin" / "config"
+            config_dir = get_bin_path() / "config"
             config_dir.mkdir(parents=True, exist_ok=True)
             config_file = config_dir / f"{config_name}.config.yaml"
 
@@ -185,12 +183,8 @@ class ConfigService(ConfigServiceProtocol):
         config_file = f"{config_name}.config.yaml"
         paths: list[Path] = []
 
-        # 1. Child project (bin/config/)
-        if self._project_root:
-            paths.append(self._project_root / "bin" / "config" / config_file)
-
-        # 2. Current directory (bin/config/)
-        paths.append(Path.cwd() / "bin" / "config" / config_file)
+        # 1. Configured bin directory
+        paths.append(get_bin_path() / "config" / config_file)
 
         # 3. Package resources — relative to cwd
         paths.append(Path.cwd() / "ezqt_app" / "resources" / "config" / config_file)
@@ -221,7 +215,7 @@ class ConfigService(ConfigServiceProtocol):
             )
             return False
 
-        project_config_dir = self._project_root / "bin" / "config"
+        project_config_dir = get_bin_path() / "config"
         project_config_dir.mkdir(parents=True, exist_ok=True)
 
         copied_files: list[str] = []

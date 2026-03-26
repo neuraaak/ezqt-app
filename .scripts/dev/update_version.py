@@ -75,6 +75,9 @@ def update_version_py(version: str) -> None:
         rf'\g<1>"{version}"',
         content,
     )
+    if new_content == content:
+        console.print(f"[dim]✓ version.py already at {version} — no change[/dim]")
+        return
     version_path.write_text(new_content, encoding="utf-8")
     console.print(
         f"[green]✓[/green] Updated [cyan]version.py[/cyan] to [bold]{version}[/bold]"

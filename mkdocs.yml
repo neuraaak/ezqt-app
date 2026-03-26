@@ -61,6 +61,7 @@ nav:
   - Getting Started: getting-started.md
   - User Guides:
       - guides/index.md
+      - Qt Resources Pipeline: guides/resources.md
       - QSS Style Guide: guides/style-guide.md
       - Development: guides/development.md
       - Testing: guides/testing.md

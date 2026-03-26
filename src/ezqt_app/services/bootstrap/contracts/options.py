@@ -31,7 +31,28 @@ class OverwritePolicy(StrEnum):
 # ///////////////////////////////////////////////////////////////
 @dataclass(slots=True)
 class InitOptions:
-    """Options driving initialization behavior across API and CLI."""
+    """Options driving initialization behavior across API and CLI.
+
+    Attributes:
+        project_root: Absolute path to the project root directory. When
+            ``None``, defaults to ``Path.cwd()`` at resolve time.
+        bin_path: Directory where generated assets (``resources_rc.py``,
+            ``app_icons.py``, ``app_images.py``, themes) are written.
+            When ``None``, defaults to ``<project_root>/bin``. A relative
+            value is resolved against ``project_root``; an absolute value is
+            used as-is.
+        mk_theme: Generate QSS theme files under ``bin_path/themes/``.
+        mk_config: Generate the ``config/`` YAML files.
+        mk_translations: Generate the ``translations/`` TS source files.
+        build_resources: Compile the QRC file with ``pyside6-rcc`` and write
+            ``resources_rc.py``, ``app_icons.py``, and ``app_images.py``
+            into ``bin_path``. Raises ``ResourceCompilationError`` if
+            ``pyside6-rcc`` is not found on ``PATH``.
+        generate_main: Write a ``main.py`` entrypoint in the project root.
+        verbose: Print step-by-step progress to stdout.
+        overwrite_policy: Controls behavior when generated files already
+            exist. See :class:`OverwritePolicy`.
+    """
 
     project_root: Path | None = None
     bin_path: Path | None = None
@@ -46,7 +67,12 @@ class InitOptions:
     def resolve(self) -> InitOptions:
         """Return a copy with normalized paths and defaults resolved."""
         root = self.project_root or Path.cwd()
-        bin_path = self.bin_path or (root / "bin")
+        if self.bin_path is None:
+            bin_path = root / "bin"
+        elif not self.bin_path.is_absolute():
+            bin_path = (root / self.bin_path).resolve()
+        else:
+            bin_path = self.bin_path
 
         return InitOptions(
             project_root=root,

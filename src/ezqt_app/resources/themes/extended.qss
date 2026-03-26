@@ -359,7 +359,7 @@ SettingSelect QComboBox::drop-down {
 }
 
 SettingSelect QComboBox::down-arrow {
-	image: url(:/icons/icons/cil-arrow-bottom.png);
+	image: url(:/icons/cil-arrow-bottom.png);
 	width: 12px;
 	height: 12px;
 	background: none;
@@ -453,7 +453,7 @@ SettingCheckbox QCheckBox {
 SettingCheckbox QCheckBox:checked {
 	background-color: var(--accent_brand);
 	border: 2px solid var(--accent_brand);
-	image: url(:/icons/icons/cil-check-alt.png);
+	image: url(:/icons/cil-check-alt.png);
 }
 
 SettingCheckbox QCheckBox:hover {
