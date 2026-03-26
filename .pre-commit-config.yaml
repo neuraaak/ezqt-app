@@ -72,7 +72,7 @@ repos:
       - id: ty
         name: "Ty — type check"
         language: system
-        entry: uv run ty check --output-format=concise
+        entry: uv run --no-sync ty check --output-format=concise
         types: [python]
         pass_filenames: false
 
@@ -82,7 +82,7 @@ repos:
       - id: import-linter
         name: "Import Linter — layer contracts"
         language: system
-        entry: uv run lint-imports
+        entry: uv run --no-sync lint-imports
         pass_filenames: false
         always_run: true
 
@@ -91,6 +91,6 @@ repos:
       - id: sync-version
         name: "Sync version.py ← pyproject.toml"
         language: system
-        entry: uv run python .scripts/dev/update_version.py
+        entry: uv run --no-sync python .scripts/dev/update_version.py
         files: ^pyproject\.toml$
         pass_filenames: false
