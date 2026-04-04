@@ -176,7 +176,7 @@ class CodeQualityChecker:
             return False
         except FileNotFoundError:
             self.console.print(
-                "[yellow]⚠[/yellow]  import-linter not found — skipping (install with: pip install import-linter)"
+                "[yellow]⚠[/yellow]  import-linter not found — skipping (install with: uv add --dev import-linter)"
             )
             return True
         else:
@@ -217,7 +217,7 @@ class CodeQualityChecker:
             return False
         except FileNotFoundError:
             self.console.print(
-                "[yellow]⚠[/yellow]  ty not found — skipping (install with: pip install ty)"
+                "[yellow]⚠[/yellow]  ty not found — skipping (install with: uv add --dev ty)"
             )
             return True
         else:

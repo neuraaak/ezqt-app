@@ -215,7 +215,7 @@ class BottomBar(QFrame):
             # Make label clickable if email is provided
             if email:
                 self._credits_label.setCursor(Qt.CursorShape.PointingHandCursor)
-                self._credits_label.mousePressEvent = lambda _event: self._open_email(  # type: ignore[method-assign]
+                self._credits_label.mousePressEvent = lambda _event: self._open_email(  # type: ignore
                     email
                 )
                 self._credits_label.setStyleSheet(
@@ -264,7 +264,7 @@ class BottomBar(QFrame):
         else:
             # Fallback to EzQt_App version if no version found
             try:
-                from ...version import __version__
+                from ..._version import __version__
 
                 self.set_version(f"v{__version__}")
             except ImportError:
@@ -326,7 +326,7 @@ class BottomBar(QFrame):
 
             # Method 5: Fallback to EzQt_App version
             try:
-                from ...version import __version__
+                from ..._version import __version__
 
                 return f"v{__version__}"
             except ImportError:

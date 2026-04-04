@@ -1,77 +1,100 @@
-# Development Guide
+# Development guide
 
-Complete guide for setting up development workflow and contributing to **ezqt_app**.
+Complete guide for setting up the development environment and contributing to **ezqt_app**.
 
----
+## 🔧 Prerequisites
 
-## Prerequisites
+- **Python** 3.11 or higher
+- **PySide6** 6.x
+- **Git** for version control
 
-- **Python**: 3.10 or higher
-- **PySide6**: 6.x
-- **Git**: for version control
+## 📝 Setup
 
----
+Install the package in editable mode with all development dependencies:
 
-## Setup
+=== "uv"
 
-```bash
-pip install -e ".[dev]"
+    ```bash
+    git clone https://github.com/neuraaak/ezqt-app.git
+    cd ezqt_app
+    uv sync
+    ```
 
-# Or with Make
-make install-dev
-```
+=== "pip"
 
----
+    ```bash
+    git clone https://github.com/neuraaak/ezqt-app.git
+    cd ezqt_app
+    pip install -e ".[dev]"
+    ```
 
-## Development Tools
+Install pre-commit hooks:
 
-### Code Formatting
+=== "uv"
 
-- Ruff for formatting and linting
-- Type checking with `pyright` and `ty`
+    ```bash
+    uv add pre-commit
+    pre-commit install
+    ```
 
-### Development Commands
+=== "pip"
 
-```bash
-ruff format src tests
-ruff check src tests
-pytest
-```
+    ```bash
+    pip install pre-commit
+    pre-commit install
+    ```
 
-Project test runner shortcuts:
+## ⚙️ Development tools
 
-```bash
-python tests/run_tests.py --type unit
-python tests/run_tests.py --type integration
-python tests/run_tests.py --type robustness
-python tests/run_tests.py --coverage
-```
+### Formatting and linting
 
----
+=== "Ruff"
 
-## Quality Tooling
+    ```bash
+    ruff format src tests
+    ruff check src tests
+    ```
 
-```bash
-ruff check src tests
-ruff format src tests
-pytest
-```
+=== "Type checking"
 
-Type checks configured in `pyproject.toml`:
+    ```bash
+    # pyright is configured in pyproject.toml
+    pyright src
 
-- `pyright`
-- `ty`
+    # ty (Astral type checker)
+    ty check src
+    ```
 
----
+### Running tests
 
-## Code Standards
+=== "By scope"
 
-- formatting/linting with Ruff
-- type hints required on public API
-- Google-style docstrings
-- section markers used across project modules
+    ```bash
+    python tests/run_tests.py --type unit
+    python tests/run_tests.py --type integration
+    python tests/run_tests.py --type robustness
+    python tests/run_tests.py --type all
+    ```
 
-### Section Markers
+=== "With coverage"
+
+    ```bash
+    python tests/run_tests.py --coverage
+    ```
+
+=== "pytest directly"
+
+    ```bash
+    pytest tests/unit/ -v
+    pytest tests/integration/ -v
+    ```
+
+## 📋 Code standards
+
+- Formatting and linting: Ruff
+- Type hints required on all public API symbols
+- Google-style docstrings for all public functions and classes
+- Section markers used consistently across project modules:
 
 ```python
 # ///////////////////////////////////////////////////////////////
@@ -79,104 +102,39 @@ Type checks configured in `pyproject.toml`:
 # ///////////////////////////////////////////////////////////////
 ```
 
----
+## 🔁 Pre-commit hooks
 
-## Pre-commit Hooks
+Pre-commit runs automatically on `git commit` and checks:
 
-### Installation
+- Formatting and linting (Ruff)
+- Import organization
+- File hygiene (trailing whitespace, end-of-file newline, etc.)
+
+To run manually against all files:
 
 ```bash
-pip install pre-commit
-pre-commit install
+pre-commit run --all-files
 ```
 
-### Automatic Checks
+## 🏗️ Architecture notes
 
-- formatting and linting
-- import organization
-- file hygiene checks
+The codebase follows a hexagonal migration approach:
 
-## Architecture Notes
+| Layer    | Path        | Role                                    |
+| :------- | :---------- | :-------------------------------------- |
+| Domain   | `domain/`   | Contracts (protocols) and domain models |
+| Services | `services/` | Adapters and orchestration              |
+| Widgets  | `widgets/`  | Presentation layer                      |
+| Kernel   | `kernel/`   | Legacy/infra layer (being reduced)      |
 
-Current codebase follows a hexagonal migration approach:
-
-- `domain/`: contracts and domain models
-- `services/`: adapters and orchestration
-- `widgets/`: presentation layer
-- `kernel/`: legacy/infra layer being reduced
-
----
-
-## Bootstrap Entry Points
+Bootstrap entry points:
 
 - Python API: `ezqt_app.main.init(...)`
 - CLI: `ezqt init`
 
-See `src/ezqt_app/services/bootstrap/` for initialization sequence.
+See `src/ezqt_app/services/bootstrap/` for the initialization sequence.
 
----
-
-## Tests
-
-### Test Structure
-
-```text
-tests/
-├── conftest.py
-├── run_tests.py
-├── unit/
-├── integration/
-└── robustness/
-```
-
-### Running Tests
-
-```bash
-python tests/run_tests.py --type all
-python tests/run_tests.py --coverage
-```
-
----
-
-## Built-in CLI
-
-The project exposes a CLI via `ezqt`:
-
-```bash
-ezqt info
-ezqt init --verbose
-ezqt test --unit --coverage
-ezqt docs --serve
-```
-
----
-
-## Recommended Workflow
-
-### 1. Before Starting
-
-```bash
-pip install -e ".[dev]"
-```
-
-### 2. During Development
-
-```bash
-ruff format src tests
-ruff check src tests
-pytest
-```
-
-### 3. Before Pushing
-
-```bash
-python tests/run_tests.py --type all
-python tests/run_tests.py --coverage
-```
-
----
-
-## Project Structure
+## 📁 Project structure
 
 ```text
 src/ezqt_app/
@@ -190,21 +148,63 @@ tests/
 docs/
 ```
 
----
+## 🔁 Recommended workflow
+
+### Before starting
+
+=== "uv"
+
+    ```bash
+    uv sync
+    pre-commit install
+    ```
+
+=== "pip"
+
+    ```bash
+    pip install -e ".[dev]"
+    pre-commit install
+    ```
+
+### During development
+
+```bash
+ruff format src tests
+ruff check src tests
+pytest tests/unit/ -v
+```
+
+### Before pushing
+
+```bash
+python tests/run_tests.py --type all
+python tests/run_tests.py --coverage
+```
+
+## 💻 Built-in CLI
+
+The project exposes a CLI via `ezqt`:
+
+```bash
+ezqt info
+ezqt init --verbose
+ezqt test --unit --coverage
+ezqt docs --serve
+```
+
+See [CLI Reference](../cli/index.md) for the full command reference.
 
 ## Troubleshooting
 
-| Issue                 | Solution                        |
-| --------------------- | ------------------------------- |
-| CLI command not found | Reinstall editable package      |
-| Qt import errors      | Verify PySide6 environment      |
-| Missing config files  | Run `ezqt init` in project root |
+| Issue                 | Solution                                                 |
+| :-------------------- | :------------------------------------------------------- |
+| CLI command not found | Reinstall editable package: `pip install -e ".[dev]"`    |
+| Qt import errors      | Verify PySide6 environment: `python -c "import PySide6"` |
+| Missing config files  | Run `ezqt init` in project root                          |
 
----
+## ➡️ Related
 
-## Resources
-
-- [API Reference](https://neuraaak.github.io/ezqt-app/api/) -- Complete widget documentation
-- [Testing Guide](https://neuraaak.github.io/ezqt-app/guides/testing/) -- Testing guidelines and best practices
-- [QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/) -- Visual customization
-- [CLI Reference](https://neuraaak.github.io/ezqt-app/cli/) -- Command-line interface
+- [Testing guide](testing.md) — test suite scopes and fixtures
+- [API reference](../api/index.md) — complete service documentation
+- [CLI reference](../cli/index.md) — command-line interface
+- [QSS style guide](style-guide.md) — visual customization

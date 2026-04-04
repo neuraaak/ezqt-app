@@ -1,7 +1,9 @@
 ruff>=0.1.0
+ty>=0.0.13
 pyright>=1.1.0
 pre-commit>=3.0.0
 import-linter>=2.0.0
+grimp>=2.3.0
 bandit>=1.7.0
 pytest>=7.0.0
 pytest-cov>=4.0.0
@@ -14,4 +16,10 @@ mkdocs-material>=9.5.0
 mkdocstrings[python]>=0.27.0
 mkdocs-section-index>=0.3.0
 mkdocs-coverage>=1.1.0
+mike>=2.0.0
+pymdown-extensions>=10.7
 git-cliff>=2.7.0
+#mypy-types
+typing_extensions>=4.0.0
+types-requests
+types-PyYAML

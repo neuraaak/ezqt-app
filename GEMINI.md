@@ -1,100 +1,39 @@
-# Gemini-Specific Instructions
+# Gemini-Specific Strategy (2026)
 
-This file contains instructions specifically for Google Gemini when working on this project.
+This profile leverages Gemini's (Google) massive context window and native multi-modal reasoning for complex codebase orchestration.
 
-## Project Overview
+<rules>
 
-This project follows a structured approach with centralized instructions in `.github/instructions/`.
+- **BOOTSTRAP:** Always load the entire `.github/instructions/core/` directory to anchor reasoning.
+- **MCP:** Adhere strictly to Model Context Protocol for type-safe tool interaction.
+- **DURABILITY:** Implement Durable Checkpoints for long-running batch operations.
 
-**CRITICAL**: Before any development task, consult `.github/instructions/README.md` and relevant domain-specific files.
+</rules>
 
-## Instruction Hierarchy
+## Long-Context Utilization
 
-The central entry point for all project-specific rules is `.github/instructions/README.md`. This file is edited per project to document the tech stack, architecture, conventions, and any overrides to the generic standards. **Always read it first.**
+Gemini is optimized for multi-file analysis. Use this to:
 
-The generic instruction files in `core/` and `languages/` apply universally across projects and should not be edited per project — they are overridden or extended via the README.
+1. **Cross-Check:** Validate changes against ALL relevant language UIAs in a single turn.
+2. **Impact Analysis:** Before editing, use the large context to identify all potential side effects across the project.
+3. **Pattern Recognition:** Use `core-hexagonal-architecture` to verify that no infrastructure leaks occur.
 
-1. `.github/instructions/README.md` — **Project-specific** context, architecture, conventions, and overrides. The authoritative source for this project.
-2. `.github/instructions/core/` — Generic core principles (architecture, commits, cognitive conduct). Apply unless the README overrides them.
-3. `.github/instructions/languages/python/` — Generic Python standards. Apply unless the README specifies otherwise.
-4. This file (GEMINI.md) — Gemini-specific preferences (tooling, response format, communication style).
+## Gemini Reasoning Protocols
 
-## Code Generation Preferences
+- **Plan Mode:** Use for complex architectural refactoring.
+- **Auto-Edit Mode:** For surgical fixes following `core-commits-git` standards.
+- **Wait Policy:** If a task depends on multiple tool outputs, use `wait_for_previous=true`.
 
-### Python Development
+## 2026 Enterprise Stack
 
-- Use type hints consistently (follow `.github/instructions/languages/python/python-development-standards.instructions.md`)
-- Prefer `pathlib` over `os.path`
-- Use f-strings for string formatting
-- Follow PEP 8 conventions
-- Add comprehensive docstrings (Google style)
+- **Package Manager:** Standardize on `uv` (Python) or `pnpm` (JS) as defined in language manifests.
+- **Type Safety:** Prioritize `ty` (Python) or `TypeScript 6.0` (JS).
+- **Security:** Follow `core-security-sanitization` for all I/O boundary logic.
 
-### Error Handling
+<success_criteria>
 
-```python
-# Preferred pattern
-try:
-    result = risky_operation()
-except SpecificError as e:
-    logger.error(f"Operation failed: {e}")
-    raise
-```
+- Large context used to prevent regressions.
+- Tooling calls are parallelized for efficiency.
+- Changes are atomized and fully documented.
 
-### Testing Approach
-
-- Write tests using pytest
-- Use descriptive test names: `test_should_<expected_behavior>_when_<condition>`
-- Include both happy path and edge cases
-- Mock external dependencies
-
-## Communication Style
-
-- Plan before coding: understand full scope, identify affected files
-- Explain architectural decisions concisely
-- Highlight potential issues or trade-offs
-- Ask clarifying questions when requirements are ambiguous
-- Suggest improvements when you notice technical debt
-
-## Corporate Environment Constraints
-
-- Proxy configuration required for external requests
-- Use wheel files for dependencies (`.whl`)
-- Limited access to PyPI - assume local package management
-- Windows-based development environment
-
-## Tool Preferences
-
-- **Type Checking**: mypy (configured in project)
-- **Formatting**: ruff
-- **Build**: cx_Freeze for executables
-- **Version Control**: Git with conventional commits
-
-## Prohibited Practices
-
-- Never use `print()` for logging (use `logging` module)
-- Avoid global variables
-- Don't commit commented-out code
-- No hard-coded credentials or file paths
-
-## Before Starting Any Task
-
-1. Read `.github/instructions/README.md` for project context
-2. Consult relevant instruction files for the task type
-3. Review existing similar code for patterns
-4. Verify understanding of requirements
-5. Propose approach if task is complex
-
-## Response Format Preferences
-
-- Start with a brief summary of the approach
-- Provide complete, runnable code
-- Include import statements
-- Add inline comments for complex logic
-- Suggest next steps or potential improvements
-
-## File Modification Strategy
-
-- Make minimal, focused changes
-- Preserve existing code style
-- Update related tests when modifying functionality
-- Keep backwards compatibility unless explicitly asked to break it
+</success_criteria>

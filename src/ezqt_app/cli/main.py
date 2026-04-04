@@ -1,9 +1,14 @@
 # ///////////////////////////////////////////////////////////////
-# CLI.MAIN - Command-line interface entry point
+# CLI.MAIN - CLI Main Entry Point
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
-"""EzQt_App CLI — main entry point and command definitions."""
+"""
+EzQt_App CLI - Main entry point.
+
+Command-line interface for managing EzQt_App projects
+and framework utilities.
+"""
 
 from __future__ import annotations
 
@@ -16,39 +21,93 @@ from pathlib import Path
 
 # Third-party imports
 import click
+from rich.panel import Panel
+from rich.text import Text
 
 # Local imports
 from ezqt_app.services.bootstrap import OverwritePolicy
 from ezqt_app.services.bootstrap import init as bootstrap_init
 from ezqt_app.utils.diagnostics import warn_tech
 
-from ..version import __version__
-from .runner import ProjectRunner
-
+from .._version import __version__
+from ._console import console
+from .commands import (
+    ProjectRunner,
+    convert_qm,
+    docs_command,
+    info_command,
+    version_command,
+)
 
 # ///////////////////////////////////////////////////////////////
 # CLI GROUP
 # ///////////////////////////////////////////////////////////////
-@click.group()
-@click.version_option(version=__version__, prog_name="EzQt_App CLI")
-def cli():
+
+
+@click.group(
+    name="ezqt-app",
+    invoke_without_command=True,
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
+@click.version_option(
+    __version__,
+    "-v",
+    "--version",
+    prog_name="EzQt_App CLI",
+    message="%(prog)s version %(version)s",
+)
+@click.pass_context
+def cli(ctx: click.Context) -> None:
     """EzQt_App CLI - Framework utilities and project management.
 
     A command-line interface for managing EzQt_App projects
     and framework utilities.
     """
+    if ctx.invoked_subcommand is None:
+        _display_welcome()
+        click.echo(ctx.get_help())
+
+
+def _display_welcome() -> None:
+    """Display a welcome message."""
+    try:
+        welcome_text = Text()
+        welcome_text.append("EzQt_App CLI", style="bold bright_blue")
+        welcome_text.append(" - Qt Application Framework", style="dim white")
+
+        panel = Panel(
+            welcome_text,
+            title="[bold bright_blue]Welcome[/bold bright_blue]",
+            border_style="bright_blue",
+            padding=(1, 2),
+        )
+        console.print(panel)
+    except (OSError, RuntimeError, ValueError):
+        click.echo("EzQt_App CLI - Qt Application Framework")
+
+
+# ///////////////////////////////////////////////////////////////
+# COMMAND GROUPS
+# ///////////////////////////////////////////////////////////////
+
+# Register commands and groups
+cli.add_command(docs_command)
+cli.add_command(info_command)
+cli.add_command(version_command)
 
 
 # ///////////////////////////////////////////////////////////////
 # COMMANDS
 # ///////////////////////////////////////////////////////////////
+
+
 @cli.command()
 @click.option("--force", "-f", is_flag=True, help="Force overwrite of existing files")
 @click.option(
     "--verbose", "-v", is_flag=True, help="Verbose output with detailed information"
 )
 @click.option("--no-main", is_flag=True, help="Skip main.py generation")
-def init(force, verbose, no_main):
+def init(force: bool, verbose: bool, no_main: bool) -> None:
     """Initialize a new EzQt_App project.
 
     Create a new EzQt_App project with all required assets and files.
@@ -107,23 +166,13 @@ def init(force, verbose, no_main):
 
 
 @cli.command()
-@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-def convert(verbose: bool) -> None:  # noqa: ARG001
+def convert() -> None:
     """Convert translation files.
 
     Convert .ts files to .qm format for Qt applications.
     """
     try:
-        from ezqt_app.cli.create_qm_files import main as convert_main
-
-        convert_main()
-    except ImportError:
-        warn_tech(
-            "cli.convert.module_missing",
-            "Translation conversion module import failed",
-        )
-        click.echo(click.style("Translation conversion module not found", fg="red"))
-        sys.exit(1)
+        convert_qm()
     except Exception as e:
         warn_tech(
             "cli.convert.failed",
@@ -135,26 +184,13 @@ def convert(verbose: bool) -> None:  # noqa: ARG001
 
 
 @cli.command()
-@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-def mkqm(verbose):
+def mkqm() -> None:
     """Convert translation files (alias for convert).
 
     Convert .ts files to .qm format for Qt applications.
     """
-    if verbose:
-        click.echo("Verbose mode enabled")
-
     try:
-        from ezqt_app.cli.create_qm_files import main as convert_main
-
-        convert_main()
-    except ImportError:
-        warn_tech(
-            "cli.mkqm.module_missing",
-            "Translation conversion module import failed",
-        )
-        click.echo(click.style("Translation conversion module not found", fg="red"))
-        sys.exit(1)
+        convert_qm()
     except Exception as e:
         warn_tech(
             "cli.mkqm.failed",
@@ -170,12 +206,12 @@ def mkqm(verbose):
 @click.option("--integration", "-i", is_flag=True, help="Run integration tests")
 @click.option("--coverage", "-c", is_flag=True, help="Run tests with coverage")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-def test(unit, integration, coverage, verbose):
+def test(unit: bool, integration: bool, coverage: bool, verbose: bool) -> None:
     """Run tests.
 
     Execute the test suite for EzQt_App framework.
     """
-    import subprocess
+    import subprocess  # nosec B404
 
     if not any([unit, integration, coverage]):
         unit = True
@@ -186,21 +222,21 @@ def test(unit, integration, coverage, verbose):
             cmd = ["python", "tests/run_tests.py", "--type", "unit"]
             if verbose:
                 cmd.append("--verbose")
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True)  # nosec B603
 
         if integration:
             click.echo("Running integration tests...")
             cmd = ["python", "tests/run_tests.py", "--type", "integration"]
             if verbose:
                 cmd.append("--verbose")
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True)  # nosec B603
 
         if coverage:
             click.echo("Running tests with coverage...")
             cmd = ["python", "tests/run_tests.py", "--coverage"]
             if verbose:
                 cmd.append("--verbose")
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True)  # nosec B603
             click.echo("Coverage report generated in htmlcov/")
 
         click.echo("Tests completed successfully!")
@@ -219,101 +255,10 @@ def test(unit, integration, coverage, verbose):
 
 
 @cli.command()
-@click.option("--serve", "-s", is_flag=True, help="Serve documentation locally")
-@click.option("--port", "-p", default=8000, help="Port for documentation server")
-def docs(serve, port):
-    """Documentation utilities.
-
-    Access and manage EzQt_App documentation.
-    """
-    if serve:
-        try:
-            import http.server
-            import os
-            import socketserver
-
-            docs_dir = os.path.join(os.path.dirname(__file__), "..", "..", "docs")
-            if os.path.exists(docs_dir):
-                os.chdir(docs_dir)
-                click.echo(f"Serving documentation at http://localhost:{port}")
-                click.echo("Press Ctrl+C to stop the server")
-
-                with socketserver.TCPServer(
-                    ("", port), http.server.SimpleHTTPRequestHandler
-                ) as httpd:
-                    httpd.serve_forever()
-            else:
-                click.echo(click.style("Documentation directory not found", fg="red"))
-
-        except KeyboardInterrupt:
-            click.echo("\nDocumentation server stopped")
-        except Exception as e:
-            warn_tech(
-                "cli.docs.serve_failed",
-                "Documentation local server failed",
-                error=e,
-            )
-            click.echo(click.style(f"Error serving documentation: {e}", fg="red"))
-    else:
-        click.echo("Documentation options:")
-        click.echo("  --serve, -s     Serve documentation locally")
-        click.echo("  --port, -p      Specify port (default: 8000)")
-        click.echo("\nExample: ezqt docs --serve --port 8080")
-
-
-@cli.command()
-def info():
-    """Show package information.
-
-    Display information about EzQt_App installation.
-    """
-    try:
-        import ezqt_app
-
-        click.echo("EzQt_App Information")
-        click.echo("=" * 40)
-        click.echo(f"Version: {getattr(ezqt_app, '__version__', '5.0.0')}")
-        click.echo(f"Location: {ezqt_app.__file__}")
-
-        try:
-            import PySide6
-
-            click.echo(f"PySide6: {PySide6.__version__}")
-        except ImportError:
-            click.echo("PySide6: Not installed")
-
-        try:
-            import yaml
-
-            click.echo(f"PyYaml: {yaml.__version__}")
-        except ImportError:
-            click.echo("PyYaml: Not installed")
-
-        try:
-            import ezpl  # noqa: F401
-
-            click.echo(f"ezplog: {ezpl.__version__}")
-        except ImportError:
-            click.echo("ezplog: Not installed")
-
-        runner = ProjectRunner()
-        try:
-            project_info = runner.get_project_info()
-            click.echo(f"Project structure: {project_info['status']}")
-        except FileNotFoundError:
-            click.echo("Project structure: Not initialized")
-
-        click.echo("=" * 40)
-
-    except ImportError:
-        click.echo(click.style("EzQt_App not found in current environment", fg="red"))
-
-
-@cli.command()
 @click.option("--template", "-t", help="Template type (basic, advanced)")
 @click.option("--name", "-n", help="Project name")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
-def create(template, name, verbose):
+def create(template: str | None, name: str | None, verbose: bool) -> None:
     """Create project template.
 
     Create a new project with predefined templates.
@@ -341,9 +286,24 @@ def create(template, name, verbose):
 
 
 # ///////////////////////////////////////////////////////////////
-# PUBLIC API
+# MAIN ENTRY POINT
 # ///////////////////////////////////////////////////////////////
-__all__ = ["cli"]
+
+
+def main() -> None:
+    """Main entry point for the CLI."""
+    try:
+        cli()
+    except click.ClickException as e:
+        e.show()
+        raise SystemExit(e.exit_code) from e
+    except KeyboardInterrupt as e:
+        console.print("\n[yellow]Interrupted by user[/yellow]")
+        raise SystemExit(1) from e
+    except (OSError, RuntimeError, ValueError) as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise SystemExit(1) from e
+
 
 if __name__ == "__main__":
-    cli()
+    main()

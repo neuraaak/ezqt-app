@@ -5,20 +5,30 @@ on:
   workflow_call:
     inputs:
       version:
-        required: false
+        required: true
         type: string
       tag:
-        required: false
+        required: true
         type: string
+      package_name:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      is_prerelease:
+        required: true
+        type: string
+        default: "false"
 
 permissions:
   contents: write
 
 env:
-  PACKAGE_NAME: ezqt-app
-  PYTHON_VERSION: "3.11"
-  # Dépendances système supplémentaires nécessaires avant l'installation du package
-  # Laisser vide si aucune dépendance système n'est requise
+  PACKAGE_NAME: ${{ inputs.package_name }}
+  PYTHON_VERSION: ${{ inputs.python_version }}
+  IS_PRERELEASE: ${{ inputs.is_prerelease }}
+  # Extra system dependencies required before package install (leave empty if none)
   EXTRA_SYSTEM_DEPS: ""
 
 jobs:
@@ -32,23 +42,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
+          enable-cache: true
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
 
       - name: Install extra system dependencies
         if: env.EXTRA_SYSTEM_DEPS != ''
         run: |
           echo "📦 Installing extra system dependencies..."
-          pip install ${{ env.EXTRA_SYSTEM_DEPS }} --no-cache-dir
+          uv pip install ${{ env.EXTRA_SYSTEM_DEPS }} --no-cache-dir
 
       - name: Install package with docs and test dependencies
         run: |
           echo "📦 Installing package with docs and test dependencies..."
-          python -m pip install --upgrade pip
-          pip install -e ".[docs,test]"
+          uv sync --extra docs --extra test
 
       - name: Install system dependencies for PySide6
         run: |
@@ -73,18 +82,19 @@ jobs:
           echo "🧪 Running tests and generating coverage report..."
           export QT_QPA_PLATFORM=offscreen
           export QT_QPA_PLATFORM_MINIMAL_PLUGINS=1
-          pytest --cov=ezqt_app --cov-report=html --cov-report=xml -q || true
+          uv run pytest --cov=src/ --cov-report=html --cov-report=xml -q || true
           echo "✅ Coverage report generated!"
 
       - name: Enforce import contracts
         run: |
           echo "🧭 Enforcing import contracts with import-linter..."
-          lint-imports
+          uv run lint-imports
+          echo "✅ Import contracts enforced"
 
       - name: Generate architecture graph
         run: |
           echo "🏗️ Generating architecture dependency graph..."
-          python .scripts/dev/generate_architecture_graph.py
+          uv run python .scripts/dev/generate_architecture_graph.py
           echo "✅ Architecture graph generated!"
 
       - name: Generate changelog
@@ -93,8 +103,29 @@ jobs:
           config: cliff.toml
           args: --output docs/changelog.md
 
-      - name: Build and deploy documentation
+      - name: Generate assets catalog
         run: |
-          echo "📚 Building and deploying documentation for ${{ env.PACKAGE_NAME }}..."
-          mkdocs gh-deploy --force
-          echo "✅ Documentation deployed successfully!"
+          echo "🖼️ Generating assets catalog..."
+          uv run python .scripts/dev/generate_assets_catalog.py
+          echo "✅ Assets catalog generated!"
+
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages --depth=1 || true
+
+      - name: Deploy versioned documentation
+        run: |
+          VERSION="${{ inputs.version || 'dev' }}"
+          IS_PRERELEASE="${{ env.IS_PRERELEASE }}"
+          echo "📚 Deploying versioned documentation for ${{ env.PACKAGE_NAME }} ($VERSION, pre-release=$IS_PRERELEASE)..."
+          if [ "$IS_PRERELEASE" = "true" ]; then
+            # Pre-release: publish the version but do NOT move the latest alias
+            uv run mike deploy --push "$VERSION"
+            echo "✅ Documentation deployed: $VERSION (pre-release — latest alias unchanged)"
+          else
+            uv run mike deploy --push --update-aliases "$VERSION" latest
+            uv run mike set-default --push latest
+            echo "✅ Documentation deployed: $VERSION → latest"
+          fi

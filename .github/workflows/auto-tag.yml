@@ -19,6 +19,10 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       tag_name: ${{ steps.create_tags.outputs.tag_name }}
       latest_tag: ${{ steps.create_tags.outputs.latest_tag }}
+      package_name: ${{ steps.metadata.outputs.package_name }}
+      python_version: ${{ steps.metadata.outputs.python_version }}
+      major_version: ${{ steps.metadata.outputs.major_version }}
+      is_prerelease: ${{ steps.metadata.outputs.is_prerelease }}
 
     steps:
       - name: Checkout code
@@ -41,16 +45,17 @@ jobs:
           echo "version=" >> $GITHUB_OUTPUT
           echo "source=" >> $GITHUB_OUTPUT
 
-      - name: Extract version from setup.py
-        id: get_setup_version
+      - name: Extract version from src/_version.py
+        id: get_version_py
         if: steps.get_pyproject_version.outputs.version == ''
         run: |
-          if [ -f "setup.py" ]; then
-            VERSION=$(grep -E "version\s*=\s*['\"]" setup.py | sed "s/.*version\s*=\s*['\"]\([^'\"]*\)['\"].*/\1/")
+          VERSION_FILE=$(find src -name "_version.py" | head -1)
+          if [ -n "$VERSION_FILE" ]; then
+            VERSION=$(grep -E '^__version__\s*=\s*"' "$VERSION_FILE" | sed 's/.*"\([^"]*\)".*/\1/')
             if [ -n "$VERSION" ]; then
               echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "source=setup.py" >> $GITHUB_OUTPUT
-              echo "📋 Version found in setup.py: $VERSION"
+              echo "source=$VERSION_FILE" >> $GITHUB_OUTPUT
+              echo "📋 Version found in $VERSION_FILE: $VERSION"
               exit 0
             fi
           fi
@@ -64,12 +69,12 @@ jobs:
           SOURCE="${{ steps.get_pyproject_version.outputs.source }}"
 
           if [ -z "$VERSION" ]; then
-            VERSION="${{ steps.get_setup_version.outputs.version }}"
-            SOURCE="${{ steps.get_setup_version.outputs.source }}"
+            VERSION="${{ steps.get_version_py.outputs.version }}"
+            SOURCE="${{ steps.get_version_py.outputs.source }}"
           fi
 
           if [ -z "$VERSION" ]; then
-            echo "→ [AUTO-TAG] No version found in pyproject.toml or setup.py"
+            echo "→ [AUTO-TAG] No version found in pyproject.toml or src/_version.py"
             echo "found=false" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -78,6 +83,34 @@ jobs:
           echo "source=$SOURCE" >> $GITHUB_OUTPUT
           echo "found=true" >> $GITHUB_OUTPUT
           echo "✅ Final version: $VERSION (from $SOURCE)"
+
+      - name: Extract project metadata
+        id: metadata
+        if: steps.version.outputs.found == 'true'
+        run: |
+          # Package name from pyproject.toml [project] name
+          PACKAGE_NAME=$(grep -E '^name\s*=' pyproject.toml | head -1 | sed 's/.*=\s*"\([^"]*\)".*/\1/')
+          echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+          echo "📦 Package name: $PACKAGE_NAME"
+
+          # Python version from requires-python (e.g. ">=3.11" → "3.11")
+          PYTHON_VERSION=$(grep -E '^requires-python' pyproject.toml | head -1 \
+            | sed 's/.*>=\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
+          [ -z "$PYTHON_VERSION" ] && PYTHON_VERSION="3.11"
+          echo "python_version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
+          echo "🐍 Python version: $PYTHON_VERSION"
+
+          # Major version (v1.2.3 → 1)
+          VERSION="${{ steps.version.outputs.version }}"
+          MAJOR_VERSION=$(echo "$VERSION" | sed 's/^\([0-9]*\)\..*/\1/')
+          echo "major_version=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+          echo "🔢 Major version: $MAJOR_VERSION"
+
+          # Pre-release detection (alpha / beta / rc / dev / a0 / b1 …)
+          echo "$VERSION" | grep -qE '(alpha|beta|rc|dev|a[0-9]+|b[0-9]+)' \
+            && IS_PRERELEASE="true" || IS_PRERELEASE="false"
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "🏷️  Pre-release: $IS_PRERELEASE"
 
       - name: Create and push tags
         id: create_tags
@@ -169,8 +202,11 @@ jobs:
         run: |
           echo "## 🏷️ Auto-Tagging Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Package**: ${{ steps.metadata.outputs.package_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Source**: ${{ steps.version.outputs.source }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Python**: ${{ steps.metadata.outputs.python_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pre-release**: ${{ steps.metadata.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Main Tag**: ${{ steps.push_tags.outputs.tag_name }}" >> $GITHUB_STEP_SUMMARY
           if [ -n "${{ steps.push_tags.outputs.latest_tag }}" ]; then
             echo "- **Latest Tag**: ${{ steps.push_tags.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
@@ -194,6 +230,9 @@ jobs:
     with:
       version: ${{ needs.auto-tag.outputs.version }}
       tag: ${{ needs.auto-tag.outputs.tag_name }}
+      package_name: ${{ needs.auto-tag.outputs.package_name }}
+      python_version: ${{ needs.auto-tag.outputs.python_version }}
+      is_prerelease: ${{ needs.auto-tag.outputs.is_prerelease }}
 
   trigger-deploy-docs:
     name: Trigger Deploy Docs
@@ -204,3 +243,6 @@ jobs:
     with:
       version: ${{ needs.auto-tag.outputs.version }}
       tag: ${{ needs.auto-tag.outputs.tag_name }}
+      package_name: ${{ needs.auto-tag.outputs.package_name }}
+      python_version: ${{ needs.auto-tag.outputs.python_version }}
+      is_prerelease: ${{ needs.auto-tag.outputs.is_prerelease }}

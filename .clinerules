@@ -1,29 +1,14 @@
-<project_context>
-    <instruction_sources>
-    CRITICAL: Always consult .github/instructions/ before any development task.
+<project_bootstrap>
+<instruction_priority>
+CRITICAL: Before any task, you MUST read the Instruction Manifests. 1. Read `.github/instructions/README.md` (Project Context) 2. Load `.github/instructions/core/MANIFEST.md` (Core Standards) 3. Load the relevant language MANIFEST (e.g., `.github/instructions/languages/python/MANIFEST.md`)
+</instruction_priority>
 
-        Workflow:
-        1. Read .github/instructions/README.md FIRST (if present)
-        → Project-specific context, instructions, and overrides
+<execution_protocol> - **THINK FIRST:** Use the Reasoning Protocol from `core-cognitive-conduct`. - **DURABLE STATE:** Maintain progress in a visible scratchpad if the task is complex. - **WATCHGUARD:** Apply the Decision Framework to avoid over-engineering. - **COMMIT:** Use AI-Native types (`prompt`, `agent`) for instruction/policy changes.
+</execution_protocol>
 
-        2. Then consult task-specific files:
-        - core/advanced-cognitive-conduct.md → Core principles
-        - languages/python/pyproject-standards.md → Project setup
-        - languages/python/python-development-standards.md → Development practices
-        - languages/python/python-formatting-standards.md → Code formatting
+<note>
+    The modular UIAs in `.github/instructions/` are the authoritative source.
+    Local code patterns must align with these 2026 standards.
+</note>
 
-        Use `view .github/instructions/` to explore available instruction files.
-    </instruction_sources>
-
-    <priority_order>
-        1. .github/instructions/README.md (project context and overrides)
-        2. Specific instruction files in .github/instructions/
-        3. General conventions (only if not covered above)
-    </priority_order>
-
-    <note>
-        .github/instructions/ rules override all default conventions.
-        README.md in this directory provides project-specific context.
-    </note>
-
-</project_context>
+</project_bootstrap>

@@ -28,7 +28,7 @@ from rich.text import Text
 # VARIABLES
 # ///////////////////////////////////////////////////////////////
 
-project_name = "ezqt_app"
+project_name = "EzQt-App"
 
 # ///////////////////////////////////////////////////////////////
 # GLOBAL CONSOLE
@@ -59,9 +59,7 @@ def run_command(command: list[str], description: str = "") -> bool:
         console.print(f"[cyan]🔄[/cyan] {description}...")
 
     try:
-        result = subprocess.run(  # noqa: S603
-            command, check=True, capture_output=True, text=True
-        )
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
         if result.stdout:
             console.print(result.stdout)
         return True
@@ -116,8 +114,8 @@ def build_package() -> bool:
 
     # Build the package
     commands = [
-        [sys.executable, "-m", "build", "--wheel"],
-        [sys.executable, "-m", "build", "--sdist"],
+        ["uv", "build", "--wheel"],
+        ["uv", "build", "--sdist"],
     ]
 
     for command in commands:
@@ -151,7 +149,7 @@ def check_package() -> bool:
         return False
 
     commands = [
-        [sys.executable, "-m", "twine", "check"] + [str(f) for f in dist_files],
+        ["uv", "run", "twine", "check"] + [str(f) for f in dist_files],
     ]
 
     for command in commands:

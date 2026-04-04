@@ -98,7 +98,7 @@ class CustomGrip(QWidget):
         self._center_grip = QFrame(self._container)
         self._center_grip.setObjectName("grip_top_center")
         self._center_grip.setCursor(QCursor(Qt.CursorShape.SizeVerCursor))
-        self._center_grip.mouseMoveEvent = self._resize_top  # type: ignore[method-assign]
+        self._center_grip.mouseMoveEvent = self._resize_top  # type: ignore
         layout.addWidget(self._center_grip)
 
         # Top Right
@@ -142,7 +142,7 @@ class CustomGrip(QWidget):
         self._center_grip = QFrame(self._container)
         self._center_grip.setObjectName("grip_bottom_center")
         self._center_grip.setCursor(QCursor(Qt.CursorShape.SizeVerCursor))
-        self._center_grip.mouseMoveEvent = self._resize_bottom  # type: ignore[method-assign]
+        self._center_grip.mouseMoveEvent = self._resize_bottom  # type: ignore
         layout.addWidget(self._center_grip)
 
         # Bottom Right
@@ -169,7 +169,7 @@ class CustomGrip(QWidget):
         self._center_grip.setCursor(QCursor(Qt.CursorShape.SizeHorCursor))
         self._center_grip.setFrameShape(QFrame.Shape.NoFrame)
         self._center_grip.setFrameShadow(QFrame.Shadow.Raised)
-        self._center_grip.mouseMoveEvent = self._resize_left  # type: ignore[method-assign]
+        self._center_grip.mouseMoveEvent = self._resize_left  # type: ignore
 
         if self._disable_color:
             self._center_grip.setStyleSheet("background: transparent")
@@ -184,7 +184,7 @@ class CustomGrip(QWidget):
         self._center_grip.setCursor(QCursor(Qt.CursorShape.SizeHorCursor))
         self._center_grip.setFrameShape(QFrame.Shape.NoFrame)
         self._center_grip.setFrameShadow(QFrame.Shadow.Raised)
-        self._center_grip.mouseMoveEvent = self._resize_right  # type: ignore[method-assign]
+        self._center_grip.mouseMoveEvent = self._resize_right  # type: ignore
 
         if self._disable_color:
             self._center_grip.setStyleSheet("background: transparent")

@@ -18,7 +18,9 @@ from types import ModuleType
 from typing import Any  # noqa: F401  # pyright: ignore[reportUnusedImport]
 
 # Local imports
-from ...resources import base_resources_rc  # type: ignore # noqa: F401
+from ...resources import (
+    base_resources_rc,  # noqa: F401  # pyright: ignore[reportUnusedImport]
+)
 from ...utils.runtime_paths import get_bin_path
 from .icons import Icons as _PackageIcons
 from .images import Images as _PackageImages

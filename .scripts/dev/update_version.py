@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # ///////////////////////////////////////////////////////////////
-# UPDATE_VERSION - Sync version.py and README badge from pyproject.toml
+# UPDATE_VERSION - Sync _version.py and README badge from pyproject.toml
 # ///////////////////////////////////////////////////////////////
 
-"""Update version.py from the version defined in pyproject.toml.
+"""Update _version.py from the version defined in pyproject.toml.
 
 pyproject.toml [project].version is the single source of truth.
 The README version badge is dynamic (shields.io PyPI) and does not need updating.
@@ -63,10 +63,10 @@ def read_version() -> str:
 
 
 def update_version_py(version: str) -> None:
-    """Update __version__ in src/{project_name}/version.py."""
+    """Update __version__ in src/{project_name}/_version.py."""
     project_root = Path(__file__).resolve().parents[2]
     version_path = (
-        project_root / "src" / project_name.lower().replace("-", "_") / "version.py"
+        project_root / "src" / project_name.lower().replace("-", "_") / "_version.py"
     )
     content = version_path.read_text(encoding="utf-8")
 
@@ -76,11 +76,11 @@ def update_version_py(version: str) -> None:
         content,
     )
     if new_content == content:
-        console.print(f"[dim]✓ version.py already at {version} — no change[/dim]")
+        console.print(f"[dim]✓ _version.py already at {version} — no change[/dim]")
         return
     version_path.write_text(new_content, encoding="utf-8")
     console.print(
-        f"[green]✓[/green] Updated [cyan]version.py[/cyan] to [bold]{version}[/bold]"
+        f"[green]✓[/green] Updated [cyan]_version.py[/cyan] to [bold]{version}[/bold]"
     )
 
 
@@ -99,7 +99,7 @@ def main() -> None:
         console.print(
             Panel.fit(
                 f"[bold green]✓ Version synchronization completed![/bold green]\n"
-                f"[dim]version.py updated to {version}[/dim]",
+                f"[dim]_version.py updated to {version}[/dim]",
                 border_style="green",
             )
         )

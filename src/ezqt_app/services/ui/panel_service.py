@@ -7,8 +7,11 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+# Standard library imports
+from typing import cast
+
 # Third-party imports
-from PySide6.QtCore import QEasingCurve, QPropertyAnimation
+from PySide6.QtCore import QEasingCurve, QObject, QPropertyAnimation
 
 # Local imports
 from ...domain.ports.main_window import MainWindowProtocol
@@ -35,7 +38,7 @@ class PanelService:
         width_extended = max_extend if width == standard else standard
 
         window.menu_animation = QPropertyAnimation(
-            window.ui.menu_container,  # type: ignore[arg-type]
+            cast(QObject, window.ui.menu_container),
             b"minimumWidth",
         )
         window.menu_animation.setDuration(settings_service.gui.TIME_ANIMATION)
@@ -60,7 +63,7 @@ class PanelService:
         window.ui.header_container.set_settings_panel_open(is_opening)
 
         window.settings_animation = QPropertyAnimation(
-            window.ui.settings_panel,  # type: ignore[arg-type]
+            cast(QObject, window.ui.settings_panel),
             b"minimumWidth",
         )
         window.settings_animation.setDuration(settings_service.gui.TIME_ANIMATION)

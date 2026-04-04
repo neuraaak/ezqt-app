@@ -65,20 +65,21 @@ class EzTranslator(QTranslator):
     # QTranslator virtual override
     # ------------------------------------------------------------------
 
-    def translate(  # type: ignore[override]
+    def translate(
         self,
         context: str,
         source_text: str,
-        _disambiguation: str | None = None,
-        _n: int = -1,
-    ) -> str | None:
+        disambiguation: str | None = None,  # noqa: ARG002
+        n: int = -1,  # noqa: ARG002
+    ) -> str | None:  # type: ignore[override]  # PySide6 maps None → null QString → Qt falls back
         """Return the translation for *source_text*, or ``None`` if unknown.
 
-        PySide6 maps a ``None`` return value to a null ``QString``, which tells
-        Qt to continue querying the next installed translator and ultimately to
-        fall back to the source text.  Returning ``""`` (an empty but non-null
-        ``QString``) would be interpreted as "the translation is an empty
-        string", which is incorrect for strings not yet translated.
+        Returning ``None`` signals Qt (via null QString) that this translator
+        did not handle the string, so Qt continues querying the next installed
+        translator and ultimately falls back to the source text.
+
+        Returning ``""`` would mean "found, but translation is empty", which
+        would incorrectly replace every untranslated string with an empty label.
 
         When the string is absent from the in-memory cache and auto-translation
         is active, an async translation request is fired so the string will be
@@ -87,11 +88,11 @@ class EzTranslator(QTranslator):
         Args:
             context: Qt translation context (only ``"EzQt_App"`` is handled).
             source_text: The English source string to translate.
-            _disambiguation: Optional disambiguation hint (unused).
-            _n: Plural form selector (unused).
+            disambiguation: Optional disambiguation hint (unused).
+            n: Plural form selector (unused).
 
         Returns:
-            The translated string if already cached, ``None`` otherwise.
+            The translated string if cached, ``None`` otherwise.
         """
         if context != self._CONTEXT or not source_text:
             return None
@@ -123,7 +124,7 @@ class EzTranslator(QTranslator):
             # Async request dispatched — a thread is running the HTTP round-trip.
             self._manager._increment_pending()
 
-        # Return None so Qt falls back to the .qm translator or source text.
+        # Null return → Qt falls back to the .qm translator or source text.
         return None
 
 
@@ -232,11 +233,9 @@ class TranslationManager(QObject):
 
     def _get_package_translations_dir(self) -> Path:
         try:
-            import pkg_resources  # type: ignore[import-untyped]
+            from importlib.resources import files
 
-            return Path(
-                pkg_resources.resource_filename("ezqt_app", "resources/translations")
-            )
+            return Path(str(files("ezqt_app").joinpath("resources/translations")))
         except Exception:
             return Path(__file__).parent.parent.parent / "resources" / "translations"
 
@@ -296,9 +295,9 @@ class TranslationManager(QObject):
             return qm_path.exists()
 
         try:
-            import subprocess
+            import subprocess  # nosec B404
 
-            result = subprocess.run(
+            result = subprocess.run(  # nosec B603
                 [str(lrelease), str(ts_path), "-qm", str(qm_path)],
                 capture_output=True,
                 text=True,
@@ -322,12 +321,14 @@ class TranslationManager(QObject):
 
     def _load_ts_file(self, ts_file_path: Path) -> bool:
         try:
-            import xml.etree.ElementTree as ET
+            import defusedxml.ElementTree as ET  # type: ignore[import-untyped]
 
             if not ts_file_path.exists():
                 return False
 
-            root = ET.parse(ts_file_path).getroot()  # noqa: S314
+            root = ET.parse(ts_file_path).getroot()
+            if root is None:
+                return False
             translations: dict[str, str] = {}
             for message in root.findall(".//message"):
                 source = message.find("source")

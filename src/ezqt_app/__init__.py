@@ -40,6 +40,7 @@ from __future__ import annotations
 import sys
 
 # Local imports
+from ._version import __version__
 from .app import EzApplication, EzQt_App
 from .main import configure_startup, generate_assets, init, setup_project
 from .services.settings import SettingsService, get_settings_service
@@ -54,7 +55,6 @@ from .services.translation import (
     tr,
 )
 from .services.ui import UIFunctions
-from .version import __version__
 from .widgets.core.header import Header
 from .widgets.core.menu import Menu
 from .widgets.core.page_container import PageContainer

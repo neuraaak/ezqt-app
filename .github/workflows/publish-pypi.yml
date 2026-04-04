@@ -16,6 +16,16 @@ on:
       tag:
         required: true
         type: string
+      package_name:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      is_prerelease:
+        required: true
+        type: string
+        default: "false"
     secrets:
       PYPI_API_TOKEN:
         description: "PyPI API token for package publishing"
@@ -25,7 +35,9 @@ permissions:
   contents: read
 
 env:
-  PACKAGE_NAME: ezqt_app
+  PACKAGE_NAME: ${{ inputs.package_name }}
+  PYTHON_VERSION: ${{ inputs.python_version }}
+  IS_PRERELEASE: ${{ inputs.is_prerelease }}
 
 jobs:
   # Job de validation et tests avant publication
@@ -43,11 +55,11 @@ jobs:
         with:
           fetch-depth: 0 # Nécessaire pour accéder aux tags et vérifier les branches
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Fetch all branches and tags
         run: |
@@ -123,8 +135,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          uv sync --extra dev
 
       - name: Run tests
         if: github.event_name != 'workflow_dispatch' || !github.event.inputs.skip_tests
@@ -132,7 +143,7 @@ jobs:
           echo "🧪 Running test suite..."
           export QT_QPA_PLATFORM=offscreen
           export QT_QPA_PLATFORM_MINIMAL_PLUGINS=1
-          pytest tests/ -v --tb=short
+          uv run pytest tests/ -v --tb=short
 
   # Job de build et publication
   publish:
@@ -145,11 +156,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
-          cache: "pip"
+          enable-cache: true
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install system dependencies for PySide6
         run: |
@@ -176,28 +187,33 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install build twine
+          uv sync --extra dev
 
       - name: Build package
         run: |
           echo "🔨 Building package..."
-          python -m build
+          uv build
           echo "📦 Build artifacts:"
           ls -lh dist/
 
       - name: Check package
         run: |
           echo "🔍 Checking package validity..."
-          twine check dist/*
+          uv run twine check dist/*
           echo "✅ Package check passed"
 
       - name: Verify package installation
         run: |
           echo "🧪 Verifying package can be installed..."
-          pip install dist/*.whl --force-reinstall
-          python -c "import sys; import importlib; pkg = importlib.import_module('${{ env.PACKAGE_NAME }}'); print(f'✅ Package installed successfully: ${{ env.PACKAGE_NAME }} {getattr(pkg, \"__version__\", \"unknown\")}')"
-          pip uninstall -y ${{ env.PACKAGE_NAME }}
+          uv pip install dist/*.whl --force-reinstall
+          uv run python -c "import sys; import importlib; pkg = importlib.import_module('${{ env.PACKAGE_NAME }}'); print(f'✅ Package installed successfully: ${{ env.PACKAGE_NAME }} {getattr(pkg, \"__version__\", \"unknown\")}')"
+          uv pip uninstall ${{ env.PACKAGE_NAME }}
+
+      - name: Warn if pre-release
+        if: env.IS_PRERELEASE == 'true'
+        run: |
+          echo "⚠️  Publishing a pre-release version (${{ inputs.version }}) to production PyPI."
+          echo "    Ensure this is intentional — pre-releases are visible to all users."
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -82,6 +82,7 @@ node_modules/
 bandit-report.json
 bandit-report.xml
 bandit-report.html
+bandit_report.html
 
 # Rapports de couverture de code (pytest-cov, coverage)
 .coverage
@@ -230,11 +231,11 @@ $RECYCLE.BIN/
 _temp/
 temp/
 tmp/
-.tmp/
 tmpclaude-*
 
 # MkDocs build output
 site/
+docs/api/assets.generated.md
 
 # =============================================================================
 # EXCLUSIONS SPÉCIFIQUES AU PROJET RACINE

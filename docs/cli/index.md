@@ -1,155 +1,163 @@
-# CLI -- Command-Line Interface
+# CLI reference
 
-Documentation for the **ezqt** command-line interface.
+`ezqt` is the command-line interface for **EzQt App**. It exposes project
+initialization, test execution, documentation serving, and utility commands.
 
----
-
-## Installation
+## 💻 Usage
 
 ```bash
-pip install -e ".[dev]"
-
-# Verify installation
-ezqt --version
+ezqt [OPTIONS] COMMAND [ARGS]...
 ```
 
----
+## ⚙️ Global options
 
-## Commands
+| Option      | Short | Description                |
+| :---------- | :---- | :------------------------- |
+| `--version` | `-v`  | Show the version and exit  |
+| `--help`    | `-h`  | Show help message and exit |
 
-### `ezqt init` -- Initialize Project
+## 📋 Commands
+
+| Command                               | Description                                               |
+| :------------------------------------ | :-------------------------------------------------------- |
+| [`init`](#ezqt-init)                  | Initialize project assets and configuration               |
+| [`create`](#ezqt-create)              | Create a new project from a template                      |
+| [`convert`](#ezqt-convert--ezqt-mkqm) | Convert translation `.ts` files to Qt binary `.qm` format |
+| [`mkqm`](#ezqt-convert--ezqt-mkqm)    | Alias for `convert`                                       |
+| [`test`](#ezqt-test)                  | Run the test suite                                        |
+| [`docs`](#ezqt-docs)                  | Serve the documentation locally                           |
+| [`info`](#ezqt-info)                  | Display package and runtime information                   |
+
+<a id="ezqt-init"></a>
+
+## 🔧 `ezqt init`
 
 Initialize project assets and configuration.
 
+```bash
+ezqt init [OPTIONS]
+```
+
 | Option      | Short | Description                       |
-| ----------- | ----- | --------------------------------- |
+| :---------- | :---- | :-------------------------------- |
 | `--force`   | `-f`  | Force overwrite of existing files |
 | `--verbose` | `-v`  | Verbose output                    |
 | `--no-main` |       | Skip `main.py` generation         |
 
-**Examples:**
+<a id="ezqt-create"></a>
+
+## 🔧 `ezqt create`
+
+Create a new project from a template.
 
 ```bash
-ezqt init
-ezqt init --verbose
-ezqt init --force --no-main
+ezqt create [OPTIONS]
 ```
 
-### `ezqt create` -- Create Project Template
-
-Create project template.
-
 | Option       | Short | Description    |
-| ------------ | ----- | -------------- |
+| :----------- | :---- | :------------- |
 | `--template` | `-t`  | Template type  |
 | `--name`     | `-n`  | Project name   |
 | `--verbose`  | `-v`  | Verbose output |
 
-**Examples:**
+<a id="ezqt-convert--ezqt-mkqm"></a>
 
-```bash
-ezqt create --template basic --name my_app
-ezqt create --template advanced --name my_app --verbose
-```
+## 🔧 `ezqt convert` / `ezqt mkqm`
 
-### `ezqt convert` / `ezqt mkqm` -- Convert Translation Files
-
-Convert translation files to Qt binary format.
-
-**Examples:**
+Convert translation `.ts` files to Qt binary `.qm` format.
 
 ```bash
 ezqt convert
-ezqt mkqm --verbose
+ezqt mkqm
 ```
 
-### `ezqt test` -- Run Tests
+No options.
 
-Run tests from CLI wrappers.
+<a id="ezqt-test"></a>
 
-| Option          | Short | Description         |
-| --------------- | ----- | ------------------- |
-| `--unit`        | `-u`  | Unit tests          |
-| `--integration` | `-i`  | Integration tests   |
-| `--coverage`    | `-c`  | Tests with coverage |
-| `--verbose`     | `-v`  | Verbose output      |
+## 🔧 `ezqt test`
 
-**Examples:**
+Run the test suite.
 
 ```bash
-ezqt test --unit
-ezqt test --integration
-ezqt test --coverage --verbose
+ezqt test [OPTIONS]
 ```
 
-### `ezqt docs` -- Documentation Utilities
+| Option          | Short | Description                 |
+| :-------------- | :---- | :-------------------------- |
+| `--unit`        | `-u`  | Run unit tests              |
+| `--integration` | `-i`  | Run integration tests       |
+| `--coverage`    | `-c`  | Run with coverage reporting |
+| `--verbose`     | `-v`  | Verbose output              |
 
-Serve docs locally.
+<a id="ezqt-docs"></a>
 
-| Option    | Short | Description          |
-| --------- | ----- | -------------------- |
-| `--serve` | `-s`  | Serve docs locally   |
-| `--port`  | `-p`  | Port (default: 8000) |
+## 🔧 `ezqt docs`
 
-### `ezqt info` -- Package Information
+Serve the documentation locally.
 
-Display package/runtime information.
+```bash
+ezqt docs [OPTIONS]
+```
+
+| Option    | Short | Description                   |
+| :-------- | :---- | :---------------------------- |
+| `--serve` | `-s`  | Start local dev server        |
+| `--port`  | `-p`  | Port number (default: `8000`) |
+
+<a id="ezqt-info"></a>
+
+## 🔧 `ezqt info`
+
+Display package and runtime information.
 
 ```bash
 ezqt info
 ```
 
----
+No options.
 
-## Use Cases
-
-### For Developers
-
-```bash
-ezqt init --verbose
-ezqt test --unit --coverage
-ezqt info
-```
-
-### For Maintainers
-
-```bash
-ezqt docs --serve --port 8000
-ezqt convert
-```
-
----
-
-## Environment Variables
+## ⚙️ Environment variables
 
 | Variable            | Description                                     |
-| ------------------- | ----------------------------------------------- |
+| :------------------ | :---------------------------------------------- |
 | `EZQT_VERBOSE`      | Enable verbose mode by default for all commands |
 | `EZQT_PROJECT_ROOT` | Override the project root directory detection   |
 | `EZQT_THEME_DIR`    | Custom path to the themes directory             |
 | `EZQT_NO_COLOR`     | Disable colored CLI output                      |
 
----
+## 🧪 Examples
+
+```bash
+# Initialize a new project
+ezqt init --verbose
+
+# Bootstrap with force overwrite
+ezqt init --force --no-main
+
+# Create a project from the basic template
+ezqt create --template basic --name my_app
+
+# Run unit tests with coverage
+ezqt test --unit --coverage
+
+# Serve documentation on a custom port
+ezqt docs --serve --port 8080
+
+# Convert translation files
+ezqt convert
+
+# Display runtime info
+ezqt info
+```
 
 ## Troubleshooting
 
-| Issue                      | Solution                                |
-| -------------------------- | --------------------------------------- |
-| `ezqt` not found           | Reinstall package in active environment |
-| Init fails in wrong folder | Run command from project root           |
-| Docs serve fails on port   | Use another `--port` value              |
+| Issue                      | Solution                                                           |
+| :------------------------- | :----------------------------------------------------------------- |
+| `ezqt` not found           | Reinstall package in active environment: `pip install -e ".[dev]"` |
+| Init fails in wrong folder | Run command from project root                                      |
+| Docs serve fails on port   | Use another `--port` value                                         |
 
----
-
-## Implementation
-
-CLI source: `src/ezqt_app/cli/main.py`
-
----
-
-## Resources
-
-- [API Reference](https://neuraaak.github.io/ezqt-app/api/) -- Widget documentation
-- [Examples](https://neuraaak.github.io/ezqt-app/examples/) -- Example code
-- [Testing Guide](https://neuraaak.github.io/ezqt-app/guides/testing/) -- Testing guidelines and best practices
-- [QSS Style Guide](https://neuraaak.github.io/ezqt-app/guides/style-guide/) -- Visual customization
+??? note "CLI source"
+    CLI implementation: `src/ezqt_app/cli/main.py`

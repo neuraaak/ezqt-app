@@ -11,7 +11,7 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
-from typing import Any
+from typing import Any, cast
 
 # Third-party imports
 from PySide6.QtCore import QEvent, QSize, Qt, Signal
@@ -254,7 +254,7 @@ class SettingsPanel(QFrame):
                     widget = self.add_setting_from_config(key, config)
                     default_value = config.get("default")
                     if default_value is not None and hasattr(widget, "set_value"):
-                        widget.set_value(default_value)  # type: ignore[union-attr]
+                        cast(Any, widget).set_value(default_value)
 
         except Exception as e:
             warn_tech(

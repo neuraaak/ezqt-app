@@ -1,5 +1,5 @@
 # ///////////////////////////////////////////////////////////////
-# CLI.CREATE_QM_FILES - Translation file converter (.ts -> .qm)
+# CLI.COMMANDS._CREATE_QM_FILES - Translation file converter (.ts -> .qm)
 # Project: ezqt_app
 # ///////////////////////////////////////////////////////////////
 
@@ -13,12 +13,14 @@ from __future__ import annotations
 # Standard library imports
 import importlib.resources
 import struct
-import xml.etree.ElementTree as ET  # noqa: S314
 from pathlib import Path
 
+# Third-party imports
+import defusedxml.ElementTree as ET  # type: ignore[import-untyped]
+
 # Local imports
-from ..utils.diagnostics import warn_tech
-from ..utils.printer import get_printer
+from ...utils.diagnostics import warn_tech
+from ...utils.printer import get_printer
 
 
 # ///////////////////////////////////////////////////////////////
@@ -40,7 +42,9 @@ def extract_translations_from_ts(ts_file_path: Path) -> dict[str, str]:
     if not ts_file_path.exists():
         raise FileNotFoundError(f"Translation file not found: {ts_file_path}")
 
-    root = ET.parse(ts_file_path).getroot()  # noqa: S314
+    root = ET.parse(ts_file_path).getroot()
+    if root is None:
+        return {}
     translations: dict[str, str] = {}
 
     for message in root.findall(".//message"):
@@ -124,7 +128,7 @@ def _get_package_translations_dir() -> Path | None:
             "cli.qm.package_translations_resolution_failed",
             "Unable to resolve bundled translations directory, using fallback",
         )
-        fallback = Path(__file__).parent.parent / "resources" / "translations"
+        fallback = Path(__file__).parent.parent.parent / "resources" / "translations"
         return fallback if fallback.exists() else None
 
 
@@ -180,6 +184,3 @@ __all__ = [
     "create_qt_qm_file",
     "main",
 ]
-
-if __name__ == "__main__":
-    main()
