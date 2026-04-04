@@ -16,6 +16,7 @@ import locale
 import os
 import sys
 from pathlib import Path
+from typing import Any, cast
 
 
 # ///////////////////////////////////////////////////////////////
@@ -52,9 +53,9 @@ class StartupConfig:
     def _configure_encoding(self) -> None:
         """Force UTF-8 encoding on stdout/stderr."""
         if hasattr(sys.stdout, "reconfigure"):
-            sys.stdout.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+            cast(Any, sys.stdout).reconfigure(encoding="utf-8")
         if hasattr(sys.stderr, "reconfigure"):
-            sys.stderr.reconfigure(encoding="utf-8")  # type: ignore[union-attr]
+            cast(Any, sys.stderr).reconfigure(encoding="utf-8")
 
     def _configure_environment(self) -> None:
         """Set mandatory Qt/Python environment variables."""

@@ -1,7 +1,7 @@
 # Makefile pour EzQt App
 # Usage: make <target>
 
-.PHONY: help install install-dev format lint test test-cov clean pre-commit setup-hooks docs docs-build docs-deploy
+.PHONY: help install install-dev format lint test test-cov clean pre-commit setup-hooks docs docs-assets docs-build docs-deploy
 
 # Configuration
 PYTHON := python
@@ -39,6 +39,7 @@ help:
 	@echo ""
 	@echo "$(GREEN)Documentation:$(RESET)"
 	@echo "  docs         - Lancer le serveur de documentation (hot-reload)"
+	@echo "  docs-assets  - Generer le catalogue des assets embarques"
 	@echo "  docs-build   - Build statique de la documentation"
 	@echo "  docs-deploy  - Deployer sur GitHub Pages"
 	@echo ""
@@ -97,6 +98,10 @@ pre-commit:
 docs:
 	@echo "$(BLUE)Lancement du serveur de documentation...$(RESET)"
 	mkdocs serve
+
+docs-assets:
+	@echo "$(BLUE)Generation du catalogue des assets...$(RESET)"
+	$(PYTHON) .scripts/dev/generate_assets_catalog.py
 
 docs-build:
 	@echo "$(BLUE)Build de la documentation...$(RESET)"

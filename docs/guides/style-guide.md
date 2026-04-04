@@ -1,22 +1,20 @@
-# QSS Style Guide
+# QSS style guide
 
-This document defines practical QSS style conventions for EzQt App components.
+Practical QSS style conventions for EzQt App components.
 
-## General Principles
+## ⚙️ General principles
 
 - Use consistent colors, spacing, and borders across all core containers.
 - Prefer specific object names (`#settings_panel`, `#menu_container`, etc.).
 - Centralize palette values in theme/config files whenever possible.
 
----
-
-## Where Styles Come From
+## 📁 Where styles come from
 
 All `.qss` files found in `bin/themes/` are loaded automatically at application
 startup in alphabetical order. The directory ships with three files:
 
 | File                         | Scope                                                       |
-| ---------------------------- | ----------------------------------------------------------- |
+| :--------------------------- | :---------------------------------------------------------- |
 | `bin/themes/application.qss` | Application-level styles (window chrome, layout containers) |
 | `bin/themes/extended.qss`    | EzQt extended widgets (`OptionSelector`, `ThemeIcon`, etc.) |
 | `bin/themes/global.qss`      | Standard Qt widgets (`QPushButton`, `QLineEdit`, etc.)      |
@@ -29,11 +27,32 @@ Additional sources:
 - Resource defaults bundled in the package
 - Runtime application orchestrated by `ThemeService`
 
----
+## 🎨 Theme previews
 
-## Core Containers
+The three built-in themes ship with a color palette preview.
+Select a theme in the settings panel at runtime, or set `THEME` in `bin/config/app.config.yaml`.
 
-### Main Window
+### Blue Gray
+
+<div>
+--8<-- "src/ezqt_app/resources/themes/preview/blue-gray-preview.html"
+</div>
+
+### GitHub Dark
+
+<div>
+--8<-- "src/ezqt_app/resources/themes/preview/github-dark-preview.html"
+</div>
+
+### Warm Dark
+
+<div>
+--8<-- "src/ezqt_app/resources/themes/preview/warm-dark-preview.html"
+</div>
+
+## 🏗️ Core containers
+
+### Main window
 
 ```css
 QMainWindow {
@@ -42,7 +61,7 @@ QMainWindow {
 }
 ```
 
-### Settings Panel
+### Settings panel
 
 ```css
 QFrame#settings_panel {
@@ -51,7 +70,7 @@ QFrame#settings_panel {
 }
 ```
 
-### Menu Container
+### Menu container
 
 ```css
 QFrame#menu_container {
@@ -60,11 +79,9 @@ QFrame#menu_container {
 }
 ```
 
----
+## 🎨 Interactive controls
 
-## Interactive Controls
-
-### Hover/Focus Baseline
+### Hover/focus baseline
 
 ```css
 QPushButton:hover,
@@ -78,7 +95,7 @@ QLineEdit:focus {
 }
 ```
 
-### Theme Selector Pattern
+### Theme selector pattern
 
 ```css
 [type="OptionSelector_Selector"] {
@@ -87,7 +104,7 @@ QLineEdit:focus {
 }
 ```
 
-### Settings Button Open State
+### Settings button open state
 
 The settings button in the header receives a dynamic `open` property whose
 value is `"true"` when the settings panel is visible and `"false"` when it is
@@ -104,23 +121,17 @@ QPushButton#settings_btn[open="false"] {
 }
 ```
 
----
-
-## Practical Recommendations
+## ✅ Best practices
 
 - Keep theme tokens centralized in config/theme files.
 - Avoid hardcoding colors in widget code when possible.
 - Prefer object names for targeted QSS rules.
-
----
-
-## Best Practices
-
 - Keep dark/light variants symmetrical when possible.
 - Validate styles on both Windows and Linux runtimes.
 - Keep transitions/animations meaningful and unobtrusive.
 
-## Related Components
+## ➡️ Related
 
 - `src/ezqt_app/services/ui/theme_service.py`
 - `src/ezqt_app/widgets/core/settings_panel.py`
+- [Qt resources pipeline](resources.md) — how themes are compiled and loaded

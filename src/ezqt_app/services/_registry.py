@@ -28,7 +28,7 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 from collections.abc import Callable
-from typing import TypeVar
+from typing import TypeVar, cast
 
 _T = TypeVar("_T")
 
@@ -61,10 +61,10 @@ class ServiceRegistry:
             instance when no cached value exists.
         """
         if service_type in cls._overrides:
-            return cls._overrides[service_type]  # type: ignore[return-value]
+            return cast(_T, cls._overrides[service_type])
         if service_type not in cls._instances:
             cls._instances[service_type] = factory()
-        return cls._instances[service_type]  # type: ignore[return-value]
+        return cast(_T, cls._instances[service_type])
 
     @classmethod
     def register(cls, service_type: type[_T], instance: _T) -> None:

@@ -1,28 +1,20 @@
-# Configuration and Runtime
+# Configuration and runtime
 
 Configuration and runtime state services for project setup and UI behavior.
 
----
-
-## ConfigService
+## 📦 ConfigService
 
 ::: ezqt_app.services.config.config_service.ConfigService
 
----
-
-## SettingsService
+## 📦 SettingsService
 
 ::: ezqt_app.services.settings.settings_service.SettingsService
 
----
-
-## RuntimeStateService
+## 📦 RuntimeStateService
 
 ::: ezqt_app.services.runtime.runtime_service.RuntimeStateService
 
----
-
-## Related Ports
+## 🔍 Related ports
 
 - `ezqt_app.domain.ports.config_service.ConfigServiceProtocol`
 - `ezqt_app.domain.ports.settings_service.SettingsServiceProtocol`

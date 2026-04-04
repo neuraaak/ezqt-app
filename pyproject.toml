@@ -14,7 +14,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ezqt-app"
-version = "5.5.2"
+version = "5.5.3"
 description = "Lightweight framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -51,10 +51,7 @@ dependencies = [
     "ezqt-widgets>=2.0.0",
     "ezplog>=1.5.0",
     "langdetect>=1.0.0",
-    #mypy-types
-    "typing_extensions>=4.0.0",
-    "types-requests",
-    "types-PyYAML",
+    "defusedxml>=0.7.1",
 ]
 
 # ///////////////////////////////////////////////////////////////
@@ -70,6 +67,11 @@ dev = [
     "pyright>=1.1.0",
     "pre-commit>=3.0.0",
     "import-linter>=2.0.0",
+    "grimp>=2.3.0",
+    #mypy-types
+    "typing_extensions>=4.0.0",
+    "types-requests",
+    "types-PyYAML",
 
     # Security
     "bandit>=1.7.0",
@@ -83,12 +85,6 @@ dev = [
     # Build and distribution
     "build>=1.0.0",
     "twine>=4.0.0",
-
-    # Documentation generation
-    "mkdocs>=1.6.0,<2.0.0",
-    "mkdocs-material>=9.5.0",
-    "mkdocstrings[python]>=0.27.0",
-    "mkdocs-section-index>=0.3.0",
 ]
 test = [
     "pytest>=7.0.0",
@@ -103,6 +99,8 @@ docs = [
     "mkdocstrings[python]>=0.27.0",
     "mkdocs-section-index>=0.3.0",
     "mkdocs-coverage>=1.1.0",
+    "mike>=2.0.0",
+    "pymdown-extensions>=10.7",
     "git-cliff>=2.7.0",
 ]
 
@@ -115,6 +113,7 @@ docs = [
 Homepage = "https://github.com/neuraaak/ezqt-app"
 Documentation = "https://neuraaak.github.io/ezqt-app/"
 Repository = "https://github.com/neuraaak/ezqt-app"
+Issues = "https://github.com/neuraaak/ezqt-app/issues"
 PyPI = "https://pypi.org/project/ezqt-app/"
 
 # ///////////////////////////////////////////////////////////////
@@ -135,23 +134,41 @@ packages = ["src/ezqt_app"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
-    "tests",
-    "docs",
-    "examples",
-    "htmlcov",
+    # Dev tooling & scripts
+    ".scripts",
     ".hooks",
-    ".venv",
-    "venv",
-    ".git",
-    ".ruff_cache",
-    ".pytest_cache",
-    ".cursor",
-    ".tmp",
-    "*.pyc",
-    "*.pyo",
-    "*.log",
+    ".pre-commit-config.yaml",
+    # Test & coverage
+    "tests",
+    "htmlcov",
     ".coverage",
     "coverage.xml",
+    ".pytest_cache",
+    # Documentation
+    "docs",
+    "examples",
+    "mkdocs.yml",
+    "cliff.toml",
+    # VCS & caches
+    ".git",
+    ".ruff_cache",
+    ".mypy_cache",
+    # Virtual envs
+    ".venv",
+    "venv",
+    # Byte-compiled / optimized files
+    "*.pyc",
+    "*.pyo",
+    "__pycache__",
+    # Logs & temp
+    "*.log",
+    ".tmp",
+    # Build artifacts
+    "dist",
+    "build",
+    "*.egg-info",
+    # IDE & OS
+    ".cursor",
     ".DS_Store",
     "Thumbs.db",
 ]
@@ -279,7 +296,7 @@ reportIncompatibleVariableOverride = true
 reportInconsistentConstructor = true
 
 # ///////////////////////////////////////////////////////////////
-# � IMPORT LINTER CONTRACTS
+# 🧭 IMPORT LINTER CONTRACTS
 # Layer dependency contracts enforced in CI
 # ///////////////////////////////////////////////////////////////
 
@@ -302,11 +319,11 @@ layers = [
 ]
 
 # ///////////////////////////////////////////////////////////////
-# �🧪 TESTING & COVERAGE TOOLS
+# 🧪 TESTING & COVERAGE TOOLS
 # Test execution, coverage analysis, and test configuration
 # ///////////////////////////////////////////////////////////////
 
-# Pytest: Test runner with coverage and detailed reporting
+# Pytest: Test runner with markers and coverage configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
 addopts = [
@@ -317,12 +334,12 @@ addopts = [
     "--cov-report=html",
     "--cov-report=xml",
     "--cov-fail-under=60",
-    "--verbose",
     "--tb=short",
     "--color=yes",
     "--durations=10",
     "--maxfail=5",
 ]
+console_output_style = "progress"
 testpaths = ["tests"]
 pythonpath = ["src"]
 python_files = ["test_*.py", "*_test.py"]
@@ -343,7 +360,6 @@ filterwarnings = [
     "ignore::PendingDeprecationWarning",
 ]
 
-# Coverage: Code coverage measurement and reporting (60% minimum)
 [tool.coverage.run]
 source = ["src/ezqt_app"]
 branch = true
@@ -368,14 +384,14 @@ omit = [
     "docs/*",
     "examples/*",
     "_temp/*",
-    # Modules non testables unitairement (point d'entrée TTY interactif / subprocess vers processus externes)
-    "*/cli/main.py",   # Entrée Click avec affichage Rich/TTY — non invocable sans terminal interactif
-    "*/cli/runner.py", # Lance des exemples Qt via subprocess.run — processus GUI externes
+    # CLI entry points: tested via e2e/smoke tests, not unit tests
+    "src/ezqt_app/cli/*",
     # Fichier auto-généré par Qt Resource Compiler (données binaires, pas de logique utilisateur)
     "*/shared/resources/base_resources.py",
 ]
 
 [tool.coverage.report]
+# Lines to exclude: comments, abstractions, unreachable code
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -391,6 +407,7 @@ exclude_lines = [
 ]
 show_missing = true
 precision = 2
+fail_under = 60
 
 [tool.coverage.html]
 directory = "htmlcov"
@@ -400,7 +417,7 @@ directory = "htmlcov"
 # Code security scanning and vulnerability detection
 # ///////////////////////////////////////////////////////////////
 
-# Bandit: Security linter (detects common security issues)
+# Bandit: Security linter for identifying common security issues
 [tool.bandit]
 exclude_dirs = [
     "tests",
@@ -411,6 +428,7 @@ exclude_dirs = [
     ".hooks",
     "docs",
     "examples",
+    ".tmp",
     "_temp",
 ]
 skips = ["B101", "B601"]

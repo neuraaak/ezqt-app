@@ -12,7 +12,7 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # Standard library imports
 import shutil
-import subprocess
+import subprocess  # nosec B404
 from pathlib import Path
 
 # Local imports
@@ -372,7 +372,7 @@ class FileService:
 
         # resources_rc.py is a derived build artifact: always regenerate it.
         try:
-            subprocess.run(
+            subprocess.run(  # nosec B603 B607
                 ["pyside6-rcc", self._qrc_file, "-o", "resources_rc.py"],  # noqa: S607
                 cwd=self._bin,
                 check=True,

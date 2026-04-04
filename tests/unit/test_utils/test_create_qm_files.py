@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from ezqt_app.cli.create_qm_files import (
+from ezqt_app.cli.commands._create_qm_files import (
     create_proper_qm_from_ts,
     create_qt_qm_file,
     extract_translations_from_ts,

@@ -6,11 +6,11 @@
 #   2. ruff check      — lint with auto-fix
 #   3. ty check        — type checking
 #   4. lint-imports    — layer dependency contracts
-#   5. update_version  — sync version.py ← pyproject.toml
+#   5. update_version  — sync _version.py ← pyproject.toml
 #
 # Setup (run once per clone):
 #   git config --unset core.hooksPath   # disable legacy .hooks/ mechanism
-#   pip install pre-commit              # or: uv add --dev pre-commit
+#   uv add --dev pre-commit             # or: pip install pre-commit
 #   pre-commit install
 #
 # Run manually on all files:
@@ -24,7 +24,7 @@
 #     commit; stage the changes (git add -u) and recommit.
 
 default_language_version:
-  python: python3.11
+  python: python
 
 repos:
   # ///////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ repos:
         pass_filenames: false
 
       # Step 4 — layer dependency contracts
-      # Relies on editable install so that ezqt_app is importable
+      # Relies on editable install so that {{ project_slug }} is importable
       # without an explicit PYTHONPATH override.
       - id: import-linter
         name: "Import Linter — layer contracts"
@@ -86,10 +86,10 @@ repos:
         pass_filenames: false
         always_run: true
 
-      # Step 5 — keep version.py in sync with pyproject.toml
+      # Step 5 — keep _version.py in sync with pyproject.toml
       # Only triggered when pyproject.toml is staged.
       - id: sync-version
-        name: "Sync version.py ← pyproject.toml"
+        name: "Sync _version.py ← pyproject.toml"
         language: system
         entry: uv run --no-sync python .scripts/dev/update_version.py
         files: ^pyproject\.toml$

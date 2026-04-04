@@ -10,35 +10,32 @@
 [![linter](https://img.shields.io/badge/linter-ruff-orange?style=flat&logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
 [![type checker](https://img.shields.io/badge/type%20checker-ty-orange?style=flat&logo=astral&logoColor=white)](https://github.com/astral-sh/ty)
 
-![Ezpl Logo](https://raw.githubusercontent.com/neuraaak/ezqt-app/refs/heads/main/docs/assets/logo-min.png)
+![EzQt-App logo](https://raw.githubusercontent.com/neuraaak/ezqt-app/refs/heads/main/docs/assets/logo-min.png)
 
 **EzQt-App** is a PySide6 framework to bootstrap and structure desktop applications with a ready-to-use shell, configuration workflow, translation support, and reusable UI components.
 
-## ✨ Key Features
+## 🚀 Quick start
 
-- **✅ Application Bootstrap**: `init`, assets generation, and project setup workflows
-- **✅ Modular Services**: config, settings, runtime, translation, and UI service layers
-- **✅ Hexagonal Migration**: `domain` contracts with `services` adapters and explicit boundaries
-- **✅ Translation Stack**: `.ts` loading + on-the-fly `.qm` compilation, `EzTranslator` Qt interceptor, non-blocking auto-translation with in-app progress indicator
-- **✅ Built-in CLI**: `ezqt` commands for init, tests, docs, and utility workflows
-- **✅ Test Scopes**: unit, integration, and robustness test suites
+=== "uv"
 
-## 🚀 Quick Start
+    ```bash
+    uv add ezqt-app
+    ```
 
-### Installation
+=== "pip"
 
-```bash
-pip install ezqt-app
-```
+    ```bash
+    pip install ezqt-app
+    ```
 
-Or from source:
+=== "From source"
 
-```bash
-git clone https://github.com/neuraaak/ezqt-app.git
-cd ezqt_app && pip install .
-```
+    ```bash
+    git clone https://github.com/neuraaak/ezqt-app.git
+    cd ezqt_app && pip install .
+    ```
 
-### First App
+Minimal application:
 
 ```python
 import sys
@@ -51,52 +48,58 @@ window.show()
 sys.exit(app.exec())
 ```
 
-## 📚 Documentation Structure
+## ✨ Key features
+
+- **Application bootstrap**: `init`, assets generation, and project setup workflows
+- **Modular services**: config, settings, runtime, translation, and UI service layers
+- **Hexagonal architecture**: `domain` contracts with `services` adapters and explicit boundaries
+- **Translation stack**: `.ts` loading + on-the-fly `.qm` compilation, `EzTranslator` Qt interceptor, non-blocking auto-translation with in-app progress indicator
+- **Built-in CLI**: `ezqt` commands for init, tests, docs, and utility workflows
+- **Test scopes**: unit, integration, and robustness test suites
+
+## 📚 Documentation
 
 | Section                                                                 | Description                                          |
-| ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| :---------------------------------------------------------------------- | :--------------------------------------------------- |
 | [Getting Started](https://neuraaak.github.io/ezqt-app/getting-started/) | Installation, bootstrap, and first app               |
-| [API Reference](https://neuraaak.github.io/ezqt-app/api/)               | Service- and architecture-oriented API documentation |
 | [User Guides](https://neuraaak.github.io/ezqt-app/guides/)              | Development, testing, and styling guidance           |
-| [Examples](https://neuraaak.github.io/ezqt-app/examples/)               | Practical usage snippets for common scenarios        |
+| [API Reference](https://neuraaak.github.io/ezqt-app/api/)               | Service- and architecture-oriented API documentation |
 | [CLI Reference](https://neuraaak.github.io/ezqt-app/cli/)               | Command-line utilities and command options           |
+| [Examples](https://neuraaak.github.io/ezqt-app/examples/)               | Practical usage snippets for common scenarios        |
+| [Concepts](https://neuraaak.github.io/ezqt-app/concepts/)               | Architecture rationale and design decisions          |
 
-## 🎯 Main Components
+## 🎯 Main components
 
 EzQt-App is organized around architectural modules:
 
-### Domain Module
+### Domain module
 
-- **`domain/ports`** - Service contracts (protocols)
-- **`domain/models`** - Typed domain models and constants
-- **`domain/results`** - Typed initialization/result payloads
+- **`domain/ports`** — service contracts (protocols)
+- **`domain/models`** — typed domain models and constants
+- **`domain/results`** — typed initialization/result payloads
 
-### Services Module
+### Services module
 
-- **`services/bootstrap`** - Initialization sequence and options
-- **`services/config`** - Configuration load/save/path resolution
-- **`services/settings`** - Mutable app/gui settings state
-- **`services/translation`** - Language manager, helpers, auto-translation
-- **`services/ui`** - UI orchestration services (theme/menu/panel/window)
+- **`services/bootstrap`** — initialization sequence and options
+- **`services/config`** — configuration load/save/path resolution
+- **`services/settings`** — mutable app/gui settings state
+- **`services/translation`** — language manager, helpers, auto-translation
+- **`services/ui`** — UI orchestration services (theme/menu/panel/window)
 
-### Widgets Module
+### Widgets module
 
-- **`widgets/core`** - Application containers (`EzApplication`, `SettingsPanel`, etc.)
-- **`widgets/extended`** - Extended reusable controls
+- **`widgets/core`** — application containers (`EzApplication`, `SettingsPanel`, etc.)
+- **`widgets/extended`** — extended reusable controls
 
 For detailed documentation, see [API Reference](https://neuraaak.github.io/ezqt-app/api/).
 
 ## 🧪 Testing
 
-Current suite is split into dedicated scopes:
-
 | Metric      | Value                         |
-| ----------- | ----------------------------- |
+| :---------- | :---------------------------- |
 | Test types  | Unit, Integration, Robustness |
 | Runner      | `tests/run_tests.py`          |
 | Output mode | Real-time streamed output     |
-
-Run tests with:
 
 ```bash
 python tests/run_tests.py --type unit
@@ -106,23 +109,12 @@ python tests/run_tests.py --type robustness
 
 See the [Testing Guide](https://neuraaak.github.io/ezqt-app/guides/testing/) for complete details.
 
-## 📦 Core Dependencies
+## 📋 Requirements
 
-- **PySide6 >= 6.7.3** - Qt for Python runtime
-- **Python >= 3.10** - Language/runtime target
-- **PyYAML / ruamel.yaml** - Configuration management
+- **Python** >= 3.11
+- **PySide6** >= 6.7.3
+- **PyYAML / ruamel.yaml** — configuration management
 
-## 📝 License
+## ⚖️ License
 
-MIT License – See [LICENSE](https://github.com/neuraaak/ezqt-app/blob/main/LICENSE) file for details.
-
-## 🔗 Links
-
-- **Repository**: [https://github.com/neuraaak/ezqt-app](https://github.com/neuraaak/ezqt-app)
-- **PyPI**: [https://pypi.org/project/ezqt-app/](https://pypi.org/project/ezqt-app/)
-- **Issues**: [https://github.com/neuraaak/ezqt-app/issues](https://github.com/neuraaak/ezqt-app/issues)
-- **Documentation**: [https://neuraaak.github.io/ezqt-app/](https://neuraaak.github.io/ezqt-app/)
-
----
-
-**EzQt-App** - Structured, practical PySide6 app framework with a complete bootstrap workflow.
+MIT License — see [LICENSE](https://github.com/neuraaak/ezqt-app/blob/main/LICENSE) for details.

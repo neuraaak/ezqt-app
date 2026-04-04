@@ -1,0 +1,38 @@
+# ///////////////////////////////////////////////////////////////
+# MARKDOWNLINT CONFIGURATION
+# Rules adjusted for MkDocs Material + pymdown-extensions
+# ///////////////////////////////////////////////////////////////
+
+default: true
+
+# Line length — disabled: badge lines and table cells exceed 80 chars by design
+MD013: false
+
+# Inline HTML — disabled: attr_list and md_in_html produce { } attributes and
+# raw HTML blocks (e.g. <div markdown> grids) that markdownlint cannot parse
+MD033: false
+
+# First line must be H1 — disabled: some pages legitimately open with an
+# admonition (!!! note) or a badge block before the heading
+MD041: false
+
+# Code block style — disabled: pymdownx.superfences supports nested fenced blocks
+# inside admonitions/tabs, which markdownlint can falsely report as indented.
+MD046: false
+
+# Spaces inside code span — disabled: markdownlint cannot parse pymdownx.details
+# admonition blocks and misidentifies indented fenced code fence markers (```) as
+# inline code spans with leading/trailing spaces. This is a false positive.
+MD038: false
+
+# Ordered list style — allow any increment (1. 1. 1.) for maintainability
+MD029:
+  style: ordered
+
+# Unordered list indent — MkDocs renders 4-space indented nested lists correctly
+MD007:
+  indent: 4
+
+# Emphasis as heading — disabled: bold used intentionally as inline labels
+# (e.g. **project-name** — description on homepage, **When to use:** in instructions)
+MD036: false

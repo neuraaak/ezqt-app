@@ -21,14 +21,14 @@ automatically — no manual `git config` required.
 
 Defined in `.pre-commit-config.yaml`, mirroring `.scripts/dev/lint.py`:
 
-| Step         | Tool                | Action                                                     |
-| ------------ | ------------------- | ---------------------------------------------------------- |
-| File hygiene | pre-commit-hooks    | trailing whitespace, YAML/TOML validity, merge conflicts…  |
-| 1            | `ruff-format`       | auto-format code                                           |
-| 2            | `ruff check`        | lint with auto-fix (`--exit-non-zero-on-fix`)              |
-| 3            | `ty check`          | type checking                                              |
-| 4            | `lint-imports`      | layer dependency contracts                                 |
-| 5            | `update_version.py` | sync `version.py` ← `pyproject.toml` (on pyproject change) |
+| Step         | Tool                | Action                                                      |
+| ------------ | ------------------- | ----------------------------------------------------------- |
+| File hygiene | pre-commit-hooks    | trailing whitespace, YAML/TOML validity, merge conflicts…   |
+| 1            | `ruff-format`       | auto-format code                                            |
+| 2            | `ruff check`        | lint with auto-fix (`--exit-non-zero-on-fix`)               |
+| 3            | `ty check`          | type checking                                               |
+| 4            | `lint-imports`      | layer dependency contracts                                  |
+| 5            | `update_version.py` | sync `_version.py` ← `pyproject.toml` (on pyproject change) |
 
 ## Workflow when a hook modifies files
 

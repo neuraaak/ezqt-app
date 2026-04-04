@@ -1,98 +1,36 @@
-# Claude-Specific Instructions
+# Claude-Specific Strategy (2026)
 
-This file contains instructions specifically for Claude (Anthropic) when working on this project.
+This profile optimizes Claude's (Anthropic) performance for high-precision software engineering and architectural review.
 
-## Project Overview
+<rules>
 
-This project follows a structured approach with centralized instructions in `.github/instructions/`.
+- **REASONING:** Use <thinking> blocks for complex logic before providing the final answer.
+- **STRUCTURE:** Use XML tags (<context>, <rules>, <example>) for modular instruction blocks.
+- **PRIORITY:** Consult `.github/instructions/README.md` first to understand the project's Watchguard choice.
 
-**CRITICAL**: Before any development task, consult `.github/instructions/README.md` and relevant domain-specific files.
+</rules>
 
-## Instruction Hierarchy
+## Cascade Loading Protocol
 
-The central entry point for all project-specific rules is `.github/instructions/README.md`. This file is edited per project to document the tech stack, architecture, conventions, and any overrides to the generic standards. **Always read it first.**
+1. **Load Core Standards:** `.github/instructions/core/core-cognitive-conduct.instructions.md` (Ethics/Logic).
+2. **Load Versioning:** `.github/instructions/core/core-commits-git.instructions.md` (Conventional types).
+3. **Load Architecture:** `.github/instructions/core/core-hexagonal-architecture.instructions.md` (Ports/Adapters).
 
-The generic instruction files in `core/` and `languages/` apply universally across projects and should not be edited per project — they are overridden or extended via the README.
+## Claude Preferences
 
-1. `.github/instructions/README.md` — **Project-specific** context, architecture, conventions, and overrides. The authoritative source for this project.
-2. `.github/instructions/core/` — Generic core principles (architecture, commits, cognitive conduct). Apply unless the README overrides them.
-3. `.github/instructions/languages/python/` — Generic Python standards. Apply unless the README specifies otherwise.
-4. This file (CLAUDE.md) — Claude-specific preferences (tooling, response format, communication style).
+- **Excellence:** Prioritize long-term maintainability over quick hacks.
+- **Feedback:** Be opinionately helpful; push back if a requested change violates the Hexagonal Hexagon.
+- **Reviewer Role:** Act as a Senior Reviewer for all PRs and commits.
 
-## Code Generation Preferences
+## 2026 Tooling Integration
 
-### Python Development
+- **Git:** Use AI-Native types: `prompt` for instruction changes, `agent` for policy changes.
+- **Formatting:** Adhere to the `ruff` (Python) or `node:test` (JS) standards defined in the language manifests.
 
-- Use type hints consistently (follow `.github/instructions/languages/python/python-development-standards.instructions.md`)
-- Prefer `pathlib` over `os.path`
-- Use f-strings for string formatting
-- Follow PEP 8 conventions
-- Add comprehensive docstrings (Google style)
+<success_criteria>
 
-### Error Handling
+- All responses are grounded in the modular UIAs.
+- <thinking> blocks are used for complex architectural decisions.
+- <handoff_context> tags are provided if task is incomplete.
 
-```python
-# Preferred pattern
-try:
-    result = risky_operation()
-except SpecificError as e:
-    logger.error(f"Operation failed: {e}")
-    raise
-```
-
-### Testing Approach
-
-- Write tests using pytest
-- Use descriptive test names: `test_should_<expected_behavior>_when_<condition>`
-- Include both happy path and edge cases
-
-## Communication Style
-
-- Explain architectural decisions concisely
-- Highlight potential issues or trade-offs
-- Ask clarifying questions when requirements are ambiguous
-- Suggest improvements when you notice technical debt
-
-## Corporate Environment Constraints
-
-- Proxy configuration required for external requests
-- Use wheel files for dependencies (`.whl`)
-- Limited access to PyPI - assume local package management
-- Windows-based development environment
-
-## Tool Preferences
-
-- **Type Checking**: mypy (configured in project)
-- **Formatting**: ruff
-- **Build**: cx_Freeze for executables
-- **Version Control**: Git with conventional commits
-
-## Prohibited Practices
-
-- Never use `print()` for logging (use `logging` module)
-- Avoid global variables
-- Don't commit commented-out code
-- No hard-coded credentials or file paths
-
-## Before Starting Any Task
-
-1. Run `view .github/instructions/` to check available guidance
-2. Read relevant instruction files for the task type
-3. Review existing similar code for patterns
-4. Verify understanding of requirements
-5. Propose approach if task is complex
-
-## Response Format Preferences
-
-- Start with a brief summary of the approach
-- Provide complete, runnable code
-- Include import statements
-- Add inline comments for complex logic
-- Suggest next steps or potential improvements
-
-## File Modification Strategy
-
-- Make minimal, focused changes
-- Preserve existing code style
-- Update related tests when modifying functionality
-- Keep backwards compatibility unless explicitly asked to break it
+</success_criteria>

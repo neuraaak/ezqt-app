@@ -435,24 +435,28 @@ class AutoTranslator(QObject):
         self, original: str, translated: str, target_lang: str, ts_file_path: Path
     ) -> None:
         """Append a single translation entry to a Qt Linguist .ts XML file."""
-        import xml.etree.ElementTree as ET
+        from xml.etree.ElementTree import Element, ElementTree, SubElement  # nosec B405
+
+        import defusedxml.ElementTree as ET  # type: ignore[import-untyped]
 
         try:
             if ts_file_path.exists():
                 try:
-                    tree = ET.parse(ts_file_path)  # noqa: S314
+                    tree = ET.parse(ts_file_path)
                     root = tree.getroot()
+                    if root is None:
+                        raise ET.ParseError("Empty document")
                 except ET.ParseError:
-                    root = ET.Element("TS", {"language": target_lang, "version": "2.1"})
-                    tree = ET.ElementTree(root)
+                    root = Element("TS", {"language": target_lang, "version": "2.1"})
+                    tree = ElementTree(root)
             else:
-                root = ET.Element("TS", {"language": target_lang, "version": "2.1"})
-                tree = ET.ElementTree(root)
+                root = Element("TS", {"language": target_lang, "version": "2.1"})
+                tree = ElementTree(root)
 
             context = root.find("context")
             if context is None:
-                context = ET.SubElement(root, "context")
-                ET.SubElement(context, "name").text = "ezqt_app"
+                context = SubElement(root, "context")
+                SubElement(context, "name").text = "ezqt_app"
 
             # Update existing entry if source already present, otherwise append.
             for msg in context.findall("message"):
@@ -463,9 +467,9 @@ class AutoTranslator(QObject):
                         trans.text = translated
                     break
             else:
-                msg = ET.SubElement(context, "message")
-                ET.SubElement(msg, "source").text = original
-                ET.SubElement(msg, "translation").text = translated
+                msg = SubElement(context, "message")
+                SubElement(msg, "source").text = original
+                SubElement(msg, "translation").text = translated
 
             ts_file_path.parent.mkdir(parents=True, exist_ok=True)
             tree.write(ts_file_path, encoding="unicode", xml_declaration=True)

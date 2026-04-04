@@ -28,7 +28,7 @@ from rich.text import Text
 # VARIABLES
 # ///////////////////////////////////////////////////////////////
 
-project_name = "ezqt_app"
+project_name = "EzQt-App"
 
 # ///////////////////////////////////////////////////////////////
 # GLOBAL CONSOLE
@@ -59,9 +59,7 @@ def run_command(command: list[str], description: str = "") -> bool:
         console.print(f"[cyan]🔄[/cyan] {description}...")
 
     try:
-        result = subprocess.run(  # noqa: S603
-            command, check=True, capture_output=True, text=True
-        )
+        result = subprocess.run(command, check=True, capture_output=True, text=True)
         if result.stdout:
             console.print(result.stdout)
         return True
@@ -120,7 +118,7 @@ def upload_to_test_pypi() -> bool:
     dist_files = list(dist_path.glob("*"))
 
     commands = [
-        [sys.executable, "-m", "twine", "upload", "--repository", "testpypi"]
+        ["uv", "run", "twine", "upload", "--repository", "testpypi"]
         + [str(f) for f in dist_files],
     ]
 
@@ -142,7 +140,7 @@ def upload_to_test_pypi() -> bool:
     )
     console.print(
         "[cyan]📦[/cyan] Package available at: "
-        f"[link]https://test.pypi.org/project/{project_name}/[/link]"
+        f"[link]https://test.pypi.org/project/{project_name.lower().replace('-', '_')}/[/link]"
     )
     return True
 
@@ -186,7 +184,7 @@ def upload_to_pypi() -> bool:
     dist_files = list(dist_path.glob("*"))
 
     commands = [
-        [sys.executable, "-m", "twine", "upload"] + [str(f) for f in dist_files],
+        ["uv", "run", "twine", "upload"] + [str(f) for f in dist_files],
     ]
 
     for command in commands:
@@ -207,7 +205,7 @@ def upload_to_pypi() -> bool:
     )
     console.print(
         "[cyan]📦[/cyan] Package available at: "
-        f"[link]https://pypi.org/project/{project_name}/[/link]"
+        f"[link]https://pypi.org/project/{project_name.lower().replace('-', '_')}/[/link]"
     )
     return True
 
