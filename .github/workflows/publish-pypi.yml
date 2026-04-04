@@ -205,8 +205,9 @@ jobs:
       - name: Verify package installation
         run: |
           echo "🧪 Verifying package can be installed..."
+          IMPORT_NAME=$(echo "${{ env.PACKAGE_NAME }}" | tr '-' '_')
           uv pip install dist/*.whl --force-reinstall
-          uv run python -c "import sys; import importlib; pkg = importlib.import_module('${{ env.PACKAGE_NAME }}'); print(f'✅ Package installed successfully: ${{ env.PACKAGE_NAME }} {getattr(pkg, \"__version__\", \"unknown\")}')"
+          uv run python -c "import sys; import importlib; pkg = importlib.import_module('${IMPORT_NAME}'); print(f'✅ Package installed successfully: ${IMPORT_NAME} {getattr(pkg, \"__version__\", \"unknown\")}')"
           uv pip uninstall ${{ env.PACKAGE_NAME }}
 
       - name: Warn if pre-release
