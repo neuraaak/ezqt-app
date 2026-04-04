@@ -215,6 +215,8 @@ All `.qss` files in `bin/themes/` are loaded automatically at runtime in alphabe
     from ezqt_app import EzApplication  # correct
     ```
 
+### pyside6-rcc not found {#pyside6-rcc-not-found}
+
 ??? warning "`pyside6-rcc` not found"
     If `pyside6-rcc` is missing, `init()` raises a `ResourceCompilationError`:
 

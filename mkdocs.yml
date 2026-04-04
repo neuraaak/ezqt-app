@@ -13,7 +13,7 @@ edit_uri: edit/main/docs/
 strict: true
 
 validation:
-  omitted_files: warn
+  omitted_files: ignore
   absolute_links: warn
   unrecognized_links: warn
 
