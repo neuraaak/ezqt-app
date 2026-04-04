@@ -28,8 +28,7 @@ import pytest
 class MockEzQtApp:
     """Mock complet de l'application EzQt_App pour les tests d'intégration."""
 
-    def __init__(self, themeFileName=None):
-        self._themeFileName = themeFileName
+    def __init__(self):
         self.ui = MagicMock()
 
         # Mock des composants UI
@@ -223,32 +222,6 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_should_store_theme_filename_when_custom_theme_is_given(
-        self, qt_application, tmp_path
-    ):
-        """Test de l'application avec un thème personnalisé."""
-        # Créer un fichier de thème temporaire
-        theme_file = tmp_path / "custom_theme.qss"
-        theme_content = """
-        QMainWindow {
-            background-color: #2b2b2b;
-        }
-        """
-        theme_file.write_text(theme_content)
-
-        # Créer l'application avec le thème personnalisé et configuration temporaire
-        temp_yaml = create_temp_app_config()
-        try:
-            app = MockEzQtApp(themeFileName=str(theme_file))
-
-            # Vérifier que l'application a été créée
-            assert app is not None
-            assert hasattr(app, "_themeFileName")
-            assert app._themeFileName == str(theme_file)
-        finally:
-            if temp_yaml.exists():
-                temp_yaml.unlink()
-
     @pytest.mark.integration
     @pytest.mark.qt
     def test_should_have_window_properties_when_app_is_created(self, qt_application):
@@ -347,25 +320,6 @@ class TestAppFlow:
 
     @pytest.mark.integration
     @pytest.mark.qt
-    def test_should_emit_deprecation_when_theme_file_name_is_passed(
-        self, qt_application
-    ):
-        """Passing theme_file_name triggers a deprecation warning (param is ignored)."""
-        from unittest.mock import patch
-
-        from ezqt_app.app import EzQt_App
-
-        with (
-            patch("ezqt_app.app.AppService.load_fonts_resources"),
-            patch("ezqt_app.app.AppService.load_app_settings"),
-            patch("ezqt_app.app.get_config_service"),
-            patch("ezqt_app.app.warn_tech") as mock_warn,
-        ):
-            EzQt_App(theme_file_name="custom.qss")
-
-        mock_warn.assert_called_once()
-        assert "theme_file_name" in mock_warn.call_args.kwargs.get("code", "")
-
     @pytest.mark.integration
     @pytest.mark.qt
     def test_should_have_expected_dimensions_when_window_is_queried(
@@ -396,7 +350,7 @@ class TestAppFlow:
     @pytest.mark.integration
     @pytest.mark.qt
     def test_should_have_none_theme_when_no_theme_is_given(self, qt_application):
-        """Test de l'application sans thème personnalisé."""
+        """Test de l'application sans configuration de thème explicite."""
         # Créer l'application sans thème et avec configuration temporaire
         temp_yaml = create_temp_app_config()
         try:
@@ -404,7 +358,6 @@ class TestAppFlow:
 
             # Vérifier que l'application a été créée sans thème
             assert app is not None
-            assert app._themeFileName is None
         finally:
             if temp_yaml.exists():
                 temp_yaml.unlink()

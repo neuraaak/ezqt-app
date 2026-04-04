@@ -32,8 +32,6 @@ def test_should_expose_expected_commands_when_cli_is_loaded() -> None:
     expected_commands = {
         "init",
         "convert",
-        "mkqm",
-        "test",
         "docs",
         "info",
         "create",

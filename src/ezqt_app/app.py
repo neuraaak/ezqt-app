@@ -68,40 +68,17 @@ class EzQt_App(QMainWindow):
 
     def __init__(
         self,
-        theme_file_name: str | None = None,
-        **kwargs: Any,
     ) -> None:
         """
         Initialize the EzQt_App application.
 
         Args:
-            theme_file_name: Deprecated — no longer used.  All ``.qss`` files
-                placed under ``bin/themes/`` are now loaded automatically.
-                Passing a value emits a deprecation warning.
-            **kwargs: Backward compatibility for legacy arguments (e.g., themeFileName).
+            None.
         """
         QMainWindow.__init__(self)
         self._has_menu: bool = True
         self._has_settings_panel: bool = True
         self._ui_initialized: bool = False
-
-        # Deprecation: theme_file_name is no longer used
-        if theme_file_name is not None:
-            warn_tech(
-                code="app.deprecated_arg.theme_file_name",
-                message=(
-                    "Argument 'theme_file_name' is deprecated and has no effect. "
-                    "Place your .qss files in bin/themes/ — they are loaded automatically."
-                ),
-            )
-
-        # Handle backward compatibility
-        if "themeFileName" in kwargs:
-            warn_tech(
-                code="app.legacy_arg",
-                message="Argument 'themeFileName' is deprecated. Use 'theme_file_name' instead.",
-            )
-            kwargs.pop("themeFileName")
 
         # Load resources and settings
         AppService.load_fonts_resources()
@@ -578,64 +555,3 @@ class EzQt_App(QMainWindow):
                 message="Error during automatic string collection",
                 error=e,
             )
-
-    # ///////////////////////////////////////////////////////////////
-    # BACKWARD COMPATIBILITY ALIASES (DEPRECATED)
-    # ///////////////////////////////////////////////////////////////
-
-    def setAppTheme(self) -> None:
-        """
-        Deprecated alias for set_app_theme.
-        .. deprecated:: 1.0.0
-        """
-        warn_tech(
-            code="app.legacy_method",
-            message="Method 'setAppTheme' is deprecated. Use 'set_app_theme' instead.",
-        )
-        self.set_app_theme()
-
-    def updateUI(self) -> None:
-        """
-        Deprecated alias for update_ui.
-        .. deprecated:: 1.0.0
-        """
-        warn_tech(
-            code="app.legacy_method",
-            message="Method 'updateUI' is deprecated. Use 'update_ui' instead.",
-        )
-        self.update_ui()
-
-    def setAppIcon(
-        self, logo: str | QPixmap, y_shrink: int = 0, y_offset: int = 0
-    ) -> None:
-        """
-        Deprecated alias for set_app_icon.
-        .. deprecated:: 1.0.0
-        """
-        warn_tech(
-            code="app.legacy_method",
-            message="Method 'setAppIcon' is deprecated. Use 'set_app_icon' instead.",
-        )
-        self.set_app_icon(logo, y_shrink, y_offset)
-
-    def addMenu(self, name: str, icon: str) -> QWidget:
-        """
-        Deprecated alias for add_menu.
-        .. deprecated:: 1.0.0
-        """
-        warn_tech(
-            code="app.legacy_method",
-            message="Method 'addMenu' is deprecated. Use 'add_menu' instead.",
-        )
-        return self.add_menu(name, icon)
-
-    def switchMenu(self) -> None:
-        """
-        Deprecated alias for switch_menu.
-        .. deprecated:: 1.0.0
-        """
-        warn_tech(
-            code="app.legacy_method",
-            message="Method 'switchMenu' is deprecated. Use 'switch_menu' instead.",
-        )
-        self.switch_menu()

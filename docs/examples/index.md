@@ -123,10 +123,6 @@ window.show()
 sys.exit(app.exec())
 ```
 
-!!! warning "Deprecated argument"
-    `EzQt_App(theme_file_name=...)` still compiles but emits a deprecation
-    warning and has no effect. Remove it from your code.
-
 ## 💡 Read configuration at runtime
 
 ```python

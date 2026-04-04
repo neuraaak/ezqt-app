@@ -200,10 +200,6 @@ All `.qss` files in `bin/themes/` are loaded automatically at runtime in alphabe
 | `bin/themes/extended.qss`    | EzQt extended widgets    |
 | `bin/themes/global.qss`      | Standard Qt widgets      |
 
-!!! warning "Deprecated argument"
-    Passing `theme_file_name` to `EzQt_App()` still compiles but emits a
-    deprecation warning and has no effect. Remove it from your code.
-
 ---
 
 ## Troubleshooting
