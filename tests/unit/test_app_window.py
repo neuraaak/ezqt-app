@@ -164,35 +164,6 @@ class TestEzQtAppInstantiation:
         instance = _make_instance(qt_application)
         assert isinstance(instance, QMainWindow)
 
-    def test_should_emit_deprecation_when_theme_file_name_is_given(
-        self, qt_application
-    ) -> None:
-        """Passing theme_file_name emits a deprecation warning."""
-
-        def fake_setupUi(_self_ui: object, window: EzQt_App, **_kwargs: object) -> None:
-            window.ui = MagicMock()
-
-        with (
-            patch(_PATCHES["load_fonts"]),
-            patch(_PATCHES["load_settings"]),
-            patch(_PATCHES["config_svc"], return_value=_make_mock_config()),
-            patch(_PATCHES["settings_svc"], return_value=_make_mock_settings()),
-            patch(_PATCHES["translation_svc"], return_value=_make_mock_translation()),
-            patch(_PATCHES["fonts_init"]),
-            patch(_PATCHES["size_init"]),
-            patch(_PATCHES["theme_svc"]),
-            patch(_PATCHES["ui_def"]),
-            patch(_PATCHES["setupUi"], new=fake_setupUi),
-            patch("ezqt_app.app.warn_tech") as mock_warn,
-        ):
-            EzQt_App(theme_file_name="custom.qss")
-
-        mock_warn.assert_called_once()
-        call_kwargs = mock_warn.call_args
-        assert "theme_file_name" in call_kwargs.kwargs.get(
-            "code", call_kwargs.args[0] if call_kwargs.args else ""
-        )
-
 
 class TestEzQtAppMethods:
     """Tests for individual EzQt_App methods via a minimally-constructed instance."""

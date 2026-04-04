@@ -188,7 +188,6 @@ The project exposes a CLI via `ezqt`:
 ```bash
 ezqt info
 ezqt init --verbose
-ezqt test --unit --coverage
 ezqt docs --serve
 ```
 

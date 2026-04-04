@@ -14,7 +14,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ezqt-app"
-version = "5.5.3"
+version = "5.5.4"
 description = "Lightweight framework based on PySide6 to quickly build modern desktop applications, with integrated resource, theme, and reusable component management."
 readme = "README.md"
 requires-python = ">=3.11"

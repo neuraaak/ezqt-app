@@ -1,7 +1,7 @@
 # CLI reference
 
 `ezqt` is the command-line interface for **EzQt App**. It exposes project
-initialization, test execution, documentation serving, and utility commands.
+initialization, documentation serving, and utility commands.
 
 ## 💻 Usage
 
@@ -18,15 +18,13 @@ ezqt [OPTIONS] COMMAND [ARGS]...
 
 ## 📋 Commands
 
-| Command                               | Description                                               |
-| :------------------------------------ | :-------------------------------------------------------- |
-| [`init`](#ezqt-init)                  | Initialize project assets and configuration               |
-| [`create`](#ezqt-create)              | Create a new project from a template                      |
-| [`convert`](#ezqt-convert--ezqt-mkqm) | Convert translation `.ts` files to Qt binary `.qm` format |
-| [`mkqm`](#ezqt-convert--ezqt-mkqm)    | Alias for `convert`                                       |
-| [`test`](#ezqt-test)                  | Run the test suite                                        |
-| [`docs`](#ezqt-docs)                  | Serve the documentation locally                           |
-| [`info`](#ezqt-info)                  | Display package and runtime information                   |
+| Command                    | Description                                               |
+| :------------------------- | :-------------------------------------------------------- |
+| [`init`](#ezqt-init)       | Initialize project assets and configuration               |
+| [`create`](#ezqt-create)   | Create a new project from a template                      |
+| [`convert`](#ezqt-convert) | Convert translation `.ts` files to Qt binary `.qm` format |
+| [`docs`](#ezqt-docs)       | Serve the documentation locally                           |
+| [`info`](#ezqt-info)       | Display package and runtime information                   |
 
 <a id="ezqt-init"></a>
 
@@ -60,35 +58,17 @@ ezqt create [OPTIONS]
 | `--name`     | `-n`  | Project name   |
 | `--verbose`  | `-v`  | Verbose output |
 
-<a id="ezqt-convert--ezqt-mkqm"></a>
+<a id="ezqt-convert"></a>
 
-## 🔧 `ezqt convert` / `ezqt mkqm`
+## 🔧 `ezqt convert`
 
 Convert translation `.ts` files to Qt binary `.qm` format.
 
 ```bash
 ezqt convert
-ezqt mkqm
 ```
 
 No options.
-
-<a id="ezqt-test"></a>
-
-## 🔧 `ezqt test`
-
-Run the test suite.
-
-```bash
-ezqt test [OPTIONS]
-```
-
-| Option          | Short | Description                 |
-| :-------------- | :---- | :-------------------------- |
-| `--unit`        | `-u`  | Run unit tests              |
-| `--integration` | `-i`  | Run integration tests       |
-| `--coverage`    | `-c`  | Run with coverage reporting |
-| `--verbose`     | `-v`  | Verbose output              |
 
 <a id="ezqt-docs"></a>
 
@@ -137,9 +117,6 @@ ezqt init --force --no-main
 
 # Create a project from the basic template
 ezqt create --template basic --name my_app
-
-# Run unit tests with coverage
-ezqt test --unit --coverage
 
 # Serve documentation on a custom port
 ezqt docs --serve --port 8080

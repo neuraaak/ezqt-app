@@ -156,19 +156,18 @@ A simple application using the EzQt_App framework.
 
 import sys
 
-import ezqt_app.main as ezqt
-from ezqt_app.app import EzApplication, EzQt_App
+from ezqt_app import EzApplication, EzQt_App, init
 
 
 def main():
     """Main application entry point."""
-    ezqt.init()
+    init()
 
     app = EzApplication(sys.argv)
-    window = EzQt_App(themeFileName="main_theme.qss")
+    window = EzQt_App()
 
-    window.addMenu("Home", "home")
-    window.addMenu("Settings", "settings")
+    window.add_menu("Home", "home")
+    window.add_menu("Settings", "settings")
 
     window.show()
     app.exec()
@@ -270,8 +269,7 @@ and advanced features.
 
 import sys
 
-import ezqt_app.main as ezqt
-from ezqt_app.app import EzApplication, EzQt_App
+from ezqt_app import EzApplication, EzQt_App, init
 from ezqt_app.services.translation import tr
 
 from src.widgets.custom_widget import CustomWidget
@@ -282,19 +280,19 @@ class AdvancedApplication:
 
     def __init__(self):
         """Initialize the advanced application."""
-        ezqt.init()
+        init()
 
         self.app = EzApplication(sys.argv)
-        self.window = EzQt_App(themeFileName="main_theme.qss")
+        self.window = EzQt_App()
 
         self.setup_application()
 
     def setup_application(self):
         """Setup the application with custom features."""
-        self.home_page = self.window.addMenu("Home", "home")
-        self.dashboard_page = self.window.addMenu("Dashboard", "chart")
-        self.settings_page = self.window.addMenu("Settings", "settings")
-        self.help_page = self.window.addMenu("Help", "help")
+        self.home_page = self.window.add_menu("Home", "home")
+        self.dashboard_page = self.window.add_menu("Dashboard", "chart")
+        self.settings_page = self.window.add_menu("Settings", "settings")
+        self.help_page = self.window.add_menu("Help", "help")
 
         self.setup_home_page()
         self.setup_dashboard_page()
