@@ -71,9 +71,6 @@ class EzQt_App(QMainWindow):
     ) -> None:
         """
         Initialize the EzQt_App application.
-
-        Args:
-            None.
         """
         QMainWindow.__init__(self)
         self._has_menu: bool = True
