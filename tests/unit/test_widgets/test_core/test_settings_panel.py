@@ -211,6 +211,57 @@ class TestSettingsPanel:
 
         panel._sync_theme_selector_with_settings.assert_called_once()
 
+    def test_should_load_non_theme_settings_with_full_app_payload(
+        self, qt_application, monkeypatch
+    ):
+        class _FakeConfigService:
+            def load_config(self, _name: str, force_reload: bool = True):
+                return {
+                    "app": {
+                        "name": "MyApplication",
+                        "description": "This is an example description",
+                        "app_width": 1280,
+                        "app_min_width": 940,
+                        "app_height": 720,
+                        "app_min_height": 560,
+                        "debug_printer": False,
+                        "menu_panel_shrinked_width": 60,
+                        "menu_panel_extended_width": 240,
+                        "settings_panel_width": 240,
+                        "time_animation": 400,
+                        "settings_storage_root": "settings_panel",
+                        "config_version": 1,
+                    },
+                    "settings_panel": {
+                        "theme": {
+                            "type": "select",
+                            "label": "Active Theme",
+                            "default": "blue-gray:dark",
+                            "description": "Choose the application theme",
+                            "enabled": True,
+                        },
+                        "language": {
+                            "type": "select",
+                            "label": "Language",
+                            "options": ["English", "Français"],
+                            "default": "English",
+                            "description": "Interface language",
+                            "enabled": True,
+                        },
+                    },
+                }
+
+        monkeypatch.setattr(
+            config_module,
+            "get_config_service",
+            lambda: _FakeConfigService(),
+        )
+
+        panel = SettingsPanel(load_from_yaml=False)
+        panel.load_settings_from_yaml()
+
+        assert "language" in panel._settings
+
 
 class TestSettingsPanelAdditionalCoverage:
     """Additional coverage tests for SettingsPanel helper methods."""
