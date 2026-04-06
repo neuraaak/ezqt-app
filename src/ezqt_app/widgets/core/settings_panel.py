@@ -57,6 +57,7 @@ class _SettingsPanelConfigSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    app: dict[str, Any] | None = None
     settings_panel: dict[str, _SettingsPanelOptionSchema] = {}
 
 
