@@ -39,7 +39,10 @@ def _mock_config() -> MagicMock:
     """Create a mock config service with default app/translation settings."""
     mock = MagicMock()
     mock.load_config.return_value = {
-        "app": {"theme": "dark", "language": "en"},
+        "settings_panel": {
+            "theme": {"default": "dark"},
+            "language": {"default": "en"},
+        },
         "translation": {"collect_strings": False},
     }
     return mock

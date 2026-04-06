@@ -5,13 +5,14 @@ goal and assumes you have already completed [Getting Started](../getting-started
 
 ## 📚 Available guides
 
-| Guide                                 | Description                                                 | Level        |
-| :------------------------------------ | :---------------------------------------------------------- | :----------- |
-| [Modular UI](modular-ui.md)           | Enable or disable core UI components with the fluent API    | Beginner     |
-| [QSS style guide](style-guide.md)     | Visual customization with Qt stylesheets                    | Beginner     |
-| [Qt resources pipeline](resources.md) | Asset generation, `AppIcons`/`AppImages`, custom `bin_path` | Intermediate |
-| [Development guide](development.md)   | Development workflow, tooling, and contribution setup       | Intermediate |
-| [Testing guide](testing.md)           | Test suite scopes, fixtures, markers, and coverage          | Advanced     |
+| Guide                                              | Description                                                 | Level        |
+| :------------------------------------------------- | :---------------------------------------------------------- | :----------- |
+| [Modular UI](modular-ui.md)                        | Enable or disable core UI components with the fluent API    | Beginner     |
+| [Logging integration](how-to-integrate-logging.md) | Configure ezplog hooks for ezqt_app library logs            | Intermediate |
+| [QSS style guide](style-guide.md)                  | Visual customization with Qt stylesheets                    | Beginner     |
+| [Qt resources pipeline](resources.md)              | Asset generation, `AppIcons`/`AppImages`, custom `bin_path` | Intermediate |
+| [Development guide](development.md)                | Development workflow, tooling, and contribution setup       | Intermediate |
+| [Testing guide](testing.md)                        | Test suite scopes, fixtures, markers, and coverage          | Advanced     |
 
 ## 🔧 Quick links
 
@@ -24,6 +25,7 @@ goal and assumes you have already completed [Getting Started](../getting-started
 ### For developers
 
 - [Development guide](development.md) — tooling, pre-commit hooks, and architecture notes
+- [Logging integration](how-to-integrate-logging.md) — ezplog hook strategy for library logs
 - [Testing guide](testing.md) — run tests, write fixtures, use markers
 - [API Reference](../api/index.md) — full service and widget API
 

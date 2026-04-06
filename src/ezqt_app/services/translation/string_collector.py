@@ -16,11 +16,21 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+# Third-party imports
+from pydantic import RootModel, ValidationError
+
 # Local imports
 from ...domain.models.translation import SUPPORTED_LANGUAGES
 from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
 from ._scanner import is_translatable, scan_widget
+
+
+# ///////////////////////////////////////////////////////////////
+# PYDANTIC SCHEMAS
+# ///////////////////////////////////////////////////////////////
+class _TranslationTasksSchema(RootModel[dict[str, dict[str, list[str]]]]):
+    """Strict schema for translation_tasks.json payload."""
 
 
 # ///////////////////////////////////////////////////////////////
@@ -174,18 +184,28 @@ class StringCollector:
     def generate_translation_tasks(
         self, language_detected: list[tuple[str, str]]
     ) -> dict[str, Any]:
-        tasks: dict[str, Any] = {}
+        tasks: dict[str, dict[str, list[str]]] = {}
         supported = self.get_supported_languages()
         for source_lang, text in language_detected:
             tasks.setdefault(source_lang, {})
             for target_lang in (lang for lang in supported if lang != source_lang):
                 tasks[source_lang].setdefault(target_lang, []).append(text)
         try:
+            validated = _TranslationTasksSchema.model_validate(tasks)
             with open(self.translation_tasks_file, "w", encoding="utf-8") as f:
-                json.dump(tasks, f, indent=2, ensure_ascii=False)
+                json.dump(
+                    validated.model_dump(mode="json"), f, indent=2, ensure_ascii=False
+                )
             get_printer().debug_msg(
                 f"[TranslationService] {len(tasks)} translation tasks generated"
             )
+        except ValidationError as e:
+            warn_tech(
+                code="translation.collector.save_tasks_validation_failed",
+                message="Invalid translation tasks payload",
+                error=e,
+            )
+            return {}
         except Exception as e:
             warn_tech(
                 code="translation.collector.save_tasks_failed",

@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 
 # Third-party imports
-from ezpl import Ezpl
+from ezplog.lib_mode import get_logger
 
 # Local imports
 from ...domain.results import InitResult
@@ -28,7 +28,7 @@ from .startup_config import StartupConfig
 # ///////////////////////////////////////////////////////////////
 # CLASSES
 # ///////////////////////////////////////////////////////////////
-_logger = Ezpl().get_logger()
+_logger = get_logger("ezqt_app.bootstrap.initializer")
 
 
 class Initializer:

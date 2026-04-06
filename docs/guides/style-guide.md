@@ -30,7 +30,8 @@ Additional sources:
 ## 🎨 Theme previews
 
 The three built-in themes ship with a color palette preview.
-Select a theme in the settings panel at runtime, or set `THEME` in `bin/config/app.config.yaml`.
+Select a theme in the settings panel at runtime, or set `settings_panel.theme.default`
+in `bin/config/app.config.yaml`.
 
 ### Blue Gray
 

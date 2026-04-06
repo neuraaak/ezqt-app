@@ -112,6 +112,13 @@ filesystem at runtime.
 This reduces the compiled resource size and avoids stale embedded copies
 diverging from the user's project files.
 
+## ⚠️ Configuration strictness
+
+Configuration files loaded from disk are now validated with strict schemas on
+known sections. Keep project config keys aligned with the shipped templates.
+
+For theme defaults, set `settings_panel.theme.default` in `app.config.yaml`.
+
 ## 📝 Custom `bin_path`
 
 By default `init()` writes all generated assets to `<project_root>/bin/`.

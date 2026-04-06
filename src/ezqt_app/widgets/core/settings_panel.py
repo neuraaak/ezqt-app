@@ -13,6 +13,8 @@ from __future__ import annotations
 # Standard library imports
 from typing import Any, cast
 
+from pydantic import BaseModel, ConfigDict, ValidationError
+
 # Third-party imports
 from PySide6.QtCore import QEvent, QSize, Qt, Signal
 from PySide6.QtWidgets import (
@@ -29,6 +31,33 @@ from ...services.settings import get_settings_service
 from ...services.translation import get_translation_service
 from ...services.ui import Fonts
 from ...utils.diagnostics import warn_tech
+
+
+# ///////////////////////////////////////////////////////////////
+# PYDANTIC SCHEMAS
+# ///////////////////////////////////////////////////////////////
+class _SettingsPanelOptionSchema(BaseModel):
+    """Schema for one settings panel option."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: str = "text"
+    label: str | None = None
+    description: str = ""
+    default: Any = None
+    enabled: bool = True
+    options: list[str] = []
+    min: int | None = None
+    max: int | None = None
+    unit: str | None = None
+
+
+class _SettingsPanelConfigSchema(BaseModel):
+    """Schema for the settings_panel section in app config."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    settings_panel: dict[str, _SettingsPanelOptionSchema] = {}
 
 
 # ///////////////////////////////////////////////////////////////
@@ -218,44 +247,31 @@ class SettingsPanel(QFrame):
     def load_settings_from_yaml(self) -> None:
         """Load settings from YAML file."""
         try:
-            from pathlib import Path
+            from ...services.config import get_config_service
 
-            import yaml
+            app_config = get_config_service().load_config("app", force_reload=True)
+            if not isinstance(app_config, dict):
+                app_config = {}
 
-            possible_paths = [
-                Path.cwd() / "bin" / "config" / "app.config.yaml",
-                Path(__file__).parent.parent.parent
-                / "resources"
-                / "config"
-                / "app.config.yaml",
-            ]
+            validated = _SettingsPanelConfigSchema.model_validate(app_config)
 
-            app_config = None
-            for path in possible_paths:
-                if path.exists():
-                    with open(path, encoding="utf-8") as f:
-                        app_config = yaml.safe_load(f)
-                    break
-
-            if app_config is None:
-                warn_tech(
-                    code="widgets.settings_panel.app_config_yaml_not_found",
-                    message="Could not find app.config.yaml file",
-                )
-                return
-
-            settings_config = app_config.get("settings_panel", {})
-
-            for key, config in settings_config.items():
+            for key, config_model in validated.settings_panel.items():
                 if key == "theme":
                     continue
 
-                if config.get("enabled", True):
+                if config_model.enabled:
+                    config = config_model.model_dump(mode="python", exclude_none=True)
                     widget = self.add_setting_from_config(key, config)
-                    default_value = config.get("default")
+                    default_value = config_model.default
                     if default_value is not None and hasattr(widget, "set_value"):
                         cast(Any, widget).set_value(default_value)
 
+        except ValidationError as e:
+            warn_tech(
+                code="widgets.settings_panel.load_yaml_validation_failed",
+                message="Invalid settings panel configuration payload",
+                error=e,
+            )
         except Exception as e:
             warn_tech(
                 code="widgets.settings_panel.load_yaml_failed",

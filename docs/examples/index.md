@@ -126,12 +126,17 @@ sys.exit(app.exec())
 ## 💡 Read configuration at runtime
 
 ```python
-from ezqt_app.services.settings import get_settings_service
+from ezqt_app.services.config import get_config_service
 
-settings = get_settings_service()
-theme = settings.get("theme", default="dark")
-language = settings.get("language", default="en")
+config = get_config_service().load_config("app")
+theme = config["settings_panel"]["theme"]["default"]
+language = config["settings_panel"]["language"]["default"]
 ```
+
+!!! warning "Strict validation applies"
+    Config payloads are validated with strict schemas when saved, and core runtime
+    loading paths also validate known sections. Keep keys aligned with the shipped
+    config contracts.
 
 ## 💡 Full app with pages and language switch
 

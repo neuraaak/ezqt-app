@@ -481,9 +481,7 @@ class EzQt_App(QMainWindow):
 
         try:
             app_config = self._config_service.load_config("app")
-            app_defaults = app_config.get("app", {})
-            fallback_theme = str(app_defaults.get("theme", "dark"))
-            _theme = self._get_setting_default(app_config, "theme", fallback_theme)
+            _theme = self._get_setting_default(app_config, "theme", "dark")
             _theme = _theme.lower()
         except Exception as e:
             warn_tech(

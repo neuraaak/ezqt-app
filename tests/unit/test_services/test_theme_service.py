@@ -10,7 +10,11 @@ from __future__ import annotations
 # ///////////////////////////////////////////////////////////////
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
+from pathlib import Path
+from typing import cast
+
 # Local imports
+from ezqt_app.domain.ports.main_window import MainWindowProtocol
 from ezqt_app.services.ui.theme_service import ThemeService
 
 
@@ -164,3 +168,116 @@ class TestThemeServiceGetAvailableThemes:
         options = ThemeService.get_available_themes()
 
         assert options == []
+
+
+class TestThemeServiceApplyAndLoad:
+    """Tests for ThemeService.apply_theme and theme file loading branches."""
+
+    def test_should_apply_resolved_stylesheet_on_window(self, monkeypatch) -> None:
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        class _FakeSettings:
+            class gui:  # noqa: N801
+                THEME_PRESET = "blue-gray"
+                THEME = "dark"
+
+        class _FakeConfigService:
+            def load_config(self, _name: str):
+                return {
+                    "palette": {"blue-gray": {"dark": {"main_surface": "rgb(1, 2, 3)"}}}
+                }
+
+        class _FakeStyleSheet:
+            def __init__(self) -> None:
+                self.value = ""
+
+            def setStyleSheet(self, value: str) -> None:  # noqa: N802
+                self.value = value
+
+        class _FakeUi:
+            def __init__(self) -> None:
+                self.style_sheet = _FakeStyleSheet()
+
+        class _FakeWindow:
+            def __init__(self) -> None:
+                self.ui = _FakeUi()
+
+        monkeypatch.setattr(ts_module, "get_settings_service", lambda: _FakeSettings())
+        monkeypatch.setattr(
+            ts_module, "get_config_service", lambda: _FakeConfigService()
+        )
+        monkeypatch.setattr(
+            ts_module,
+            "_load_themes_content",
+            lambda: "QWidget { background: var(--main_surface); }",
+            raising=False,
+        )
+        monkeypatch.setattr(
+            ts_module.ThemeService,
+            "_load_themes_content",
+            staticmethod(lambda: "QWidget { background: var(--main_surface); }"),
+        )
+
+        window = _FakeWindow()
+        ThemeService.apply_theme(cast(MainWindowProtocol, window))
+
+        assert "rgb(1, 2, 3)" in window.ui.style_sheet.value
+        assert window.ui.style_sheet.value.endswith("\n")
+
+    def test_should_load_local_themes_and_skip_qtstrap(
+        self, tmp_path: Path, monkeypatch
+    ) -> None:
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        local_themes = tmp_path / "bin" / "themes"
+        local_themes.mkdir(parents=True)
+        (local_themes / "b.qss").write_text("B", encoding="utf-8")
+        (local_themes / "a.qss").write_text("A", encoding="utf-8")
+        (local_themes / "qtstrap.qss").write_text("SKIP", encoding="utf-8")
+
+        monkeypatch.setattr(ts_module, "get_bin_path", lambda: tmp_path / "bin")
+
+        merged = ThemeService._load_themes_content()
+
+        assert merged == "A\n\nB"
+
+    def test_should_fallback_to_package_themes_when_local_is_empty(
+        self, tmp_path: Path, monkeypatch
+    ) -> None:
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        fake_module_file = (
+            tmp_path / "pkg" / "ezqt_app" / "services" / "ui" / "theme_service.py"
+        )
+        fake_module_file.parent.mkdir(parents=True, exist_ok=True)
+        fake_module_file.write_text("# fake", encoding="utf-8")
+
+        package_themes = tmp_path / "pkg" / "ezqt_app" / "resources" / "themes"
+        package_themes.mkdir(parents=True)
+        (package_themes / "theme.qss").write_text("PKG", encoding="utf-8")
+
+        monkeypatch.setattr(ts_module, "get_bin_path", lambda: tmp_path / "missing_bin")
+        monkeypatch.setattr(ts_module, "__file__", str(fake_module_file))
+
+        merged = ThemeService._load_themes_content()
+
+        assert merged == "PKG"
+
+    def test_should_raise_file_not_found_when_no_qss_files_exist(
+        self, tmp_path: Path, monkeypatch
+    ) -> None:
+        import ezqt_app.services.ui.theme_service as ts_module
+
+        fake_module_file = (
+            tmp_path / "pkg" / "ezqt_app" / "services" / "ui" / "theme_service.py"
+        )
+        fake_module_file.parent.mkdir(parents=True, exist_ok=True)
+        fake_module_file.write_text("# fake", encoding="utf-8")
+
+        monkeypatch.setattr(ts_module, "get_bin_path", lambda: tmp_path / "missing_bin")
+        monkeypatch.setattr(ts_module, "__file__", str(fake_module_file))
+
+        import pytest
+
+        with pytest.raises(FileNotFoundError):
+            ThemeService._load_themes_content()

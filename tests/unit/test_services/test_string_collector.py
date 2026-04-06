@@ -167,3 +167,94 @@ class TestCollectStringsFromWidget:
             if isinstance(result, list)
             else len([s for s in result if s == "Open File"]) == 1
         )
+
+
+class TestStringCollectorWorkflows:
+    """Tests for persistence and workflow helpers in StringCollector."""
+
+    def test_should_generate_translation_tasks_file_when_languages_are_detected(
+        self, tmp_path: Path
+    ) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+
+        tasks = collector.generate_translation_tasks(
+            [
+                ("en", "Hello"),
+                ("fr", "Bonjour"),
+            ]
+        )
+
+        assert collector.translation_tasks_file.exists()
+        assert "en" in tasks
+        assert "fr" in tasks
+
+    def test_should_save_and_reload_processed_strings(self, tmp_path: Path) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+        collector.mark_strings_as_processed({"Hello", "Open settings"})
+
+        loaded = collector.load_processed_strings()
+        assert "Hello" in loaded
+        assert "Open settings" in loaded
+
+    def test_should_return_empty_processed_set_when_file_missing(
+        self, tmp_path: Path
+    ) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+        loaded = collector.load_processed_strings()
+        assert loaded == set()
+
+    def test_should_collect_compare_and_expose_stats(self, tmp_path: Path) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+        widget = MagicMock()
+
+        stats = collector.collect_and_compare(widget, recursive=False)
+
+        assert "total_collected" in stats
+        assert "new_strings" in stats
+        report = collector.get_stats()
+        assert "translation_tasks_file" in report
+
+    def test_should_clear_internal_cache_sets(self, tmp_path: Path) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+        collector._collected_strings.update({"A"})
+        collector._new_strings.update({"B"})
+        collector._language_detected_strings.append(("en", "Hello"))
+
+        collector.clear_cache()
+
+        assert collector._collected_strings == set()
+        assert collector._new_strings == set()
+        assert collector._language_detected_strings == []
+
+    def test_should_fallback_to_simple_detection_when_langdetect_missing(
+        self, tmp_path: Path, monkeypatch
+    ) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+
+        real_import = __import__
+
+        def _fake_import(name, *args, **kwargs):
+            if name == "langdetect":
+                raise ImportError("missing")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr("builtins.__import__", _fake_import)
+
+        assert collector._detect_language("Bonjour à tous") == "fr"
+
+    def test_should_warn_when_mark_processed_called_with_no_strings(
+        self, tmp_path: Path, monkeypatch
+    ) -> None:
+        collector = StringCollector(user_dir=tmp_path)
+        warned: dict[str, bool] = {"called": False}
+
+        def _fake_warn_user(**_kwargs):
+            warned["called"] = True
+
+        monkeypatch.setattr(
+            "ezqt_app.services.translation.string_collector.warn_user", _fake_warn_user
+        )
+
+        collector.mark_strings_as_processed(set())
+
+        assert warned["called"] is True

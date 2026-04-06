@@ -130,7 +130,6 @@ def info_command() -> None:
             deps_table.add_row("rich", getattr(rich, "__version__", "unknown"))
             deps_table.add_row("click", _get_version("click"))
             deps_table.add_row("PyYAML", _get_version("PyYAML"))
-            deps_table.add_row("ezplog", _get_version("ezplog"))
 
             console.print("\n")
             console.print(deps_table)

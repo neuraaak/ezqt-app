@@ -13,18 +13,122 @@ from __future__ import annotations
 # Standard library imports
 import shutil
 import sys
+from collections.abc import Mapping, MutableMapping
 from importlib.resources import files as _pkg_files
 from pathlib import Path
 from typing import Any
 
-# Third-party imports
 import yaml
+from pydantic import BaseModel, ConfigDict, ValidationError
+
+# Third-party imports
+from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
 
 # Local imports
 from ...domain.ports.config_service import ConfigServiceProtocol
 from ...utils.diagnostics import warn_user
 from ...utils.printer import get_printer
 from ...utils.runtime_paths import APP_PATH, get_bin_path
+
+
+# ///////////////////////////////////////////////////////////////
+# PYDANTIC VALIDATION MODELS
+# ///////////////////////////////////////////////////////////////
+class _AppSectionSchema(BaseModel):
+    """Validation schema for the ``app`` section in app config."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str | None = None
+    description: str | None = None
+    app_width: int | None = None
+    app_min_width: int | None = None
+    app_height: int | None = None
+    app_min_height: int | None = None
+    debug_printer: bool | None = None
+    menu_panel_shrinked_width: int | None = None
+    menu_panel_extended_width: int | None = None
+    settings_panel_width: int | None = None
+    time_animation: int | None = None
+    settings_storage_root: str | None = None
+    config_version: int | None = None
+
+
+class _SettingsPanelOptionSchema(BaseModel):
+    """Validation schema for one settings panel entry."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: str | None = None
+    label: str | None = None
+    default: Any = None
+    description: str | None = None
+    enabled: bool | None = None
+    options: list[str] | None = None
+    min: int | None = None
+    max: int | None = None
+    unit: str | None = None
+
+
+class _AppConfigSchema(BaseModel):
+    """Validation schema for ``app.config.yaml`` payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    app: _AppSectionSchema | None = None
+    settings_panel: dict[str, _SettingsPanelOptionSchema] | None = None
+
+
+class _TranslationSectionSchema(BaseModel):
+    """Validation schema for the ``translation`` section."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    collect_strings: bool | None = None
+    auto_translation_enabled: bool | None = None
+    auto_translate_new_strings: bool | None = None
+    save_to_ts_files: bool | None = None
+    cache_translations: bool | None = None
+    max_cache_age_days: int | None = None
+
+
+class _LanguageDetectionSectionSchema(BaseModel):
+    """Validation schema for the ``language_detection`` section."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    auto_detect_language: bool | None = None
+    confidence_threshold: float | None = None
+
+
+class _SupportedLanguageSchema(BaseModel):
+    """Validation schema for one supported language entry."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    code: str
+    name: str
+    native_name: str
+    description: str
+
+
+class _TranslationConfigSchema(BaseModel):
+    """Validation schema for ``translation.config.yaml`` payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    translation: _TranslationSectionSchema | None = None
+    language_detection: _LanguageDetectionSectionSchema | None = None
+    supported_languages: list[_SupportedLanguageSchema] | None = None
+
+
+class _ThemeConfigSchema(BaseModel):
+    """Validation schema for ``theme.config.yaml`` payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    palette: dict[str, Any]
 
 
 # ///////////////////////////////////////////////////////////////
@@ -37,6 +141,10 @@ class ConfigService(ConfigServiceProtocol):
         self._config_cache: dict[str, Any] = {}
         self._config_files: dict[str, Path] = {}
         self._project_root: Path | None = None
+        self._yaml_writer = YAML(typ="rt")
+        self._yaml_writer.preserve_quotes = True
+        self._yaml_writer.default_flow_style = False
+        self._yaml_writer.indent(mapping=2, sequence=4, offset=2)
 
     # -----------------------------------------------------------
     # Port methods (ConfigServiceProtocol)
@@ -129,6 +237,10 @@ class ConfigService(ConfigServiceProtocol):
     def save_config(self, config_name: str, config_data: dict[str, Any]) -> bool:
         """Persist a named configuration to the project directory.
 
+        Writes use ``ruamel.yaml`` round-trip mode to preserve existing comments,
+        key ordering, and formatting whenever the target file already exists.
+        Configuration reads stay on ``PyYAML`` for the current typed read path.
+
         Parameters
         ----------
         config_name:
@@ -152,8 +264,23 @@ class ConfigService(ConfigServiceProtocol):
             config_file = config_dir / f"{config_name}.config.yaml"
 
         try:
+            if not self._validate_config_payload(config_name, config_data):
+                return False
+
+            existing_doc: MutableMapping[str, Any] | None = None
+            if config_file.exists():
+                with open(config_file, encoding="utf-8") as f:
+                    loaded_doc = self._yaml_writer.load(f)
+                if isinstance(loaded_doc, MutableMapping):
+                    existing_doc = loaded_doc
+
+            if existing_doc is None:
+                payload: MutableMapping[str, Any] = self._to_yaml_mapping(config_data)
+            else:
+                payload = self._merge_yaml_mapping(existing_doc, config_data)
+
             with open(config_file, "w", encoding="utf-8") as f:
-                yaml.dump(config_data, f, default_flow_style=False, allow_unicode=True)
+                self._yaml_writer.dump(payload, f)
 
             self._config_cache[config_name] = config_data
             self._config_files[config_name] = config_file
@@ -166,6 +293,83 @@ class ConfigService(ConfigServiceProtocol):
         except Exception as e:
             get_printer().error(f"Error saving '{config_name}': {e}")
             return False
+
+    def _validate_config_payload(
+        self, config_name: str, config_data: dict[str, Any]
+    ) -> bool:
+        """Validate known configuration payloads with permissive Pydantic schemas."""
+        schema_map: dict[str, type[BaseModel]] = {
+            "app": _AppConfigSchema,
+            "translation": _TranslationConfigSchema,
+            "theme": _ThemeConfigSchema,
+        }
+
+        schema = schema_map.get(config_name)
+        if schema is None:
+            return True
+
+        try:
+            schema.model_validate(config_data)
+            return True
+        except ValidationError as exc:
+            warn_user(
+                code="config.service.validation_failed",
+                user_message=(
+                    f"Invalid '{config_name}' configuration; file was not written."
+                ),
+                log_message=(
+                    f"Validation failed for '{config_name}' configuration: {exc}"
+                ),
+            )
+            get_printer().error(
+                f"Validation failed for '{config_name}' configuration: {exc}"
+            )
+            return False
+
+    def _to_yaml_mapping(self, value: Mapping[str, Any]) -> CommentedMap:
+        """Convert a standard mapping to a ruamel-compatible ``CommentedMap``."""
+        converted = CommentedMap()
+        for key, item in value.items():
+            converted[key] = self._to_yaml_value(item)
+        return converted
+
+    def _to_yaml_value(self, value: Any) -> Any:
+        """Recursively convert Python containers to ruamel round-trip containers."""
+        if isinstance(value, Mapping):
+            return self._to_yaml_mapping(value)
+        if isinstance(value, list):
+            return [self._to_yaml_value(item) for item in value]
+        return value
+
+    def _merge_yaml_mapping(
+        self,
+        target: MutableMapping[str, Any],
+        source: Mapping[str, Any],
+    ) -> MutableMapping[str, Any]:
+        """Merge ``source`` values into ``target`` while preserving YAML metadata."""
+        for existing_key in list(target.keys()):
+            if existing_key not in source:
+                del target[existing_key]
+
+        for key, source_value in source.items():
+            current_value = target.get(key)
+            if isinstance(source_value, Mapping) and isinstance(
+                current_value, MutableMapping
+            ):
+                target[key] = self._merge_yaml_mapping(current_value, source_value)
+                continue
+
+            if isinstance(source_value, Mapping):
+                target[key] = self._to_yaml_mapping(source_value)
+                continue
+
+            if isinstance(source_value, list):
+                target[key] = [self._to_yaml_value(item) for item in source_value]
+                continue
+
+            target[key] = source_value
+
+        return target
 
     # -----------------------------------------------------------
     # Implementation-specific methods
