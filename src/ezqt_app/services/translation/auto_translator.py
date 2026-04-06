@@ -22,11 +22,61 @@ from typing import Any
 
 # Third-party imports
 import requests
+from pydantic import BaseModel, ConfigDict, RootModel, ValidationError
 from PySide6.QtCore import QObject, Signal
 
 # Local imports
 from ...utils.diagnostics import warn_tech, warn_user
 from ...utils.printer import get_printer
+
+
+# ///////////////////////////////////////////////////////////////
+# PYDANTIC RESPONSE SCHEMAS
+# ///////////////////////////////////////////////////////////////
+class _LibreTranslateResponseSchema(BaseModel):
+    """Expected response payload for LibreTranslate provider."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    translatedText: str
+
+
+class _GoogleTranslateResponseSchema(RootModel[list[Any]]):
+    """Root response payload for Google Translate unofficial endpoint."""
+
+
+class _MyMemoryResponseDataSchema(BaseModel):
+    """Nested MyMemory response data payload."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    translatedText: str | None = None
+
+
+class _MyMemoryResponseSchema(BaseModel):
+    """Expected response payload for MyMemory provider."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    responseStatus: int
+    responseData: _MyMemoryResponseDataSchema | None = None
+
+
+class _TranslationCacheEntrySchema(BaseModel):
+    """Strict schema for one translation cache entry."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    original: str
+    translation: str
+    source_lang: str
+    target_lang: str
+    provider: str
+    created: datetime
+
+
+class _TranslationCacheFileSchema(RootModel[dict[str, _TranslationCacheEntrySchema]]):
+    """Strict schema for translation cache file content."""
 
 
 # ///////////////////////////////////////////////////////////////
@@ -82,25 +132,18 @@ class LibreTranslateProvider(TranslationProvider):
                 timeout=self.timeout,
             )
             if response.status_code == 200:
-                return response.json().get("translatedText")
-            if self.base_url == "https://libretranslate.com":
-                warn_user(
-                    code="translation.provider.libretranslate.http_error",
-                    user_message=(
-                        f"LibreTranslate error: {response.status_code}, "
-                        "trying alternative server"
-                    ),
-                    log_message=(
-                        f"LibreTranslate error: {response.status_code}, "
-                        "trying alternative server"
-                    ),
-                )
-                return LibreTranslateProvider(
-                    custom_server="https://translate.argosopentech.com"
-                ).translate(text, source_lang, target_lang)
+                payload = _LibreTranslateResponseSchema.model_validate(response.json())
+                return payload.translatedText
             warn_tech(
                 code="translation.provider.libretranslate.http_error",
                 message=f"LibreTranslate error: {response.status_code}",
+            )
+            return None
+        except ValidationError as e:
+            warn_tech(
+                code="translation.provider.libretranslate.invalid_payload",
+                message="LibreTranslate returned an invalid payload",
+                error=e,
             )
             return None
         except Exception as e:
@@ -133,14 +176,35 @@ class GoogleTranslateProvider(TranslationProvider):
                 timeout=self.timeout,
             )
             if response.status_code == 200:
-                data = response.json()
-                if data and len(data) > 0 and len(data[0]) > 0:
-                    return data[0][0][0]
+                payload = _GoogleTranslateResponseSchema.model_validate(response.json())
+                data = payload.root
+                if (
+                    data
+                    and len(data) > 0
+                    and isinstance(data[0], list)
+                    and len(data[0]) > 0
+                ):
+                    first_entry = data[0][0]
+                    if isinstance(first_entry, list) and first_entry:
+                        translated = first_entry[0]
+                        if isinstance(translated, str):
+                            return translated
+
+                warn_tech(
+                    code="translation.provider.google.invalid_payload",
+                    message="Google Translate returned an unexpected payload shape",
+                )
             else:
                 warn_tech(
                     code="translation.provider.google.http_error",
                     message=f"Google Translate error: {response.status_code}",
                 )
+        except ValidationError as e:
+            warn_tech(
+                code="translation.provider.google.invalid_payload",
+                message="Google Translate returned an invalid payload",
+                error=e,
+            )
         except Exception as e:
             warn_tech(
                 code="translation.provider.google.exception",
@@ -164,14 +228,20 @@ class MyMemoryProvider(TranslationProvider):
                 timeout=self.timeout,
             )
             if response.status_code == 200:
-                data = response.json()
-                if data.get("responseStatus") == 200:
-                    return data.get("responseData", {}).get("translatedText")
+                payload = _MyMemoryResponseSchema.model_validate(response.json())
+                if payload.responseStatus == 200 and payload.responseData is not None:
+                    return payload.responseData.translatedText
             else:
                 warn_tech(
                     code="translation.provider.mymemory.http_error",
                     message=f"MyMemory error: {response.status_code}",
                 )
+        except ValidationError as e:
+            warn_tech(
+                code="translation.provider.mymemory.invalid_payload",
+                message="MyMemory returned an invalid payload",
+                error=e,
+            )
         except Exception as e:
             warn_tech(
                 code="translation.provider.mymemory.exception",
@@ -197,11 +267,16 @@ class TranslationCache:
 
     def get(self, text: str, source_lang: str, target_lang: str) -> str | None:
         key = self._get_cache_key(text, source_lang, target_lang)
-        entry = self.cache_data.get(key)
-        if entry:
-            created_time = datetime.fromisoformat(entry["created"])
-            if datetime.now() - created_time < timedelta(days=self.max_age_days):
-                return entry["translation"]
+        entry_raw = self.cache_data.get(key)
+        if entry_raw:
+            try:
+                entry = _TranslationCacheEntrySchema.model_validate(entry_raw)
+            except ValidationError:
+                del self.cache_data[key]
+                return None
+
+            if datetime.now() - entry.created < timedelta(days=self.max_age_days):
+                return entry.translation
             del self.cache_data[key]
         return None
 
@@ -228,7 +303,12 @@ class TranslationCache:
         try:
             if self.cache_file.exists():
                 with open(self.cache_file, encoding="utf-8") as f:
-                    self.cache_data = json.load(f)
+                    raw_data = json.load(f)
+                validated = _TranslationCacheFileSchema.model_validate(raw_data)
+                self.cache_data = {
+                    key: entry.model_dump(mode="json")
+                    for key, entry in validated.root.items()
+                }
         except Exception as e:
             warn_tech(
                 code="translation.cache.load_failed",
@@ -240,8 +320,11 @@ class TranslationCache:
     def save_cache(self) -> None:
         try:
             self.cache_file.parent.mkdir(parents=True, exist_ok=True)
+            validated = _TranslationCacheFileSchema.model_validate(self.cache_data)
             with open(self.cache_file, "w", encoding="utf-8") as f:
-                json.dump(self.cache_data, f, indent=2, ensure_ascii=False)
+                json.dump(
+                    validated.model_dump(mode="json"), f, indent=2, ensure_ascii=False
+                )
         except Exception as e:
             warn_tech(
                 code="translation.cache.save_failed",
@@ -251,12 +334,17 @@ class TranslationCache:
 
     def clear_expired(self) -> None:
         current_time = datetime.now()
-        expired_keys = [
-            key
-            for key, entry in self.cache_data.items()
-            if current_time - datetime.fromisoformat(entry["created"])
-            > timedelta(days=self.max_age_days)
-        ]
+        expired_keys: list[str] = []
+        for key, entry_raw in self.cache_data.items():
+            try:
+                entry = _TranslationCacheEntrySchema.model_validate(entry_raw)
+            except ValidationError:
+                expired_keys.append(key)
+                continue
+
+            if current_time - entry.created > timedelta(days=self.max_age_days):
+                expired_keys.append(key)
+
         for key in expired_keys:
             del self.cache_data[key]
         if expired_keys:
@@ -495,8 +583,12 @@ class AutoTranslator(QObject):
             "max_age_days": self.cache.max_age_days,
         }
         provider_stats: dict[str, int] = {}
-        for entry in self.cache.cache_data.values():
-            p = entry.get("provider", "unknown")
+        for entry_raw in self.cache.cache_data.values():
+            try:
+                entry = _TranslationCacheEntrySchema.model_validate(entry_raw)
+                p = entry.provider
+            except ValidationError:
+                p = "invalid"
             provider_stats[p] = provider_stats.get(p, 0) + 1
         stats["by_provider"] = provider_stats
         return stats

@@ -93,7 +93,6 @@ def create_temp_app_config():
   app_min_width: 940
   app_height: 720
   app_min_height: 560
-  theme: "dark"
   menu_panel_shrinked_width: 60
   menu_panel_extended_width: 240
   settings_panel_width: 240

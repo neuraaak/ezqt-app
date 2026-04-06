@@ -55,7 +55,7 @@ class Printer:
 
     def debug_msg(self, message: str, prefix: str = "~") -> None:
         """Print a debug message (only when ``debug`` is enabled)."""
-        if self.verbose or self.debug:
+        if self.debug:
             print(f"{Fore.LIGHTBLACK_EX}{prefix} {message}{Style.RESET_ALL}")
 
     def action(self, message: str, prefix: str = "+") -> None:

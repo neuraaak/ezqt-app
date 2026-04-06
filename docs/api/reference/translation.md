@@ -10,6 +10,35 @@ Translation stack: service adapter, manager, auto-translation providers, and str
 
 ::: ezqt_app.services.translation.manager.TranslationManager
 
+## 📡 Translation signal integration
+
+`TranslationManager` exposes runtime signals used by the UI layer:
+
+| Signal                 | Payload               | Purpose                                                  |
+| :--------------------- | :-------------------- | :------------------------------------------------------- |
+| `languageChanged`      | `str` (language code) | Notify widgets/services that the active language changed |
+| `translation_started`  | none                  | Notify that async auto-translation queue became active   |
+| `translation_finished` | none                  | Notify that async auto-translation queue drained         |
+
+`AutoTranslator` also emits low-level worker signals:
+
+| Signal              | Payload                  | Purpose                                      |
+| :------------------ | :----------------------- | :------------------------------------------- |
+| `translation_ready` | `(original, translated)` | One async translation completed successfully |
+| `translation_error` | `(original, error)`      | One async translation failed                 |
+
+Example wiring:
+
+```python
+from ezqt_app.services.translation import get_translation_manager
+
+manager = get_translation_manager()
+
+manager.languageChanged.connect(lambda code: print(f"Language -> {code}"))
+manager.translation_started.connect(lambda: print("Auto-translation started"))
+manager.translation_finished.connect(lambda: print("Auto-translation finished"))
+```
+
 ## 📦 EzTranslator
 
 `EzTranslator` is a `QTranslator` subclass installed permanently into Qt's translator
@@ -28,6 +57,28 @@ even during language switches (only the `.qm`-backed translator is swapped).
 ## 📦 AutoTranslator
 
 ::: ezqt_app.services.translation.auto_translator.AutoTranslator
+
+## ⚠️ Provider response validation
+
+External HTTP payloads from providers are schema-validated before use.
+
+| Provider                  | Validation mode             |
+| :------------------------ | :-------------------------- |
+| `GoogleTranslateProvider` | strict payload shape checks |
+| `MyMemoryProvider`        | strict object schema checks |
+| `LibreTranslateProvider`  | strict object schema checks |
+
+Invalid payloads are rejected and logged; translation returns `None`.
+
+## ⚠️ Cache contract
+
+`translations.json` is validated with a strict schema on read and write.
+Malformed entries are removed or rejected instead of being tolerated.
+
+## ⚠️ Legacy fallback removed
+
+`LibreTranslateProvider` no longer auto-falls back to an alternate host when
+the primary host returns an HTTP error.
 
 ## 📦 StringCollector
 

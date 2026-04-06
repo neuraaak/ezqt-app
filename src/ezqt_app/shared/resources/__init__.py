@@ -11,11 +11,13 @@ from __future__ import annotations
 # IMPORTS
 # ///////////////////////////////////////////////////////////////
 import importlib.util
-import logging
 import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Any  # noqa: F401  # pyright: ignore[reportUnusedImport]
+
+# Third-party imports
+from ezplog.lib_mode import get_logger
 
 # Local imports
 from ...resources import (
@@ -42,6 +44,8 @@ Images = _PackageImages
 AppIcons: Any = None
 AppImages: Any = None
 
+_LOGGER = get_logger(__name__)
+
 
 def _load_module_from_file(module_name: str, file_path: Path) -> ModuleType | None:
     """Import a Python module directly from file when it exists."""
@@ -56,7 +60,7 @@ def _load_module_from_file(module_name: str, file_path: Path) -> ModuleType | No
     try:
         spec.loader.exec_module(module)
     except Exception as e:
-        logging.getLogger(__name__).warning(
+        _LOGGER.warning(
             "Failed to load runtime module %s from %s: %s", module_name, file_path, e
         )
         return None

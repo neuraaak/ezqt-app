@@ -15,11 +15,8 @@ app:
 
   # GUI
   # //////
-  debug: false
-  # Initial/fallback theme used on first launch or when settings_panel.theme.default
-  # is absent. Once the user picks a theme, the persisted value in
-  # settings_panel.theme.default takes precedence (see _get_setting_default in app.py).
-  theme: "dark"
+  # Controls debug-level output of ezqt_app internal printer.
+  debug_printer: false
   menu_panel_shrinked_width: 60
   menu_panel_extended_width: 240
   settings_panel_width: 240
@@ -44,9 +41,9 @@ settings_panel:
     label: "Active Theme"
     # options are derived dynamically from theme.config.yaml palette — do not set here
     # Stored as "preset:variant" (e.g. "blue_gray:dark").
-    # Persisted theme chosen by the user. Overrides app.theme (the initial fallback).
-    # Written by AppService.stage_config_value on every theme change and flushed to
-    # disk on application quit.
+    # Persisted theme chosen by the user and also the framework default.
+    # Written by AppService.stage_config_value on every theme change and
+    # flushed to disk on application quit.
     default: "blue-gray:dark"
     description: "Choose the application theme"
     enabled: true

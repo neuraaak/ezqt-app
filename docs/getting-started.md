@@ -64,6 +64,14 @@ ezqt init
 The bootstrap step creates a `bin/` directory containing compiled Qt resources,
 a default theme, and configuration files. You should see a summary of generated files.
 
+!!! warning "Strict config validation"
+    Runtime and save-time configuration parsing now uses strict schema validation.
+    Unknown keys in validated sections can trigger validation errors instead of being
+    silently ignored.
+
+    For theme defaults, use `settings_panel.theme.default` in `bin/config/app.config.yaml`.
+    `app.theme` is no longer used.
+
 Alternatively, bootstrap from Python:
 
 ```python
@@ -161,6 +169,26 @@ window.set_app_theme()
 ```python
 window = EzQt_App().build()
 window.enable_auto_translation(False)
+```
+
+### Observe theme and translation signals
+
+```python
+from ezqt_app.services.translation import get_translation_manager
+
+window = EzQt_App().build()
+translation_manager = get_translation_manager()
+
+window.themeChanged.connect(lambda: print("Theme changed"))
+translation_manager.languageChanged.connect(
+    lambda code: print(f"Language changed -> {code}")
+)
+translation_manager.translation_started.connect(
+    lambda: print("Auto-translation started")
+)
+translation_manager.translation_finished.connect(
+    lambda: print("Auto-translation finished")
+)
 ```
 
 ### Custom `bin_path`

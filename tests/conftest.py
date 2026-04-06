@@ -241,7 +241,6 @@ def mock_yaml_config(tmp_path):
     config_content = """app:
   name: "Test Application"
   description: "Test Description"
-  theme: "dark"
 
 settings_panel:
   theme:

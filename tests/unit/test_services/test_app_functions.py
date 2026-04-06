@@ -41,8 +41,12 @@ class TestConfigServiceV5:
             "app": {
                 "name": "Test App",
                 "description": "Test Description",
-                "theme": "dark",
-            }
+            },
+            "settings_panel": {
+                "theme": {
+                    "default": "blue-gray:dark",
+                }
+            },
         }
         with open(config_file, "w", encoding="utf-8") as file:
             yaml.safe_dump(config_data, file)
@@ -51,7 +55,7 @@ class TestConfigServiceV5:
         loaded = self.service.load_config("app")
 
         assert loaded["app"]["name"] == "Test App"
-        assert loaded["app"]["theme"] == "dark"
+        assert loaded["settings_panel"]["theme"]["default"] == "blue-gray:dark"
 
     def test_should_return_empty_dict_when_config_file_is_missing(
         self, temp_project_root: Path
@@ -82,14 +86,17 @@ class TestConfigServiceV5:
     ) -> None:
         self.service.set_project_root(temp_project_root)
 
-        data = {"app": {"name": "Updated App", "theme": "light"}}
+        data = {
+            "app": {"name": "Updated App"},
+            "settings_panel": {"theme": {"default": "blue-gray:light"}},
+        }
         result = self.service.save_config("app", data)
 
         assert result is True
         saved_file = temp_project_root / "bin" / "config" / "app.config.yaml"
         assert saved_file.exists()
         loaded = yaml.safe_load(saved_file.read_text(encoding="utf-8"))
-        assert loaded["app"]["theme"] == "light"
+        assert loaded["settings_panel"]["theme"]["default"] == "blue-gray:light"
 
     def test_should_save_loaded_config_back_when_project_root_is_none(
         self, temp_project_root: Path
@@ -99,20 +106,25 @@ class TestConfigServiceV5:
 
         config_file = config_dir / "app.config.yaml"
         config_file.write_text(
-            yaml.safe_dump({"app": {"name": "Demo", "theme": "dark"}}),
+            yaml.safe_dump(
+                {
+                    "app": {"name": "Demo"},
+                    "settings_panel": {"theme": {"default": "blue-gray:dark"}},
+                }
+            ),
             encoding="utf-8",
         )
 
         self.service.set_project_root(temp_project_root)
         loaded = self.service.load_config("app", force_reload=True)
         self.service._project_root = None  # simulate runtime without bootstrap root
-        loaded["app"]["theme"] = "light"
+        loaded["settings_panel"]["theme"]["default"] = "blue-gray:light"
 
         saved = self.service.save_config("app", loaded)
 
         assert saved is True
         reloaded = yaml.safe_load(config_file.read_text(encoding="utf-8"))
-        assert reloaded["app"]["theme"] == "light"
+        assert reloaded["settings_panel"]["theme"]["default"] == "blue-gray:light"
 
     def test_should_return_existing_path_when_package_resource_is_queried(self) -> None:
         resource = get_package_resource("resources/config/app.config.yaml")

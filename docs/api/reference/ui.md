@@ -2,6 +2,26 @@
 
 UI orchestration services and reusable widget containers.
 
+## 📡 Theme signal integration
+
+`EzQt_App` emits `themeChanged` whenever the active theme is switched via
+the settings panel flow (`set_app_theme()` / `refresh_theme()`).
+
+Use this signal to refresh custom widgets that keep theme-dependent caches
+outside standard QSS repaint behavior.
+
+```python
+from ezqt_app import EzQt_App
+
+window = EzQt_App().build()
+
+def on_theme_changed() -> None:
+    # Recompute theme-dependent resources in custom components.
+    ...
+
+window.themeChanged.connect(on_theme_changed)
+```
+
 ## 📦 ThemeService
 
 ::: ezqt_app.services.ui.theme_service.ThemeService

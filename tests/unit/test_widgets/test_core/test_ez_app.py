@@ -14,6 +14,7 @@ from __future__ import annotations
 import contextlib
 import locale
 import os
+from unittest.mock import MagicMock, patch
 
 # Third-party imports
 import pytest
@@ -131,3 +132,56 @@ class TestEzApplication:
         """create_for_testing must return the same singleton on repeated calls."""
         second = EzApplication.create_for_testing([])
         assert second is ez_app
+
+    def test_should_raise_runtime_error_when_non_ez_qapplication_exists(self):
+        """Constructor must reject an existing non-Ez QApplication singleton."""
+
+        class _ForeignApp:
+            pass
+
+        with (
+            patch(
+                "ezqt_app.widgets.core.ez_app.QApplication.instance",
+                return_value=_ForeignApp(),
+            ),
+            pytest.raises(RuntimeError),
+        ):
+            EzApplication([])
+
+    def test_should_set_runtime_environment_variables_in_create_for_testing(self):
+        """create_for_testing should enforce expected runtime environment values."""
+        app = EzApplication.create_for_testing([])
+        assert app is not None
+        assert os.environ.get("PYTHONIOENCODING") == "utf-8"
+        assert os.environ.get("QT_FONT_DPI") == "96"
+
+    def test_should_cleanup_existing_foreign_qapplication_in_create_for_testing(self):
+        """create_for_testing should cleanup foreign QApplication instances."""
+
+        class _DummyApp(EzApplication):
+            def __init__(self, *args, **kwargs):  # noqa: ARG002
+                self.created = True
+
+        foreign = MagicMock()
+        nested = MagicMock()
+
+        with (
+            patch(
+                "ezqt_app.widgets.core.ez_app.QGuiApplication.instance",
+                return_value=object(),
+            ),
+            patch(
+                "ezqt_app.widgets.core.ez_app.QApplication.instance",
+                side_effect=[foreign, nested, None],
+            ),
+            patch("ezqt_app.widgets.core.ez_app.time.sleep"),
+            pytest.raises(
+                RuntimeError,
+            ),
+        ):
+            _DummyApp.create_for_testing([])
+
+        foreign.quit.assert_called_once()
+        foreign.deleteLater.assert_called_once()
+        nested.quit.assert_called_once()
+        nested.deleteLater.assert_called_once()

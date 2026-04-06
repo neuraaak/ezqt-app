@@ -70,6 +70,7 @@ nav:
   - User Guides:
       - guides/index.md
       - Modular UI: guides/modular-ui.md
+      - Logging Integration: guides/how-to-integrate-logging.md
       - Qt Resources Pipeline: guides/resources.md
       - QSS Style Guide: guides/style-guide.md
       - Development: guides/development.md

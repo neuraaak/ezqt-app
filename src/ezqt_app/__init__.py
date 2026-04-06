@@ -39,6 +39,9 @@ from __future__ import annotations
 # Standard library imports
 import sys
 
+# Third-party imports
+from ezplog.lib_mode import get_logger
+
 # Local imports
 from ._version import __version__
 from .app import EzApplication, EzQt_App
@@ -85,6 +88,9 @@ if sys.version_info < (3, 11):  # noqa: UP036
         f"ezqt_app {__version__} requires Python 3.11 or higher. "
         f"Current version: {sys.version}"
     )
+
+# Library logging contract: no global configuration side effects.
+get_logger("ezqt_app")
 
 # ///////////////////////////////////////////////////////////////
 # PUBLIC API
